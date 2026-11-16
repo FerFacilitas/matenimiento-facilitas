@@ -1,0 +1,9 @@
+Matenimiento V9.6 - GitHub Pages
+
+Subir únicamente los 7 archivos de este ZIP a la raíz del repositorio (NO subir el ZIP).
+GitHub > Settings > Pages > Build and deployment > Deploy from a branch > main > /(root) > Save.
+La app se abrirá en https://ferfacilitas.github.io/matenimiento-facilitas/
+IMPORTANTE: la versión contiene funciones pendientes de validación; probar acceso, permisos y sincronización antes de uso real.
+Google OAuth: agregar el origen https://ferfacilitas.github.io en Google Cloud > OAuth client > Authorized JavaScript origins, si se usa la exportación a Drive.
+Supabase: revisar Site URL / Redirect URLs y las políticas RLS antes de uso real.
+Para ver el icono nuevo en iPhone, eliminar el acceso directo viejo y agregar el nuevo desde Safari.
