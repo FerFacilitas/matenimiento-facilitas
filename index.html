@@ -1,387 +1,703 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Matenimiento · Facilitas</title><style>
-:root{font-family:Inter,system-ui,Arial,sans-serif;color:#172c3c;background:#f3f6fa}*{box-sizing:border-box}body{margin:0}.wrap{max-width:1250px;margin:auto;padding:24px}header{background:#12324b;color:white;padding:24px;border-radius:16px}h1{margin:0 0 6px;font-size:27px}p{line-height:1.5}.muted{color:#617284;font-size:13px}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:16px 0}.stat,.panel{background:white;border:1px solid #e0e6ed;border-radius:13px;padding:18px}.stat strong{display:block;font-size:27px;margin-top:6px}.layout{display:grid;grid-template-columns: minmax(300px,1fr) minmax(430px,1.25fr);gap:16px}.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}input,select,textarea,button{font:inherit;border:1px solid #cad4df;border-radius:8px;padding:10px;background:white}input[type=search]{flex:1;min-width:160px}button{cursor:pointer;background:#136d8d;color:white;border:0;font-weight:650}button.secondary{background:#eaf1f5;color:#18405a}button.danger{background:#fff0ed;color:#9b3327}.list{max-height:650px;overflow:auto}.item{padding:11px;border-bottom:1px solid #edf0f3;cursor:pointer;display:flex;justify-content:space-between;gap:8px}.item:hover,.item.active{background:#edf7fa}.item small{display:block;color:#6b7886;margin-top:3px}.pill{display:inline-block;border-radius:99px;padding:4px 9px;font-size:11px;font-weight:800;white-space:nowrap}.alta{background:#ffe5e1;color:#a53027}.media{background:#fff0c9;color:#8a5c00}.baja{background:#dff5e8;color:#176b43}.pendiente{background:#e9eef4;color:#596b7a}.field{margin:16px 0}.field label{font-weight:700;display:block;margin-bottom:6px}.field select,.field textarea{width:100%}.field .hint{color:#617284;font-size:12px;margin-top:5px}.heading{display:flex;justify-content:space-between;gap:12px;align-items:center}.score{background:#eef6fa;border-radius:12px;padding:14px;margin:15px 0;font-size:20px;font-weight:800}.footer{margin-top:14px;font-size:12px;color:#617284}#notes{min-height:75px} @media(max-width:800px){.wrap{padding:10px}.layout{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}.list{max-height:260px}header{padding:17px}h1{font-size:22px}}
-input[type=range]{width:100%;padding:0;accent-color:#136d8d;height:30px;cursor:pointer;touch-action:pan-y}.range-labels{display:flex;justify-content:space-between;gap:10px;font-size:11px;color:#617284}.range-labels span:last-child{text-align:right}.field strong{font-size:16px}
-.incident-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.incident-grid label{display:block;font-weight:600;font-size:13px;margin-bottom:5px}.incident-grid input,.incident-grid textarea{width:100%}.incident-grid .wide{grid-column:1/-1}.subhead{border-top:2px solid #e3eaf0;margin-top:20px;padding-top:16px}.inc-table{width:100%;border-collapse:collapse;font-size:13px}.inc-table th,.inc-table td{padding:8px 5px;text-align:left;border-bottom:1px solid #e4e9ee}.inc-table-wrap{overflow:auto}.inc-actions{display:flex;gap:5px;flex-wrap:wrap}.inc-actions button{padding:6px 9px;font-size:12px}.summary-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.summary-card{background:#f0f5f8;padding:12px;border-radius:10px}.summary-card strong{display:block;font-size:22px}.hint2{font-size:12px;color:#607385;margin-top:5px}.notice{background:#fff8e7;padding:10px;border-radius:9px;font-size:13px}.small-button{font-size:12px;padding:8px}.period-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:10px 0}.period-controls input,.period-controls select{max-width:180px}@media(max-width:650px){.incident-grid{grid-template-columns:1fr}.summary-grid{grid-template-columns:1fr 1fr}.inc-table{font-size:12px}.period-controls input,.period-controls select{max-width:100%}}
-.brand-head{display:flex;align-items:center;gap:18px;flex-wrap:wrap}.brand-logo{width:170px;max-width:45vw;height:auto;background:#fff;border-radius:10px;padding:5px}header{background:#8f202c}.report-controls{display:flex;gap:12px;align-items:end;flex-wrap:wrap}.report-controls label{display:flex;flex-direction:column;gap:5px}.report-controls select,.report-controls input{min-width:125px}.report-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}@media(max-width:600px){.brand-logo{width:125px}}
-</style><style>
-.shared-nav{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}.shared-panel{margin:16px 0}.shared-panel input,.shared-panel textarea,.shared-panel select{width:100%}.shared-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.shared-grid label{display:block;font-size:13px;font-weight:700;margin-bottom:5px}.shared-grid>div{min-width:0}.shared-list{display:grid;gap:10px}.shared-entry{padding:13px;border:1px solid #e0e6ed;border-radius:10px;background:#fff}.shared-entry p{margin:5px 0}.shared-muted{color:#607385;font-size:13px}.shared-hidden{display:none!important}@media(max-width:650px){.shared-grid{grid-template-columns:1fr}}
-</style><style>
-/* FACILITAS V8 — capa visual, sin cambios a las funciones existentes */
-:root{font-family:'Arial Rounded MT Bold','Trebuchet MS',Arial,sans-serif;color:#272b31;background:#f7f7f8;--brand:#b72c37;--brand-dark:#851c29;--line:#e9e5e6}
-body{background:linear-gradient(180deg,#fff3f4 0,#f7f7f8 270px)}
-.wrap{max-width:1340px;padding:22px}
-header{background:linear-gradient(120deg,#971e2c,#c33743 65%,#891d2a);border-radius:22px;padding:27px 30px;box-shadow:0 12px 28px #8e26302c;border:1px solid #ffffff36;position:relative;overflow:hidden}
-header:after{content:'';position:absolute;right:-42px;top:-65px;width:250px;height:250px;border:28px solid #ffffff12;border-radius:50%;pointer-events:none}
-header h1{font-size:clamp(26px,3.2vw,39px);font-weight:900;letter-spacing:-1.2px;line-height:1.1}
-.brand-logo{width:205px;max-width:44vw;border-radius:14px;background:white;padding:10px;box-shadow:0 5px 18px #42121a33}
-.panel,.stat{border:1px solid #e8e4e5;border-radius:18px;box-shadow:0 5px 18px #29242a0b}
-.panel{position:relative;overflow:hidden}
-.panel>h2,.panel>.heading h2{letter-spacing:-.45px;color:#32272b}
-.panel:before{content:'';position:absolute;top:0;left:0;right:0;height:5px;background:#b72c37}
-#shared-app{border-top:0;background:linear-gradient(145deg,#fff,#fffafa)}
-#shared-app:before{background:#b72c37;height:6px}
-.shared-nav{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;margin:20px 0}
-.shared-nav button{display:flex;align-items:center;justify-content:center;min-height:65px;text-align:center;border-radius:14px;padding:12px;font-size:14px;line-height:1.3;background:#fff;color:#68252c;border:2px solid #efd8dc;box-shadow:0 3px 9px #3b22230b}
-.shared-nav button:hover,.shared-nav button:focus-visible{background:#fff0f2;border-color:#b72c37;transform:translateY(-1px)}
-.shared-nav button:nth-child(1){background:#eaf5f1;color:#216a55;border-color:#c5e6da}
-.shared-nav button:nth-child(2){background:#fff3e5;color:#965b16;border-color:#f4dbba}
-.shared-nav button:nth-child(3){background:#eaf0fb;color:#315e9d;border-color:#cbdcf8}
-.shared-nav button:nth-child(4){background:#f0ebfa;color:#6647a0;border-color:#ded2f4}
-.shared-nav button:nth-child(5){background:#edf5f6;color:#236c7b;border-color:#cde5e8}
-.shared-nav button:nth-child(6){background:#fff0f1;color:#a32837;border-color:#f0c7ce}
-.shared-section:not(.shared-hidden){padding:20px;border:1px solid #e5e8eb;border-left:6px solid #b72c37;border-radius:15px;background:white;box-shadow:0 4px 12px #2a29300b}
-#sh-news{border-left-color:#398e6d;background:#fbfefd}#sh-tasks{border-left-color:#e1a23b;background:#fffdfa}#sh-part{border-left-color:#447fc3;background:#fbfdff}#sh-profile{border-left-color:#8a6bb9;background:#fdfbff}#sh-manual{border-left-color:#4a95a3;background:#faffff}#sh-assign{border-left-color:#b72c37;background:#fffafb}
-.shared-entry{border-radius:12px;border:1px solid #e9e7e7;border-left:4px solid #b72c37;box-shadow:0 2px 7px #00000009}
-#sh-news .shared-entry{border-left-color:#398e6d}#sh-tasks .shared-entry{border-left-color:#e1a23b}
-button{background:#b72c37;border-radius:10px;transition:background .15s,transform .15s}button:hover{background:#8e202b}button.secondary{background:#f5e9eb;color:#862533}button.secondary:hover{background:#efd6da}button.danger{background:#fff0ed;color:#9b3327}
-input:focus,select:focus,textarea:focus{outline:2px solid #cb6670;outline-offset:1px;border-color:#b72c37}
-input[type=range]{accent-color:#b72c37}
-.stat{border-top:5px solid #b72c37}.stat:nth-child(2){border-top-color:#df9e32}.stat:nth-child(3){border-top-color:#4088c4}.stat:nth-child(4){border-top-color:#39926f}
-#reports-area:before{background:#377ca9}#stats-area:before{background:#388f70}
-.score{background:#fff0f1;color:#912631}.summary-card{background:#f9f3f4;border:1px solid #f0e4e6}
-.item:hover,.item.active{background:#fff0f2}.pill{border:1px solid #0000000c}
-.facilitas-section-mark{display:flex;align-items:center;gap:10px;margin:0 0 14px;padding:9px 12px;background:#fff;border:1px solid #f0e4e6;border-radius:12px;width:fit-content;max-width:100%}
-.facilitas-section-mark img{width:88px;height:auto;object-fit:contain}.facilitas-section-mark span{font-size:12px;font-weight:800;letter-spacing:.6px;color:#912631;text-transform:uppercase}
-.v8-footer{text-align:center;color:#7c6266;font-size:12px;margin:28px 0 8px}.v8-footer img{width:86px;vertical-align:middle;margin-right:10px}
-@media(max-width:800px){.wrap{padding:10px}header{padding:20px;border-radius:17px}.brand-logo{width:145px}.shared-nav{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.shared-nav button{min-height:66px;font-size:12px;padding:9px}.shared-section:not(.shared-hidden){padding:12px}.panel{padding:13px}.facilitas-section-mark img{width:72px}}
-</style><link rel="manifest" href="./manifest.webmanifest?v=96-logo-final-20261116"><meta name="theme-color" content="#b72c37"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="Matenimiento"><link rel="apple-touch-icon" href="./icon-192.png?v=96-logo-final-20261116"><meta name="app-version" content="V9.6"><meta name="app-build-argentina" content="16/11/2026 06:22"><script src="https://accounts.google.com/gsi/client" async defer></script><script src="./CONFIGURACION_GOOGLE_V96.js"></script></head><body><div class="wrap"><header><div class="brand-head"><img src="./logo-facilitas.png?v=96-logo-final-20261116" alt="Facilitas" class="brand-logo"><div><h1>Matenimiento</h1><div>Mundo Facilitas · Equipos, paradas e informes</div></div></div><div id="facilitas-live-clock" role="status" aria-label="Fecha y hora de Argentina" style="margin-top:10px;font-weight:700;font-size:14px;color:white;letter-spacing:.2px">Fecha y hora de Argentina: cargando...</div></header><section class="panel shared-panel" id="shared-app"><div class="facilitas-section-mark"><img src="./logo-facilitas.png?v=96-logo-final-20261116" alt="Facilitas"><span>Gestión de turnos y tareas</span></div><div class="heading"><h2>Partes de turno y trabajos compartidos</h2><span id="shared-connection" class="pill pendiente">Sin configurar</span></div><p class="muted">Las novedades se comparten entre celulares únicamente cuando se conecta la base de datos y cada persona inicia sesión.</p>
-<div id="shared-login"><div class="shared-grid"><div><label>Correo de usuario</label><input id="sh-email" type="email" autocomplete="username" placeholder="usuario@empresa.com"></div><div><label>Contraseña</label><input id="sh-pass" type="password" autocomplete="current-password"><button type="button" class="secondary" aria-label="Mostrar u ocultar contraseña" onclick="const p=this.previousElementSibling;p.type=p.type==='password'?'text':'password';this.textContent=p.type==='text'?'Ocultar':'👁 Ver'">👁 Ver</button></div></div><div class="toolbar" style="margin-top:12px"><button onclick="shLogin()">Ingresar</button><button class="secondary" onclick="shForgotPassword()">Olvidé mi contraseña</button><button class="secondary" onclick="shToggleSignup()">Crear cuenta</button></div><p id="sh-authmsg" class="notice"></p></div>
-<div id="sh-signup" class="shared-hidden shared-section"><h3>Crear cuenta de operario</h3><p class="notice">La cuenta quedará pendiente hasta que Fernando autorice el acceso. No se puede elegir rol de jefe ni administrador.</p><div class="shared-grid"><div><label>Nombre</label><input id="sh-reg-first" autocomplete="given-name"></div><div><label>Apellido</label><input id="sh-reg-last" autocomplete="family-name"></div><div><label>Correo personal</label><input id="sh-reg-email" type="email" autocomplete="email"></div><div><label>Contraseña (mínimo 8 caracteres)</label><input id="sh-reg-pass" type="password" autocomplete="new-password"><button type="button" class="secondary" aria-label="Mostrar u ocultar contraseña" onclick="const p=this.previousElementSibling;p.type=p.type==='password'?'text':'password';this.textContent=p.type==='text'?'Ocultar':'👁 Ver'">👁 Ver</button></div><div><label>Horario de entrada</label><input id="sh-reg-start" type="time"></div><div><label>Horario de salida</label><input id="sh-reg-end" type="time"></div><div><label>Especialidad</label><select id="sh-reg-specialty"><option>Mantenimiento</option><option>Herrería</option><option>Mantenimiento edilicio</option></select></div></div><div class="toolbar"><button onclick="shSignup()">Solicitar cuenta</button><button class="secondary" onclick="shToggleSignup(false)">Volver al ingreso</button></div><p id="sh-reg-msg" class="notice"></p></div>
-<div id="sh-pending" class="shared-hidden shared-section"><h3>Cuenta pendiente de aprobación</h3><p>Tu solicitud fue recibida, pero todavía no podés utilizar las tareas ni los partes. Fernando debe aprobar tu cuenta.</p><button onclick="shLogout()">Salir</button></div>
-<div id="shared-main" class="shared-hidden"><div class="heading"><p id="sh-welcome"></p><button class="secondary" onclick="shLogout()">Salir</button></div><div class="shared-nav"><button onclick="shTab('news')">Novedades</button><button onclick="shTab('tasks')">Mis tareas</button><button onclick="shTab('part')">Registrar trabajo / cerrar turno</button><button onclick="shTab('profile')">Mi perfil</button><button onclick="shTab('manual')">Manual de uso</button><button onclick="shTab('inventory');shLoadInventory()">Inventario de repuestos</button><button id="sh-stats-tab" class="shared-hidden" onclick="shTab('private-stats');shLoadPrivateStats()">Estadísticas privadas</button><button id="sh-admin-tab" class="shared-hidden" onclick="shTab('approvals');shLoadApprovals()">Aprobar usuarios</button><button id="sh-users-tab" class="shared-hidden" onclick="shTab('users');shLoadUsers()">Agregar / administrar usuarios</button><button id="sh-supervisor-tab" class="shared-hidden" onclick="shTab('assign')">Asignar trabajos</button></div>
-<div id="sh-news" class="shared-section"><h3>Novedades de todos los turnos</h3><div id="sh-news-list" class="shared-list"></div></div>
-<div id="sh-tasks" class="shared-section shared-hidden"><h3>Todas las tareas</h3><p class="shared-muted">Trabajos asignados y registro de inicio, pausas y finalización.</p><div id="sh-task-list" class="shared-list"></div></div>
-<div id="sh-private-stats" class="shared-section shared-hidden"><h3>Estadísticas de tiempos — uso exclusivo de Fernando</h3><p class="shared-muted">Vista preliminar. Los datos provienen de las tareas registradas en Supabase. Los períodos sin tareas no equivalen automáticamente a ociosidad.</p><div class="toolbar"><label>Desde <input type="date" id="sh-stats-from"></label><label>Hasta <input type="date" id="sh-stats-to"></label><button onclick="shLoadPrivateStats()">Actualizar</button><button class="secondary" onclick="shExportStatsXlsx()">Exportar a Excel</button></div><p class="shared-muted">Genera un libro Excel con cinco hojas y solicita autorización de Google para guardarlo únicamente en Drive. No descarga el archivo al dispositivo.</p><p id="sh-private-stats-msg" role="status" class="notice"></p><div id="sh-private-stats-body" class="shared-list"></div><p class="notice">Informe calculado mediante una función de Supabase que verifica el rol supervisor. Importante: las tablas de tareas compartidas siguen siendo legibles por usuarios autenticados; el aislamiento completo de datos requiere rediseñar los permisos de lectura.</p></div><div id="sh-inventory" class="shared-section shared-hidden"><h3>Inventario de repuestos</h3><p>Las entradas suman, los retiros descuentan y las devoluciones reponen existencias. Todos los movimientos quedan registrados con el usuario y la fecha.</p>
-<div class="toolbar"><input id="sh-inventory-filter" placeholder="Buscar código o repuesto" oninput="shRenderInventory()"><button onclick="shLoadInventory()">Actualizar</button></div>
-<div class="shared-grid">
-<div><label>Repuesto *</label><select id="sh-move-part"></select></div><div><label>Movimiento *</label><select id="sh-move-type"><option value="retiro">Retiro (descontar)</option><option value="devolucion">Devolución (sumar)</option><option value="entrada">Entrada (sumar, jefe/administrador)</option></select></div>
-<div><label>Cantidad *</label><input id="sh-move-qty" type="number" min="1" step="1" value="1"></div><div><label>Código de máquina</label><input id="sh-move-machine" placeholder="Ej. SOB-01"></div>
-<div><label>Observaciones</label><input id="sh-move-notes" placeholder="Motivo del movimiento"></div></div>
-<div class="toolbar"><button onclick="shSaveMovement()">Registrar movimiento</button><button class="secondary" onclick="shLoadMovements()">Ver últimos movimientos</button></div>
-<p id="sh-inventory-msg" class="notice" role="status"></p><div id="sh-inventory-list" class="shared-list"></div><div id="sh-movements-list" class="shared-list"></div></div>
-<div id="sh-part" class="shared-section shared-hidden"><h3>Registrar intervención</h3><div class="shared-grid"><div><label>Equipo o instalación</label><select id="sh-machine" onchange="shOtherMachine()"></select></div><div id="sh-other-box" class="shared-hidden"><label>Nombre del equipo o elemento</label><input id="sh-other" placeholder="Portón, cañería, tablero, estructura..."></div><div><label>Estado</label><select id="sh-status"><option value="terminado">Terminado</option><option value="en_proceso">En proceso</option><option value="pendiente">Pendiente</option></select></div><div><label>Repuestos utilizados</label><input id="sh-parts" placeholder="Opcional"></div><div style="grid-column:1/-1"><label>Descripción del trabajo *</label><textarea id="sh-description" rows="3" placeholder="Qué se hizo y cuál fue el resultado"></textarea></div><div style="grid-column:1/-1"><label>Observaciones para el siguiente turno</label><textarea id="sh-next" rows="2" placeholder="Qué falta hacer, riesgos, próximos pasos"></textarea></div></div><div class="toolbar" style="margin-top:12px"><button onclick="shSavePart()">Guardar trabajo</button><button class="secondary" onclick="shCloseShift()">Cerrar turno</button></div><p id="sh-part-msg" class="shared-muted"></p></div>
-<div id="sh-profile" class="shared-section shared-hidden"><h3>Mis datos</h3><div class="shared-grid"><div><label>Nombre</label><input id="sh-first"></div><div><label>Apellido</label><input id="sh-last"></div><div><label>Horario de entrada</label><input id="sh-start" type="time"></div><div><label>Horario de salida</label><input id="sh-end" type="time"></div><div><label>Especialidad</label><select id="sh-specialty"><option>Mantenimiento</option><option>Herrería</option><option>Mantenimiento edilicio</option><option>Supervisión</option></select></div></div><div class="toolbar" style="margin-top:12px"><button onclick="shSaveProfile()">Guardar perfil</button></div></div>
-<div id="sh-assign" class="shared-section shared-hidden"><h3>Asignar trabajo</h3><div class="shared-grid"><div><label>Asignar a</label><select id="sh-assignee"></select></div><div><label>Equipo / elemento</label><input id="sh-assigned-machine" placeholder="Código o nombre; admite elementos no inventariados"></div><div><label>Prioridad</label><select id="sh-priority"><option value="normal">Normal</option><option value="alta">Alta</option><option value="urgente">Urgente</option></select></div><div><label>Fecha límite (opcional)</label><input id="sh-due" type="date"></div><div style="grid-column:1/-1"><label>Descripción *</label><textarea id="sh-assignment" rows="3"></textarea></div></div><div class="toolbar" style="margin-top:12px"><button onclick="shAssign()">Asignar tarea</button></div></div>
-<div id="sh-users" class="shared-section shared-hidden"><h3>Agregar usuarios</h3><p class="notice">Invitá a cada empleado a registrarse. El empleado define su contraseña y la cuenta queda pendiente hasta que la apruebes. No se crean cuentas automáticamente desde esta pantalla.</p><div class="shared-grid"><div><label>Correo del empleado</label><input type="email" id="sh-invite-email" placeholder="empleado@correo.com"></div><div><label>Nombre (opcional, para la invitación)</label><input id="sh-invite-name" placeholder="Nombre y apellido"></div></div><div class="toolbar"><button onclick="shInviteUser()">Preparar invitación por correo</button><button class="secondary" onclick="shLoadUsers()">Actualizar lista</button></div><p id="sh-users-msg" class="notice" role="status"></p><h3>Administrar usuarios</h3><p class="shared-muted">Podés editar los perfiles existentes y activar o desactivar su acceso. Los nuevos empleados se registran desde la invitación y después los aprobás. Las modificaciones requieren instalar la función administrativa SQL incluida en este paquete.</p><div id="sh-users-list" class="shared-list"></div></div><div id="sh-approvals" class="shared-section shared-hidden"><h3>Solicitudes pendientes</h3><p>Solo Fernando puede aprobar cuentas.</p><div id="sh-approvals-list"></div></div><div id="sh-manual" class="shared-section shared-hidden"><h3>Manual de uso</h3><details open><summary>1. Crear cuenta, ingresar y recuperar contraseña</summary><p>Los operarios nuevos eligen «Crear cuenta», completan nombre, apellido, correo, especialidad, horario y contraseña. Confirman su correo si Supabase lo solicita y esperan la aprobación de Fernando. No eligen roles. Juan Carlos utiliza su cuenta existente de jefe y Fernando su cuenta de administrador. Para ingresar, escribí correo y contraseña. Si la olvidaste, escribí tu correo y elegí «Olvidé mi contraseña» para recibir un enlace. Nunca compartas tu clave.</p></details><details><summary>1A. Aprobaciones — solo Fernando</summary><p>Entrá con tu cuenta de administrador, abrí «Aprobar usuarios», revisá cada solicitud y autorizá únicamente a empleados identificados. Nadie puede aprobarse a sí mismo.</p></details><details><summary>2. Revisar novedades</summary><p>Al comenzar el turno, abrí «Novedades» y leé los trabajos del equipo. Prestá especial atención a pendientes y en proceso.</p></details><details><summary>3. Consultar tareas asignadas</summary><p>En «Mis tareas» aparecen los trabajos que te asignaron. Usá Iniciar trabajo y Finalizar trabajo para registrar los horarios automáticamente. Podés pausar y reanudar.</p></details><details><summary>4. Registrar una intervención</summary><p>Elegí una máquina del inventario o «Otro equipo / instalación». Indicá qué hiciste, repuestos, estado y observaciones para el próximo turno. Guardá cada intervención.</p></details><details><summary>5. Cerrar turno</summary><p>Antes de retirarte, revisá tus trabajos y presioná «Cerrar turno». El cierre queda registrado para que el próximo operario lo consulte.</p></details><details><summary>6. Asignar trabajos (supervisores)</summary><p>Juan Carlos y el responsable del área pueden abrir «Asignar trabajos», seleccionar operario, prioridad, equipo y descripción.</p></details><details><summary>7. Inventario, criticidad e informes</summary><p>La sección original permite consultar máquinas, registrar paradas, evaluar criticidad y descargar informes. Esos datos siguen siendo locales hasta una futura migración.</p></details><p class="notice">La conexión compartida requiere internet. Si no hay conexión, no se debe asumir que un trabajo se guardó.</p></div></div></section><div class="stats"><div class="stat"><span class="muted">Equipos</span><strong id="nall">85</strong></div><div class="stat"><span class="muted">Evaluados</span><strong id="ndone">0</strong></div><div class="stat"><span class="muted">Criticidad alta</span><strong id="nhigh">0</strong></div><div class="stat"><span class="muted">Pendientes</span><strong id="nleft">85</strong></div></div><div class="toolbar"><button onclick="exportCSV()">Exportar evaluación a CSV</button><button class="secondary" onclick="exportJSON()">Copia de seguridad</button><button class="secondary" onclick="document.getElementById('restore').click()">Importar copia</button><input id="restore" type="file" accept=".json" hidden onchange="restoreJSON(event)"></div><div class="toolbar"><button onclick="newMachine()">+ Agregar máquina</button><button class="secondary" onclick="editMachine()">Editar datos del equipo</button><button class="danger" onclick="archiveMachine()">Quitar máquina</button><button class="secondary" onclick="toggleArchived()">Ver / ocultar equipos quitados</button></div><div id="machine-editor" class="panel" style="display:none;margin-bottom:16px"><h3 id="editor-title">Datos del equipo</h3><div class="incident-grid"><div><label>Código *</label><input id="machine-code" placeholder="Ej.: SOB-02" maxlength="40"></div><div><label>Nombre *</label><input id="machine-name" placeholder="Nombre del equipo" maxlength="160"></div><div><label>Sector</label><input id="machine-sector" placeholder="Producción"></div><div><label>Ubicación</label><input id="machine-location" placeholder="Línea / sector"></div></div><div class="toolbar" style="margin-top:12px"><button onclick="saveMachine()">Guardar equipo</button><button class="secondary" onclick="closeMachineEditor()">Cancelar</button></div><p class="hint2">El código identifica al equipo y debe ser único. Para preservar el historial, el código de una máquina existente no se modifica.</p></div><div class="layout"><section class="panel"><div class="toolbar"><input id="search" type="search" placeholder="Buscar código o máquina..." oninput="renderList()"><select id="filter" onchange="renderList()"><option value="todos">Todas</option><option value="archivadas">Quitadas</option><option value="pendiente">Pendientes</option><option value="ALTA">Alta</option><option value="MEDIA">Media</option><option value="BAJA">Baja</option></select></div><div id="list" class="list"></div></section><section class="panel"><div class="heading"><h2 id="selected" style="margin:0;font-size:21px">Seleccioná una máquina</h2><span id="tag" class="pill pendiente">Pendiente</span></div><p id="meta" class="muted"></p><div id="form" style="display:none"><p class="muted">Deslizá cada selector de izquierda (menor impacto) a derecha (mayor impacto). La clasificación se calcula automáticamente.</p><div id="fields"></div><div class="field"><label><input type="checkbox" id="safety" onchange="updateScore()"> Riesgo grave para seguridad de personas</label><div class="hint">El riesgo grave de seguridad o una puntuación 5 en inocuidad implica criticidad ALTA automática.</div></div><div class="score" id="score"></div><div class="field"><label>Justificación / observaciones</label><textarea id="notes" placeholder="Ej.: sin equipo alternativo; motor con entrega de 30 días..."></textarea></div><div class="toolbar"><button onclick="save()">Guardar evaluación</button><button class="secondary" onclick="nextPending()">Siguiente pendiente</button><button class="danger" onclick="clearCurrent()">Borrar evaluación</button></div></div><div class="subhead" id="incident-area"><h3>Paradas por roturas · <span id="inc-machine"></span></h3><p class="muted">Cada parada queda asociada a esta máquina. Registrá fecha y hora de detención, motivo, repuesto utilizado, responsable y puesta en marcha.</p><div class="incident-grid"><div><label for="inc-start">Fecha y hora de parada *</label><input id="inc-start" type="datetime-local"></div><div><label for="inc-end">Fecha y hora de puesta en marcha</label><input id="inc-end" type="datetime-local"></div><div class="wide"><label for="inc-reason">Motivo / descripción de la rotura *</label><textarea id="inc-reason" rows="2" placeholder="Ej.: rotura de correa, rodamiento dañado..."></textarea></div><div><label for="inc-part">Repuesto utilizado</label><input id="inc-part" placeholder="Ej.: correa A-42; sin repuesto"></div><div><label for="inc-person">Personal a cargo del arreglo *</label><input id="inc-person" placeholder="Ej.: Walter y Hernán"></div><div class="wide"><label for="inc-note">Observaciones (opcional)</label><textarea id="inc-note" rows="2" placeholder="Acciones realizadas, pendiente, proveedor..."></textarea></div></div><div class="toolbar" style="margin-top:12px"><button onclick="saveIncident()" id="inc-save">Guardar parada</button><button class="secondary" onclick="resetIncidentForm()">Nuevo registro / cancelar edición</button></div><div class="notice">Si la máquina todavía está detenida, dejá vacía la puesta en marcha. La parada quedará abierta y no sumará horas definitivas hasta que registres el reinicio.</div><h4>Historial de paradas del equipo</h4><div class="inc-table-wrap" id="inc-history"></div></div></div></section></div><section class="panel" id="reports-area" style="margin-top:16px"><div class="facilitas-section-mark"><img src="./logo-facilitas.png?v=96-logo-final-20261116" alt="Facilitas"><span>Informes de mantenimiento</span></div><div class="heading"><h2 style="margin:0">Informes descargables</h2></div><p class="muted">Generá informes semanales, mensuales o anuales. Los registros de paradas abiertas se identifican por separado. Las horas se calculan por período para las paradas cerradas.</p><div class="report-controls"><label>Período<select id="report-type" onchange="reportPeriodChanged()"><option value="week">Semanal</option><option value="month" selected>Mensual</option><option value="year">Anual</option></select></label><label>Fecha / mes / año<input id="report-date" type="month"></label><label>Equipo<select id="report-machine"><option value="all">Toda la fábrica</option></select></label></div><div class="report-actions"><button onclick="downloadReportCSV()">Descargar informe Excel (CSV)</button><button class="secondary" onclick="printReport()">Imprimir / Guardar PDF</button></div></section><section class="panel" style="margin-top:16px" id="stats-area"><div class="heading"><h2 style="margin:0">Estadísticas de paradas</h2><button class="secondary small-button" onclick="exportIncidentsCSV()">Exportar paradas a Excel (CSV)</button></div><p class="muted">Resumen de toda la planta o por equipo. Las horas se distribuyen por fecha real, incluso si una parada cruza la medianoche o cambia de mes o año.</p><div class="period-controls"><label>Período <select id="period-type" onchange="updatePeriodControl();renderStats()"><option value="day">Diario</option><option value="month" selected>Mensual</option><option value="year">Anual</option></select></label><label>Fecha <input id="period-value" type="month" onchange="renderStats()"></label><label>Equipo <select id="stats-machine" onchange="renderStats()"><option value="all">Todos los equipos</option></select></label></div><div id="stats-cards" class="summary-grid"></div><div id="stats-detail" class="inc-table-wrap" style="margin-top:12px"></div><p class="hint2">Se contabilizan paradas iniciadas en el período y horas de parada correspondientes al período. Las paradas abiertas se cuentan, pero sus horas se muestran aparte y no se suman como definitivas. No incluye paradas no registradas.</p></section><p class="footer">Las máquinas activas evaluadas se muestran ordenadas por criticidad. Los equipos quitados pueden recuperarse sin perder su historial. Los datos se guardan localmente en este navegador. Para trabajar en otra PC o evitar pérdidas, exportá una copia JSON. El CSV se abre en Excel. Los puntajes y umbrales son criterios propuestos que deben validarse con Producción y Calidad/Seguridad.</p></div><script>
-const initialMachines=[{"id": "AMC-01", "name": "Amasadora chica N1", "sector": "Producción", "location": "Inicio de bollería"}, {"id": "AMC-02", "name": "Amasadora chica N2", "sector": "Producción", "location": "Inicio de bollería"}, {"id": "DIV-01", "name": "Divisora", "sector": "Producción", "location": "2do proceso bollería"}, {"id": "REB-01", "name": "Rebolladora", "sector": "Producción", "location": "3er proceso bollería"}, {"id": "DES-01", "name": "Descansadora", "sector": "Producción", "location": "4to proceso bollería"}, {"id": "AR-01", "name": "Armadora", "sector": "Producción", "location": "5to proceso bollería"}, {"id": "SOB-01", "name": "Sobadora", "sector": "Producción", "location": "Sin ubicación"}, {"id": "TRI-01", "name": "Trinchadora", "sector": "Producción", "location": "Sin ubicación"}, {"id": "MPI-01", "name": "Máquina de pizzas", "sector": "Producción", "location": "Bollería"}, {"id": "AMG-01", "name": "Amasadora grande N1", "sector": "Producción", "location": "Inicio pan de molde"}, {"id": "AMG-02", "name": "Amasadora grande N2", "sector": "Producción", "location": "Inicio pan de molde"}, {"id": "ELE-01", "name": "Elevadora", "sector": "Producción", "location": "2do proceso pan de molde"}, {"id": "DIV-02", "name": "Divisora", "sector": "Producción", "location": "3er proceso pan de molde"}, {"id": "REB-02", "name": "Rebolladora", "sector": "Producción", "location": "4to proceso pan de molde"}, {"id": "DES-02", "name": "Descansadora", "sector": "Producción", "location": "5to proceso pan de molde"}, {"id": "AR-02", "name": "Armadora", "sector": "Producción", "location": "6to proceso pan de molde"}, {"id": "FER-01", "name": "Fermentadora 1", "sector": "Producción", "location": "Cámara de fermentación"}, {"id": "FER-02", "name": "Fermentadora 2", "sector": "Producción", "location": "Cámara de fermentación"}, {"id": "FER-03", "name": "Fermentadora 3", "sector": "Producción", "location": "Cámara de fermentación"}, {"id": "FER-04", "name": "Fermentadora 4", "sector": "Producción", "location": "Cámara de fermentación"}, {"id": "FER-05", "name": "Fermentadora 5", "sector": "Producción", "location": "Cámara de fermentación"}, {"id": "HOR-01", "name": "Horno rotativo 1", "sector": "Producción", "location": "Hornos"}, {"id": "HOR-02", "name": "Horno rotativo 2", "sector": "Producción", "location": "Hornos"}, {"id": "HOR-03", "name": "Horno rotativo 3", "sector": "Producción", "location": "Hornos"}, {"id": "HOR-04", "name": "Horno rotativo 4", "sector": "Producción", "location": "Hornos"}, {"id": "HOR-05", "name": "Horno rotativo 5", "sector": "Producción", "location": "Hornos"}, {"id": "HOR-06", "name": "Horno rotativo 6", "sector": "Producción", "location": "Hornos"}, {"id": "HOR-07", "name": "Horno rotativo 7", "sector": "Producción", "location": "Hornos"}, {"id": "HOR-08", "name": "Horno rotativo 8", "sector": "Producción", "location": "Hornos"}, {"id": "HOR-09", "name": "Horno rotativo 9", "sector": "Producción", "location": "Hornos"}, {"id": "HOR-10", "name": "Horno rotativo 10", "sector": "Producción", "location": "Hornos"}, {"id": "HOR-11", "name": "Horno rotativo 11", "sector": "Producción", "location": "Hornos"}, {"id": "HEL-04", "name": "Heladera", "sector": "Producción", "location": "Producción"}, {"id": "ESC-01", "name": "Escamadora", "sector": "Producción", "location": "Producción"}, {"id": "ROC-01", "name": "Rociadora 1", "sector": "Envasado", "location": "Sobre envasadora ADK bollería"}, {"id": "ROC-02", "name": "Rociadora 2", "sector": "Envasado", "location": "Inicio línea ADK 400"}, {"id": "SUN-01", "name": "Sunchadora 1", "sector": "Envasado", "location": "Fin de línea"}, {"id": "SUN-02", "name": "Sunchadora 2", "sector": "Envasado", "location": "Fin de línea"}, {"id": "SUN-03", "name": "Sunchadora 3", "sector": "Envasado", "location": "Back Up"}, {"id": "ADK-01", "name": "Flow pack ADK bollería", "sector": "Envasado", "location": "Línea de bollería"}, {"id": "FEC-01", "name": "Fechadora 1", "sector": "Envasado", "location": "Panes"}, {"id": "FEC-02", "name": "Fechadora 2", "sector": "Envasado", "location": "Panes"}, {"id": "SOP-01", "name": "Sopladora 1", "sector": "Envasado", "location": "Fin de línea manual"}, {"id": "CTR-01", "name": "Cinta transportadora 1", "sector": "Envasado", "location": "Fin de línea"}, {"id": "CTR-02", "name": "Cinta transportadora 2", "sector": "Envasado", "location": "Fin de línea"}, {"id": "SOP-02", "name": "Sopladora 2", "sector": "Envasado", "location": "Fin de línea manual"}, {"id": "SEL-01", "name": "Selladora", "sector": "Envasado", "location": "Bollería"}, {"id": "ADK-02", "name": "ADK 400 pan de molde", "sector": "Envasado", "location": "Línea pan de molde"}, {"id": "ARM-01", "name": "Armadora de empanadas", "sector": "CHE", "location": ""}, {"id": "FRE-01", "name": "Freidora", "sector": "CHE", "location": ""}, {"id": "HOR-12", "name": "Horno rotativo", "sector": "CHE", "location": ""}, {"id": "ABA-11", "name": "Abatidor", "sector": "CHE", "location": ""}, {"id": "MPR-01", "name": "Multiprocesadora", "sector": "CHE", "location": ""}, {"id": "FIA-01", "name": "Fiambrera automática 1", "sector": "CHE", "location": ""}, {"id": "FIA-02", "name": "Fiambrera automática 2", "sector": "CHE", "location": ""}, {"id": "FIA-03", "name": "Fiambrera 3", "sector": "CHE", "location": ""}, {"id": "ADK-03", "name": "Flowpack ADK", "sector": "CHE", "location": ""}, {"id": "TER-01", "name": "Termoselladora", "sector": "CHE", "location": ""}, {"id": "MAP-01", "name": "Envasadora al vacío", "sector": "CHE", "location": ""}, {"id": "COM-01", "name": "Compresor grande", "sector": "Planta", "location": "Depósito de residuos"}, {"id": "COM-02", "name": "Compresor chico", "sector": "Planta", "location": ""}, {"id": "COM-03", "name": "Compresor logística", "sector": "Logística", "location": "Depósito de PT"}, {"id": "CAM-01", "name": "Cámara de frío", "sector": "CHE", "location": "Depósito de PT"}, {"id": "HEL-01", "name": "Heladera 1", "sector": "CHE", "location": ""}, {"id": "HEL-02", "name": "Heladera 2", "sector": "CHE", "location": ""}, {"id": "HEL-03", "name": "Heladera 3", "sector": "CHE", "location": ""}, {"id": "FRE-02", "name": "Freezer", "sector": "CHE", "location": ""}, {"id": "CAM-02", "name": "Cámara de frío PT", "sector": "Logística", "location": "Depósito de PT"}, {"id": "COR-01", "name": "Cortadora", "sector": "Tapas", "location": ""}, {"id": "AMT-01", "name": "Amasadora 1", "sector": "Tapas", "location": "Inicio línea Tapas"}, {"id": "AMT-02", "name": "Amasadora 2", "sector": "Tapas", "location": "Inicio línea Tapas"}, {"id": "AMT-03", "name": "Amasadora 3", "sector": "Tapas", "location": "Inicio línea Tapas"}, {"id": "LAM-01", "name": "Laminadora", "sector": "Tapas", "location": ""}, {"id": "EMP-01", "name": "Empastadora", "sector": "Tapas", "location": ""}, {"id": "ADK-04", "name": "Envasadora ADK Tapas Emp", "sector": "Tapas", "location": ""}, {"id": "STC-01", "name": "Envasadora STC Pascu y Tarta", "sector": "Tapas", "location": ""}, {"id": "TQG-01", "name": "Tanque principal 1.000 lts", "sector": "Planta", "location": "Techo"}, {"id": "CST-01", "name": "Cisterna de producción 3.000 lts", "sector": "Planta", "location": "Depósito"}, {"id": "TQC-01", "name": "Tanque 1 CHE 1.000 lts", "sector": "Planta", "location": "CHE"}, {"id": "TQC-02", "name": "Tanque 2 CHE 1.000 lts", "sector": "Planta", "location": "Techo"}, {"id": "EFR-01", "name": "Enfriador de agua 1.000 lts", "sector": "Planta", "location": "Techo"}, {"id": "TQ-01", "name": "Tanque cilíndrico 1 500 lts", "sector": "Planta", "location": "Techo"}, {"id": "TQ-02", "name": "Tanque cilíndrico 2 500 lts", "sector": "Planta", "location": "Mantenimiento"}, {"id": "CIS-01", "name": "Cisterna 1.000 lts", "sector": "Planta", "location": "Mantenimiento"}, {"id": "TQG-02", "name": "Tanque 1.000 lts", "sector": "Planta", "location": "Mantenimiento"}];
-const catalogKey='facilitas_catalogo_v4';
-let catalog={added:[],edited:{},archived:[]};
-try{const saved=JSON.parse(localStorage.getItem(catalogKey)||'{}');if(saved&&typeof saved==='object'){catalog.added=Array.isArray(saved.added)?saved.added:[];catalog.edited=saved.edited||{};catalog.archived=Array.isArray(saved.archived)?saved.archived:[]}}catch(e){}
-let machines=[];
-let showArchived=false,editingMachineCode=null;
-function rebuildMachines(){machines=[...initialMachines,...catalog.added].map(m=>({...m,...(catalog.edited[m.id]||{})}));}
-function persistCatalog(){try{localStorage.setItem(catalogKey,JSON.stringify(catalog))}catch(e){alert('No se pudo guardar el catálogo. Hacé una copia de seguridad.')}}
-function activeMachines(){return machines.filter(m=>!catalog.archived.includes(m.id))}
-function refreshCatalog(){rebuildMachines();const active=activeMachines();if(!active.some(m=>m.id===current))current=active[0]?.id||null;document.getElementById('nall').textContent=active.length;renderList();refreshStatsMachine();if(current)selectMachine(current);else{document.getElementById('selected').textContent='No hay equipos activos';document.getElementById('meta').textContent='';document.getElementById('form').style.display='none';document.getElementById('incident-area').style.display='none'}renderStats()}
-function closeMachineEditor(){document.getElementById('machine-editor').style.display='none'}
-function newMachine(){editingMachineCode=null;document.getElementById('editor-title').textContent='Agregar máquina';for(const id of ['machine-code','machine-name','machine-sector','machine-location'])document.getElementById(id).value='';document.getElementById('machine-code').disabled=false;document.getElementById('machine-editor').style.display='block';document.getElementById('machine-code').focus()}
-function editMachine(){if(!current)return alert('Seleccioná un equipo.');const m=machines.find(x=>x.id===current);editingMachineCode=current;document.getElementById('editor-title').textContent='Editar máquina '+current;document.getElementById('machine-code').value=m.id;document.getElementById('machine-code').disabled=true;document.getElementById('machine-name').value=m.name;document.getElementById('machine-sector').value=m.sector||'';document.getElementById('machine-location').value=m.location||'';document.getElementById('machine-editor').style.display='block'}
-function saveMachine(){const id=document.getElementById('machine-code').value.trim().toUpperCase(),name=document.getElementById('machine-name').value.trim(),sector=document.getElementById('machine-sector').value.trim(),location=document.getElementById('machine-location').value.trim();if(!id||!name)return alert('Código y nombre son obligatorios.');if(!editingMachineCode&&machines.some(m=>m.id===id))return alert('Ese código ya existe. Usá otro código.');if(!/^[A-Z0-9_-]+$/.test(id))return alert('Usá letras, números, guion o guion bajo para el código.');const m={id,name,sector,location};if(editingMachineCode){catalog.edited[id]=m}else{catalog.added.push(m)}persistCatalog();closeMachineEditor();current=id;refreshCatalog();alert('Equipo guardado: '+id)}
-function archiveMachine(){if(!current)return;const m=machines.find(x=>x.id===current);if(!confirm('¿Quitar '+m.id+' · '+m.name+' del ranking? Su historial de paradas y evaluaciones se conservará. Podrás recuperarlo desde el filtro Quitadas.'))return;catalog.archived.push(current);persistCatalog();refreshCatalog()}
-function restoreMachine(id){catalog.archived=catalog.archived.filter(x=>x!==id);persistCatalog();current=id;document.getElementById('filter').value='todos';refreshCatalog()}
-function toggleArchived(){showArchived=!showArchived;document.getElementById('filter').value=showArchived?'archivadas':'todos';renderList()}
-function refreshStatsMachine(){const sel=document.getElementById('stats-machine'),prev=sel.value;sel.innerHTML='<option value="all">Todos los equipos</option>'+machines.map(m=>`<option value="${esc(m.id)}">${esc(m.id+' · '+m.name)}${catalog.archived.includes(m.id)?' (quitada)':''}</option>`).join('');sel.value=machines.some(m=>m.id===prev)?prev:'all';const rs=document.getElementById('report-machine');if(rs){const old=rs.value;rs.innerHTML='<option value="all">Toda la fábrica</option>'+machines.map(m=>`<option value="${esc(m.id)}">${esc(m.id+' · '+m.name)}</option>`).join('');rs.value=machines.some(m=>m.id===old)?old:'all'}}
-rebuildMachines();
-const criteria=[{key:'prod',name:'Impacto en producción',weight:45,opts:['Sin impacto','Inconvenientes menores','Reduce parcialmente la producción','Detiene una línea','Detiene varias líneas o proceso esencial']},{key:'alternative',name:'Falta de alternativa',weight:25,opts:['Reemplazo inmediato','Alternativa con impacto mínimo','Alternativa parcial','Alternativa muy limitada','Sin alternativa']},{key:'frequency',name:'Frecuencia de fallas',weight:15,opts:['Muy rara','Poco frecuente','Ocasional','Frecuente','Muy frecuente']},{key:'quality',name:'Calidad e inocuidad',weight:15,opts:['Sin impacto','Impacto menor','Posible rechazo de producto','Impacto importante','Riesgo grave de inocuidad']}];
-const key='facilitas_criticidad_v1';let data={};try{data=JSON.parse(localStorage.getItem(key)||'{}')}catch(e){}let current=machines[0].id;
-function classify(d){if(!d)return null;const score=criteria.reduce((s,c)=>s+Number(d[c.key])*c.weight/100,0);return {score,level:d.safety||Number(d.quality)===5||score>=3.8?'ALTA':score>=2.5?'MEDIA':'BAJA'}}
-function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function renderList(){const q=document.getElementById('search').value.toLowerCase(),f=document.getElementById('filter').value;const subset=f==='archivadas'?machines.filter(m=>catalog.archived.includes(m.id)):activeMachines();document.getElementById('list').innerHTML=subset.filter(m=>(m.id+' '+m.name+' '+m.location).toLowerCase().includes(q)).filter(m=>f==='archivadas'||f==='todos'||(f==='pendiente'?!data[m.id]:classify(data[m.id])?.level===f)).sort((a,b)=>(classify(data[b.id])?.score||0)-(classify(data[a.id])?.score||0)).map(m=>{const lev=classify(data[m.id])?.level||'pendiente';return `<div class="item ${current===m.id?'active':''}" ${f==='archivadas'?'':`onclick="selectMachine('${m.id}')"`}><div><b>${esc(m.id)}</b> · ${esc(m.name)}<small>${esc(m.location||'')}${f==='archivadas'?' · Quitada':''}</small></div>${f==='archivadas'?`<button class="secondary small-button" onclick="restoreMachine('${m.id}')">Recuperar</button>`:`<span class="pill ${lev.toLowerCase()}">${lev==='pendiente'?'Pendiente':lev}</span>`}</div>`}).join('')||'<p class="muted">Sin resultados</p>';const active=activeMachines(),values=active.map(m=>classify(data[m.id]));document.getElementById('nall').textContent=active.length;document.getElementById('ndone').textContent=values.filter(Boolean).length;document.getElementById('nhigh').textContent=values.filter(v=>v?.level==='ALTA').length;document.getElementById('nleft').textContent=values.filter(v=>!v).length;}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#b72c37">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Matenimiento">
+<title>Matenimiento Facilitas</title>
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<link rel="icon" href="./icon-192.png">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+:root{--red:#b72c37;--red-d:#7e1928;--red-l:#fbe9eb;--yel:#f5c400;--yel-l:#fff7d1;--ink:#1d1d1f;--mut:#6b6b73;--line:#e4e4e8;--bg:#f5f5f7;--ok:#1d7a4c;--ok-l:#e3f4ea;--warn:#a15c00;--warn-l:#fff1dc;--blue:#1d5fa8;--blue-l:#e6effa;--r:14px}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
+button,input,select,textarea{font:inherit;color:inherit}
+header.top{position:sticky;top:0;z-index:20;background:var(--red);color:#fff;padding:calc(env(safe-area-inset-top) + 10px) 16px 10px;display:flex;align-items:center;gap:12px;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+header.top img{height:34px;border-radius:6px;background:#fff;padding:2px 4px}
+header.top .t{flex:1;min-width:0}
+header.top .t b{display:block;font-size:17px;letter-spacing:.2px}
+header.top .t small{opacity:.85;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+header.top .sync{background:rgba(255,255,255,.18);border:0;color:#fff;border-radius:999px;padding:7px 11px;font-size:13px}
+main{padding:14px 14px calc(env(safe-area-inset-bottom) + 92px);max-width:760px;margin:0 auto}
+h2{font-size:21px;margin:6px 2px 12px}
+h3{font-size:17px;margin:0 0 10px}
+.card{background:#fff;border-radius:var(--r);padding:14px;margin-bottom:12px;box-shadow:0 1px 2px rgba(0,0,0,.06);border:1px solid var(--line)}
+.card.accent{border-left:5px solid var(--red)}
+.card.urgent{border-left:5px solid #d92d20}
+.card.alta{border-left:5px solid var(--yel)}
+.muted{color:var(--mut);font-size:14px}
+.small{font-size:13px}
+label{display:block;font-size:14px;font-weight:600;margin:12px 0 5px}
+input,select,textarea{width:100%;border:1px solid #cfcfd6;border-radius:11px;padding:12px;background:#fff;font-size:16px}
+textarea{min-height:88px;resize:vertical}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--red);border-color:transparent}
+.row{display:flex;gap:10px}.row>*{flex:1;min-width:0}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:0;border-radius:12px;padding:13px 16px;font-weight:700;background:var(--red);color:#fff;cursor:pointer;min-height:48px}
+.btn.block{width:100%;margin-top:14px}
+.btn.sec{background:#fff;color:var(--red);border:1.5px solid var(--red)}
+.btn.ghost{background:#f0f0f3;color:var(--ink)}
+.btn.ok{background:var(--ok)}
+.btn.yel{background:var(--yel);color:#3a2c00}
+.btn.sm{min-height:40px;padding:8px 12px;font-size:14px;border-radius:10px}
+.btn:disabled{opacity:.55}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.badge{display:inline-block;border-radius:999px;padding:3px 9px;font-size:12px;font-weight:700;background:#eee;color:#444;white-space:nowrap}
+.b-pend{background:var(--warn-l);color:var(--warn)}.b-proc{background:var(--blue-l);color:var(--blue)}.b-ok{background:var(--ok-l);color:var(--ok)}
+.b-urg{background:#fde4e1;color:#b42318}.b-alta{background:var(--yel-l);color:#7a5d00}.b-red{background:var(--red-l);color:var(--red-d)}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:12px}
+.stat{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:12px;cursor:pointer}
+.stat b{font-size:28px;display:block;line-height:1.1}
+.stat span{font-size:13px;color:var(--mut)}
+.stat.red b{color:var(--red)}.stat.yel{background:var(--yel-l);border-color:#f0dc8a}
+.seg{display:flex;background:#e9e9ee;border-radius:12px;padding:3px;margin-bottom:12px;overflow-x:auto}
+.seg button{flex:1;border:0;background:transparent;padding:9px 10px;border-radius:9px;font-weight:600;font-size:14px;white-space:nowrap}
+.seg button.on{background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.12);color:var(--red)}
+.note{background:var(--yel-l);border:1px solid #f0dc8a;border-radius:11px;padding:10px 12px;font-size:14px;margin-top:8px}
+.info{background:var(--blue-l);border-radius:11px;padding:10px 12px;font-size:14px;color:#123d6b}
+.err{background:#fde4e1;border-radius:11px;padding:10px 12px;font-size:14px;color:#912018}
+.line{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.line>div{min-width:0}
+.title{font-weight:700;overflow-wrap:anywhere}
+.partrow{display:grid;grid-template-columns:1fr 78px 44px;gap:8px;margin-top:8px}
+.partrow button{border:0;background:#f0f0f3;border-radius:10px;font-size:20px}
+.list-item{padding:12px 0;border-bottom:1px solid var(--line)}
+.list-item:last-child{border-bottom:0}
+.menu a{display:flex;align-items:center;gap:12px;padding:15px 4px;border-bottom:1px solid var(--line);color:inherit;text-decoration:none;font-weight:600}
+.menu a:last-child{border-bottom:0}
+.menu a .ic{width:36px;height:36px;border-radius:10px;background:var(--red-l);display:grid;place-items:center;font-size:19px}
+.menu a .ar{margin-left:auto;color:#aaa}
+nav.bottom{position:fixed;left:0;right:0;bottom:0;z-index:30;background:#fff;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr);padding:6px 4px calc(env(safe-area-inset-bottom) + 6px)}
+nav.bottom button{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11.5px;color:var(--mut);padding:4px 0;font-weight:600}
+nav.bottom button i{font-style:normal;font-size:22px;line-height:1.1}
+nav.bottom button.on{color:var(--red)}
+nav.bottom button.main i{background:var(--red);color:#fff;border-radius:14px;width:46px;height:34px;display:grid;place-items:center;font-size:20px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom) + 84px);background:#222;color:#fff;padding:12px 16px;border-radius:12px;z-index:50;max-width:92vw;font-size:15px;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+.toast.bad{background:#b42318}.toast.good{background:var(--ok)}
+.login-wrap{max-width:420px;margin:0 auto;padding-top:10px}
+.login-logo{display:block;margin:10px auto 16px;width:210px;max-width:70%;border-radius:12px}
+.hidden{display:none!important}
+details summary{cursor:pointer;color:var(--red);font-weight:600;font-size:14px;margin-top:6px}
+table.mini{width:100%;border-collapse:collapse;font-size:14px}
+table.mini td,table.mini th{padding:7px 4px;border-bottom:1px solid var(--line);text-align:left}
+table.mini th{font-size:12px;color:var(--mut);text-transform:uppercase}
+.spin{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.5);border-top-color:#fff;border-radius:50%;animation:s .7s linear infinite}
+@keyframes s{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<header class="top">
+  <img src="./logo-facilitas.jpg" alt="Facilitas">
+  <div class="t"><b>Matenimiento</b><small id="who">Mundo Facilitas</small></div>
+  <button class="sync hidden" id="syncBtn" onclick="refresh(true)">↻ Actualizar</button>
+</header>
+<main id="app"></main>
+<nav class="bottom hidden" id="nav">
+  <button data-v="inicio" onclick="go('inicio')"><i>🏠</i>Inicio</button>
+  <button data-v="tareas" onclick="go('tareas')"><i>📋</i>Tareas</button>
+  <button data-v="registrar" class="main" onclick="go('registrar')"><i>＋</i>Registrar</button>
+  <button data-v="repuestos" onclick="go('repuestos')"><i>🔩</i>Repuestos</button>
+  <button data-v="mas" onclick="go('mas')"><i>☰</i>Más</button>
+</nav>
+<script>
+'use strict';
+/* ===================== CONFIGURACIÓN ===================== */
+const VERSION='V10.1';
+const SB_URL='https://kuvzvpzqsjwpiekrxnxe.supabase.co';
+const SB_KEY='sb_publishable_tEVUpS6_hvpKjZonjw20_g_XDEMw12_'; // clave pública (no es de administrador)
+const GOOGLE_CLIENT_ID='586047120992-v6evqrq8q6n54vgfj3pcg1l3ac73c4o6.apps.googleusercontent.com';
+const DRIVE_FOLDER='Matenimiento Facilitas - Informes';
+const TZ='America/Argentina/Buenos_Aires';
+const MACHINES=[["AMC-01","Amasadora chica N1","Producción","Inicio de bollería"],["AMC-02","Amasadora chica N2","Producción","Inicio de bollería"],["DIV-01","Divisora","Producción","2do proceso bollería"],["REB-01","Rebolladora","Producción","3er proceso bollería"],["DES-01","Descansadora","Producción","4to proceso bollería"],["AR-01","Armadora","Producción","5to proceso bollería"],["SOB-01","Sobadora","Producción","Sin ubicación"],["TRI-01","Trinchadora","Producción","Sin ubicación"],["MPI-01","Máquina de pizzas","Producción","Bollería"],["AMG-01","Amasadora grande N1","Producción","Inicio pan de molde"],["AMG-02","Amasadora grande N2","Producción","Inicio pan de molde"],["ELE-01","Elevadora","Producción","2do proceso pan de molde"],["DIV-02","Divisora","Producción","3er proceso pan de molde"],["REB-02","Rebolladora","Producción","4to proceso pan de molde"],["DES-02","Descansadora","Producción","5to proceso pan de molde"],["AR-02","Armadora","Producción","6to proceso pan de molde"],["FER-01","Fermentadora 1","Producción","Cámara de fermentación"],["FER-02","Fermentadora 2","Producción","Cámara de fermentación"],["FER-03","Fermentadora 3","Producción","Cámara de fermentación"],["FER-04","Fermentadora 4","Producción","Cámara de fermentación"],["FER-05","Fermentadora 5","Producción","Cámara de fermentación"],["HOR-01","Horno rotativo 1","Producción","Hornos"],["HOR-02","Horno rotativo 2","Producción","Hornos"],["HOR-03","Horno rotativo 3","Producción","Hornos"],["HOR-04","Horno rotativo 4","Producción","Hornos"],["HOR-05","Horno rotativo 5","Producción","Hornos"],["HOR-06","Horno rotativo 6","Producción","Hornos"],["HOR-07","Horno rotativo 7","Producción","Hornos"],["HOR-08","Horno rotativo 8","Producción","Hornos"],["HOR-09","Horno rotativo 9","Producción","Hornos"],["HOR-10","Horno rotativo 10","Producción","Hornos"],["HOR-11","Horno rotativo 11","Producción","Hornos"],["HEL-04","Heladera","Producción","Producción"],["ESC-01","Escamadora","Producción","Producción"],["ROC-01","Rociadora 1","Envasado","Sobre envasadora ADK bollería"],["ROC-02","Rociadora 2","Envasado","Inicio línea ADK 400"],["SUN-01","Sunchadora 1","Envasado","Fin de línea"],["SUN-02","Sunchadora 2","Envasado","Fin de línea"],["SUN-03","Sunchadora 3","Envasado","Back Up"],["ADK-01","Flow pack ADK bollería","Envasado","Línea de bollería"],["FEC-01","Fechadora 1","Envasado","Panes"],["FEC-02","Fechadora 2","Envasado","Panes"],["SOP-01","Sopladora 1","Envasado","Fin de línea manual"],["CTR-01","Cinta transportadora 1","Envasado","Fin de línea"],["CTR-02","Cinta transportadora 2","Envasado","Fin de línea"],["SOP-02","Sopladora 2","Envasado","Fin de línea manual"],["SEL-01","Selladora","Envasado","Bollería"],["ADK-02","ADK 400 pan de molde","Envasado","Línea pan de molde"],["ARM-01","Armadora de empanadas","CHE",""],["FRE-01","Freidora","CHE",""],["HOR-12","Horno rotativo","CHE",""],["ABA-11","Abatidor","CHE",""],["MPR-01","Multiprocesadora","CHE",""],["FIA-01","Fiambrera automática 1","CHE",""],["FIA-02","Fiambrera automática 2","CHE",""],["FIA-03","Fiambrera 3","CHE",""],["ADK-03","Flowpack ADK","CHE",""],["TER-01","Termoselladora","CHE",""],["MAP-01","Envasadora al vacío","CHE",""],["COM-01","Compresor grande","Planta","Depósito de residuos"],["COM-02","Compresor chico","Planta",""],["COM-03","Compresor logística","Logística","Depósito de PT"],["CAM-01","Cámara de frío","CHE","Depósito de PT"],["HEL-01","Heladera 1","CHE",""],["HEL-02","Heladera 2","CHE",""],["HEL-03","Heladera 3","CHE",""],["FRE-02","Freezer","CHE",""],["CAM-02","Cámara de frío PT","Logística","Depósito de PT"],["COR-01","Cortadora","Tapas",""],["AMT-01","Amasadora 1","Tapas","Inicio línea Tapas"],["AMT-02","Amasadora 2","Tapas","Inicio línea Tapas"],["AMT-03","Amasadora 3","Tapas","Inicio línea Tapas"],["LAM-01","Laminadora","Tapas",""],["EMP-01","Empastadora","Tapas",""],["ADK-04","Envasadora ADK Tapas Emp","Tapas",""],["STC-01","Envasadora STC Pascu y Tarta","Tapas",""],["TQG-01","Tanque principal 1.000 lts","Planta","Techo"],["CST-01","Cisterna de producción 3.000 lts","Planta","Depósito"],["TQC-01","Tanque 1 CHE 1.000 lts","Planta","CHE"],["TQC-02","Tanque 2 CHE 1.000 lts","Planta","Techo"],["EFR-01","Enfriador de agua 1.000 lts","Planta","Techo"],["TQ-01","Tanque cilíndrico 1 500 lts","Planta","Techo"],["TQ-02","Tanque cilíndrico 2 500 lts","Planta","Mantenimiento"],["CIS-01","Cisterna 1.000 lts","Planta","Mantenimiento"],["TQG-02","Tanque 1.000 lts","Planta","Mantenimiento"]].map(([id,name,sector,location])=>({id,name,sector,location}));
+const SPECIALTIES=['Mantenimiento','Herrería','Mantenimiento edilicio','Supervisión'];
+/* Criticidad: mismo criterio que la V9.6 y que la función save_machine_criticality de Supabase */
+const CRIT=[
+ {k:'production_impact',old:'prod',name:'Impacto en producción',w:45,opts:['Sin impacto','Inconvenientes menores','Reduce parcialmente la producción','Detiene una línea','Detiene varias líneas o proceso esencial']},
+ {k:'no_alternative',old:'alternative',name:'Falta de alternativa',w:25,opts:['Reemplazo inmediato','Alternativa con impacto mínimo','Alternativa parcial','Alternativa muy limitada','Sin alternativa']},
+ {k:'failure_frequency',old:'frequency',name:'Frecuencia de fallas',w:15,opts:['Muy rara','Poco frecuente','Ocasional','Frecuente','Muy frecuente']},
+ {k:'quality_impact',old:'quality',name:'Calidad e inocuidad',w:15,opts:['Sin impacto','Impacto menor','Posible rechazo de producto','Impacto importante','Riesgo grave de inocuidad']}];
+function critCalc(d){if(!d||!CRIT.every(c=>Number(d[c.k])>=1&&Number(d[c.k])<=5))return null;const score=Math.round(CRIT.reduce((s,c)=>s+Number(d[c.k])*c.w/100,0)*100)/100;
+  return {score,level:d.safety_risk||Number(d.quality_impact)===5||score>=3.8?'ALTA':score>=2.5?'MEDIA':'BAJA'}}
+const LEVEL={ALTA:['Crítica ALTA','b-urg'],MEDIA:['Criticidad MEDIA','b-alta'],BAJA:['Criticidad BAJA','b-ok'],NONE:['Sin evaluar','']};
+const critOf=code=>S.crit[code]||null;
+const critBadge=(code,short)=>{const c=critOf(code);if(!c)return short?'':`<span class="badge">Sin evaluar</span>`;const l=LEVEL[c.level];return `<span class="badge ${l[1]}">${short?c.level:l[0]}</span>`};
 
-function selectMachine(id){current=id;const m=machines.find(m=>m.id===id),d=data[id]||{};document.getElementById('selected').textContent=m.id+' · '+m.name;document.getElementById('meta').textContent=m.sector+' · '+m.location;document.getElementById('form').style.display='block';document.getElementById('incident-area').style.display='block';document.getElementById('fields').innerHTML=criteria.map(c=>`<div class="field"><label for="${c.key}">${c.name} <span class="muted">(${c.weight}%)</span> <strong id="value-${c.key}" style="float:right;color:#136d8d">${Number(d[c.key])||3}/5</strong></label><input type="range" id="${c.key}" min="1" max="5" step="1" value="${Number(d[c.key])||3}" oninput="updateScore()" aria-label="${c.name}"><div class="range-labels"><span>1 · ${c.opts[0]}</span><span>5 · ${c.opts[4]}</span></div><div class="hint" id="desc-${c.key}">${c.opts[(Number(d[c.key])||3)-1]}</div></div>`).join('');document.getElementById('safety').checked=!!d.safety;document.getElementById('notes').value=d.notes||'';updateScore();renderList();renderIncidentHistory();}
-function collect(){const d={};for(const c of criteria){d[c.key]=Number(document.getElementById(c.key).value)}d.safety=document.getElementById('safety').checked;d.notes=document.getElementById('notes').value;return d}
-function updateScore(){const d=collect();criteria.forEach(c=>{document.getElementById('value-'+c.key).textContent=d[c.key]+'/5';document.getElementById('desc-'+c.key).textContent=c.opts[d[c.key]-1]});const complete=criteria.every(c=>d[c.key]>=1&&d[c.key]<=5);const v=complete?classify(d):null;document.getElementById('score').textContent=v?`Puntaje ${v.score.toFixed(2)} / 5 · Criticidad ${v.level}`:'Completá los cuatro criterios para calcular';const tag=document.getElementById('tag');tag.textContent=v?.level||'Pendiente';tag.className='pill '+(v?.level.toLowerCase()||'pendiente')}
-function save(){const d=collect();if(!criteria.every(c=>d[c.key]>=1&&d[c.key]<=5)){alert('Completá los cuatro criterios.');return}d.updated=new Date().toISOString();data[current]=d;persist();renderList();alert('Evaluación guardada: '+current)}
-function persist(){try{localStorage.setItem(key,JSON.stringify(data))}catch(e){alert('No se pudo guardar localmente. Exportá una copia JSON.')}}
-function nextPending(){const m=activeMachines().find(m=>!data[m.id]);if(m)selectMachine(m.id);else alert('Todas las máquinas están evaluadas.')}
-function clearCurrent(){if(confirm('¿Borrar la evaluación de '+current+'?')){delete data[current];persist();selectMachine(current)}}
-function download(content,name,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([content],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000)}
-function exportCSV(){const headers=['ID','Máquina','Sector','Ubicación',...criteria.map(c=>c.name),'Riesgo seguridad','Puntaje','Criticidad','Observaciones','Actualizado'];const lines=[headers,...machines.map(m=>{const d=data[m.id]||{},v=classify(data[m.id]);return [m.id,m.name,m.sector,m.location,...criteria.map(c=>d[c.key]||''),d.safety?'Sí':'No',v?v.score.toFixed(2).replace('.',','):'',v?.level||'PENDIENTE',d.notes||'',d.updated||'']})];download('\ufeff'+lines.map(r=>r.map(x=>'"'+String(x??'').replace(/"/g,'""')+'"').join(';')).join('\r\n'),'criticidad_maquinaria_facilitas.csv','text/csv;charset=utf-8')}
-function exportJSON(){download(JSON.stringify({version:4,exported:new Date().toISOString(),data,incidents,catalog},null,2),'respaldo_criticidad_facilitas.json','application/json')}
-function restoreJSON(e){const f=e.target.files?.[0];if(!f)return;const reader=new FileReader();reader.onload=()=>{try{const obj=JSON.parse(reader.result);if(!obj.data||typeof obj.data!=='object')throw Error('Formato inválido');if(confirm('¿Reemplazar las evaluaciones actuales con esta copia?')){data=obj.data;incidents=Array.isArray(obj.incidents)?obj.incidents:incidents;if(obj.catalog&&typeof obj.catalog==='object'){catalog={added:Array.isArray(obj.catalog.added)?obj.catalog.added:[],edited:obj.catalog.edited||{},archived:Array.isArray(obj.catalog.archived)?obj.catalog.archived:[]};persistCatalog()}persist();persistIncidents();refreshCatalog()}}catch(err){alert('No se pudo importar la copia: '+err.message)}};reader.readAsText(f);e.target.value=''}
+/* ===================== UTILIDADES ===================== */
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmtDT=d=>d?new Date(d).toLocaleString('es-AR',{timeZone:TZ,day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}):'';
+const fmtD=d=>d?new Date(d+(String(d).length===10?'T12:00:00':'')).toLocaleDateString('es-AR',{timeZone:TZ,day:'2-digit',month:'2-digit',year:'numeric'}):'';
+const today=()=>new Date().toLocaleDateString('en-CA',{timeZone:TZ});
+const STATUS={pendiente:['Pendiente','b-pend'],en_proceso:['En proceso','b-proc'],terminado:['Terminado','b-ok'],cierre:['Cierre de turno','b-red']};
+const PRIO={normal:['Normal',''],alta:['Alta','b-alta'],urgente:['Urgente','b-urg']};
+const MOVE={retiro:'Retiro',devolucion:'Devolución',entrada:'Ingreso',ajuste:'Ajuste'};
+const badge=(map,k)=>{const v=map[k]||[k||'—',''];return `<span class="badge ${v[1]}">${esc(v[0])}</span>`};
+const machineLabel=m=>m.id+' · '+m.name;
+function toast(msg,kind=''){const t=document.createElement('div');t.className='toast '+kind;t.textContent=msg;document.body.append(t);setTimeout(()=>t.remove(),kind==='bad'?6000:3200)}
+async function busy(btn,fn){if(btn?.disabled)return;const old=btn?.innerHTML;if(btn){btn.disabled=true;btn.innerHTML='<span class="spin"></span> Guardando…'}try{return await fn()}finally{if(btn&&document.body.contains(btn)){btn.disabled=false;btn.innerHTML=old}}}
+function taskSeconds(t){if(!t.started_at)return 0;const end=new Date(t.finished_at||t.paused_at||Date.now());return Math.max(0,(end-new Date(t.started_at))/1000-(Number(t.total_pause_seconds)||0))}
+const hhmm=s=>{const m=Math.round(s/60);return m<60?m+' min':Math.floor(m/60)+' h '+String(m%60).padStart(2,'0')+' min'};
+const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch{return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}},del(k){try{localStorage.removeItem(k)}catch{}}};
 
-// Registro de paradas independiente de la evaluación existente (no borra datos anteriores).
-const incidentsKey='facilitas_paradas_v3';let incidents=[];let editingIncident=null;
-try{const saved=JSON.parse(localStorage.getItem(incidentsKey)||'[]');if(Array.isArray(saved))incidents=saved}catch(e){}
-function persistIncidents(){try{localStorage.setItem(incidentsKey,JSON.stringify(incidents))}catch(e){alert('No se pudo guardar la parada. Exportá una copia de seguridad y verificá el espacio disponible.')}}
-function localDateTime(d){const pad=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`}
-function formatDate(v){if(!v)return 'Pendiente';const d=new Date(v);return Number.isNaN(+d)?'Fecha inválida':d.toLocaleString('es-AR',{dateStyle:'short',timeStyle:'short'})}
-function durationMs(r){if(!r.end)return 0;return Math.max(0,new Date(r.end)-new Date(r.start))}
-function fmtHours(ms){return (ms/3600000).toLocaleString('es-AR',{minimumFractionDigits:1,maximumFractionDigits:1})+' h'}
-function resetIncidentForm(){editingIncident=null;['inc-end','inc-reason','inc-part','inc-person','inc-note'].forEach(id=>document.getElementById(id).value='');document.getElementById('inc-start').value=localDateTime(new Date());document.getElementById('inc-save').textContent='Guardar parada'}
-function saveIncident(){const start=document.getElementById('inc-start').value,end=document.getElementById('inc-end').value,reason=document.getElementById('inc-reason').value.trim(),part=document.getElementById('inc-part').value.trim(),person=document.getElementById('inc-person').value.trim(),note=document.getElementById('inc-note').value.trim();if(!start||!reason||!person){alert('Completá fecha y hora de parada, motivo y personal a cargo.');return}if(Number.isNaN(+new Date(start))||(end&&Number.isNaN(+new Date(end)))){alert('Revisá las fechas.');return}if(end&&new Date(end)<new Date(start)){alert('La puesta en marcha no puede ser anterior a la parada.');return}if(new Date(start)>new Date()){if(!confirm('La fecha de parada está en el futuro. ¿Guardar igualmente?'))return}const record={id:editingIncident||('p'+Date.now()+'-'+Math.random().toString(36).slice(2,7)),machineId:current,start,end,reason,part,person,note,updated:new Date().toISOString()};if(editingIncident){const idx=incidents.findIndex(r=>r.id===editingIncident);if(idx<0){alert('Registro no encontrado');return}incidents[idx]=record}else incidents.push(record);persistIncidents();resetIncidentForm();renderIncidentHistory();renderStats();alert('Parada guardada en '+current)}
-function editIncident(id){const r=incidents.find(r=>r.id===id);if(!r)return;selectMachine(r.machineId);editingIncident=id;for(const [k,v] of [['inc-start',r.start],['inc-end',r.end],['inc-reason',r.reason],['inc-part',r.part],['inc-person',r.person],['inc-note',r.note]])document.getElementById(k).value=v||'';document.getElementById('inc-save').textContent='Guardar cambios';document.getElementById('incident-area').scrollIntoView({behavior:'smooth',block:'start'})}
-function deleteIncident(id){if(!confirm('¿Eliminar definitivamente este registro de parada?'))return;incidents=incidents.filter(r=>r.id!==id);persistIncidents();if(editingIncident===id)resetIncidentForm();renderIncidentHistory();renderStats()}
-function renderIncidentHistory(){const el=document.getElementById('inc-history');if(!el)return;document.getElementById('inc-machine').textContent=current;const rows=incidents.filter(r=>r.machineId===current).sort((a,b)=>new Date(b.start)-new Date(a.start));el.innerHTML=rows.length?'<table class="inc-table"><thead><tr><th>Parada</th><th>Motivo</th><th>Repuesto</th><th>Personal</th><th>Puesta en marcha</th><th>Duración</th><th>Acciones</th></tr></thead><tbody>'+rows.map(r=>`<tr><td>${esc(formatDate(r.start))}</td><td>${esc(r.reason)}</td><td>${esc(r.part||'—')}</td><td>${esc(r.person)}</td><td>${esc(formatDate(r.end))}</td><td>${r.end?fmtHours(durationMs(r)):'Abierta'}</td><td><div class="inc-actions"><button class="secondary" onclick="editIncident('${r.id}')">Editar</button><button class="danger" onclick="deleteIncident('${r.id}')">Borrar</button></div></td></tr>`).join('')+'</tbody></table>':'<p class="muted">Todavía no hay paradas registradas para esta máquina.</p>'}
-function periodBounds(){const t=document.getElementById('period-type').value,v=document.getElementById('period-value').value;let a,b;if(t==='day'){a=new Date(v+'T00:00:00');b=new Date(a);b.setDate(b.getDate()+1)}else if(t==='month'){a=new Date(v+'-01T00:00:00');b=new Date(a);b.setMonth(b.getMonth()+1)}else{a=new Date(Number(v),0,1);b=new Date(Number(v)+1,0,1)}return [+a,+b]}
-function updatePeriodControl(){const type=document.getElementById('period-type').value,inp=document.getElementById('period-value'),d=new Date();inp.type=type==='day'?'date':type==='month'?'month':'number';inp.min=type==='year'?'2000':'';inp.max=type==='year'?'2100':'';inp.value=type==='day'?localDateTime(d).slice(0,10):type==='month'?localDateTime(d).slice(0,7):String(d.getFullYear())}
-function renderStats(){const [a,b]=periodBounds(),mid=document.getElementById('stats-machine').value;const selected=incidents.filter(r=>mid==='all'||r.machineId===mid);const starts=selected.filter(r=>{const t=+new Date(r.start);return t>=a&&t<b});const active=selected.filter(r=>r.end&&+new Date(r.start)<b&&+new Date(r.end)>a);const ms=active.reduce((sum,r)=>sum+Math.max(0,Math.min(+new Date(r.end),b)-Math.max(+new Date(r.start),a)),0);const open=selected.filter(r=>!r.end&&+new Date(r.start)<b);const affected=new Set(starts.map(r=>r.machineId)).size;document.getElementById('stats-cards').innerHTML=`<div class="summary-card">Paradas iniciadas<strong>${starts.length}</strong></div><div class="summary-card">Horas detenidas (cerradas)<strong>${fmtHours(ms)}</strong></div><div class="summary-card">Paradas abiertas<strong>${open.length}</strong></div><div class="summary-card">Equipos con nuevas paradas<strong>${affected}</strong></div><div class="summary-card">Promedio por parada cerrada iniciada<strong>${fmtHours(starts.filter(r=>r.end).length?starts.filter(r=>r.end).reduce((n,r)=>n+durationMs(r),0)/starts.filter(r=>r.end).length:0)}</strong></div><div class="summary-card">Total histórico de registros<strong>${selected.length}</strong></div>`;const byMachine=new Map();for(const r of starts){const x=byMachine.get(r.machineId)||{count:0,ms:0};x.count++;byMachine.set(r.machineId,x)}for(const r of active){const x=byMachine.get(r.machineId)||{count:0,ms:0};x.ms+=Math.max(0,Math.min(+new Date(r.end),b)-Math.max(+new Date(r.start),a));byMachine.set(r.machineId,x)}const entries=[...byMachine].sort((a,b)=>b[1].ms-a[1].ms||b[1].count-a[1].count);document.getElementById('stats-detail').innerHTML=entries.length?'<h3>Detalle por máquina</h3><table class="inc-table"><thead><tr><th>Equipo</th><th>Paradas iniciadas</th><th>Horas detenidas en período</th></tr></thead><tbody>'+entries.map(([id,x])=>`<tr><td>${esc(id+' · '+(machines.find(m=>m.id===id)?.name||''))}</td><td>${x.count}</td><td>${fmtHours(x.ms)}</td></tr>`).join('')+'</tbody></table>':'<p class="muted">No hay paradas registradas en el período seleccionado.</p>'}
-function csvCell(x){return '"'+String(x??'').replace(/"/g,'""')+'"'}
-function exportIncidentsCSV(){const headers=['Código máquina','Máquina','Sector','Fecha y hora parada','Motivo','Repuesto utilizado','Personal a cargo','Fecha y hora puesta en marcha','Estado','Horas de parada','Observaciones'];const rows=incidents.slice().sort((a,b)=>new Date(b.start)-new Date(a.start)).map(r=>{const m=machines.find(m=>m.id===r.machineId);return [r.machineId,m?.name||'',m?.sector||'',formatDate(r.start),r.reason,r.part,r.person,r.end?formatDate(r.end):'','CERRADA'=== (r.end?'CERRADA':'ABIERTA')?'Cerrada':'Abierta',r.end?(durationMs(r)/3600000).toFixed(2).replace('.',','):'',r.note]});download('\ufeff'+[headers,...rows].map(r=>r.map(csvCell).join(';')).join('\r\n'),'paradas_mantenimiento_facilitas.csv','text/csv;charset=utf-8')}
-function initIncidentStats(){resetIncidentForm();refreshStatsMachine();updatePeriodControl();renderIncidentHistory();renderStats()}
+/* ===================== SUPABASE ===================== */
+let session=store.get('mat10_session',null);
+function saveSession(s){session=s?{...s,expires_at:s.expires_at||Math.floor(Date.now()/1000)+(s.expires_in||3600)}:null;s?store.set('mat10_session',session):store.del('mat10_session')}
+async function raw(path,{method='GET',body,auth=true,prefer}={}){
+  const h={apikey:SB_KEY,'Content-Type':'application/json'};
+  if(auth&&session)h.Authorization='Bearer '+session.access_token;
+  if(prefer)h.Prefer=prefer;
+  const r=await fetch(SB_URL+path,{method,headers:h,body:body===undefined?undefined:JSON.stringify(body)});
+  let out=await r.text();try{out=out?JSON.parse(out):null}catch{}
+  if(!r.ok){const e=new Error(out?.message||out?.msg||out?.error_description||out?.error||('Error '+r.status));e.status=r.status;throw e}
+  return out;
+}
+let refreshing=null;
+async function refreshToken(){
+  if(!session?.refresh_token)return false;
+  refreshing??=raw('/auth/v1/token?grant_type=refresh_token',{method:'POST',auth:false,body:{refresh_token:session.refresh_token}})
+    .then(s=>{saveSession(s);return true}).catch(e=>{if(e.status===400||e.status===401){saveSession(null)}return false}).finally(()=>{refreshing=null});
+  return refreshing;
+}
+async function api(path,opt={}){
+  if(opt.auth!==false&&session&&session.expires_at*1000-Date.now()<90000)await refreshToken();
+  try{return await raw(path,opt)}
+  catch(e){if((e.status===401||/jwt/i.test(e.message))&&await refreshToken())return raw(path,opt);
+    if(!navigator.onLine)e.message='Sin conexión a internet. No se guardó nada.';throw e}
+}
+const rpc=(fn,body)=>api('/rest/v1/rpc/'+fn,{method:'POST',body});
 
+/* ===================== ESTADO ===================== */
+const S={crit:{},critMissing:false,critF:'todas',me:null,profiles:[],tasks:[],parts:[],inv:[],moves:[],view:'inicio',taskFilter:'mias',taskStatus:'activas',invQ:'',invLow:false,machQ:'',newsFilter:'todo',loaded:false};
+const role=()=>S.me?.role||'operario';
+const isBoss=()=>['jefe','supervisor'].includes(role());
+const isSup=()=>role()==='supervisor';
+const nameOf=id=>{const p=S.profiles.find(x=>x.id===id);return p?([p.first_name,p.last_name].filter(Boolean).join(' ')||'Sin nombre'):'—'};
+const myId=()=>session?.user?.id;
 
-function reportPeriodChanged(){const t=document.getElementById('report-type').value,el=document.getElementById('report-date'),d=new Date();el.type=t==='week'?'date':t==='month'?'month':'number';el.min=t==='year'?'2000':'';el.max=t==='year'?'2100':'';el.value=t==='week'?localDateTime(d).slice(0,10):t==='month'?localDateTime(d).slice(0,7):String(d.getFullYear())}
-function reportBounds(){const t=document.getElementById('report-type').value,v=document.getElementById('report-date').value;let a,b;if(t==='week'){a=new Date(v+'T00:00:00');if(Number.isNaN(+a))return null;const day=(a.getDay()+6)%7;a.setDate(a.getDate()-day);b=new Date(a);b.setDate(b.getDate()+7)}else if(t==='month'){a=new Date(v+'-01T00:00:00');b=new Date(a);b.setMonth(b.getMonth()+1)}else{a=new Date(Number(v),0,1);b=new Date(Number(v)+1,0,1)}if(Number.isNaN(+a)||Number.isNaN(+b))return null;return [a,b]}
-function reportData(){const bounds=reportBounds();if(!bounds){alert('Elegí un período válido.');return null}const [a,b]=bounds,mid=document.getElementById('report-machine').value,records=incidents.filter(r=>mid==='all'||r.machineId===mid);const relevant=records.filter(r=>+new Date(r.start)<+b&&(r.end?+new Date(r.end)>+a:+new Date(r.start)>=+a));const rows=relevant.map(r=>{const m=machines.find(m=>m.id===r.machineId);const overlap=r.end?Math.max(0,Math.min(+new Date(r.end),+b)-Math.max(+new Date(r.start),+a)):0;return {code:r.machineId,name:m?.name||'',start:r.start,end:r.end||'',reason:r.reason||'',part:r.part||'',person:r.person||'',status:r.end?'Cerrada':'Abierta',hours:overlap/3600000,notes:r.note||'',started:+new Date(r.start)>=+a&&+new Date(r.start)<+b}}).sort((x,y)=>new Date(x.start)-new Date(y.start));const started=rows.filter(r=>r.started),hours=rows.reduce((n,r)=>n+r.hours,0),opened=rows.filter(r=>r.status==='Abierta').length;const byMachine={};for(const r of rows){const x=byMachine[r.code]||(byMachine[r.code]={name:r.name,starts:0,hours:0});x.starts+=r.started?1:0;x.hours+=r.hours}return {a,b,rows,started:started.length,hours,opened,byMachine}}
-function reportTitle(d){return 'Informe de mantenimiento · '+d.a.toLocaleDateString('es-AR')+' al '+new Date(+d.b-1).toLocaleDateString('es-AR')}
-function downloadReportCSV(){const d=reportData();if(!d)return;const lines=[['MUNDO FACILITAS · MATENIMIENTO'],[reportTitle(d)],['Paradas iniciadas',d.started],['Horas de parada cerradas en período',d.hours.toFixed(2).replace('.',',')],['Paradas abiertas',d.opened],[],['RESUMEN POR EQUIPO'],['Código','Máquina','Paradas iniciadas','Horas detenidas'],...Object.entries(d.byMachine).sort((a,b)=>b[1].hours-a[1].hours).map(([id,x])=>[id,x.name,x.starts,x.hours.toFixed(2).replace('.',',')]),[],['DETALLE DE PARADAS'],['Código','Máquina','Inicio','Puesta en marcha','Motivo','Repuesto','Personal','Estado','Horas en período','Observaciones'],...d.rows.map(r=>[r.code,r.name,formatDate(r.start),r.end?formatDate(r.end):'',r.reason,r.part,r.person,r.status,r.hours.toFixed(2).replace('.',','),r.notes])];const name='informe_matenimiento_'+document.getElementById('report-type').value+'_'+document.getElementById('report-date').value+'.csv';download('\ufeff'+lines.map(r=>r.map(csvCell).join(';')).join('\r\n'),name,'text/csv;charset=utf-8')}
-function printReport(){const d=reportData();if(!d)return;const safe=x=>esc(String(x??''));const html=`<!doctype html><html lang="es"><head><meta charset="utf-8"><title>${safe(reportTitle(d))}</title><style>body{font-family:Arial,sans-serif;margin:28px;color:#20262b}img{width:155px}h1{font-size:24px}table{width:100%;border-collapse:collapse;font-size:11px;margin:14px 0}td,th{border:1px solid #ccc;padding:6px;text-align:left;vertical-align:top}th{background:#eee}.summary{display:flex;gap:18px;flex-wrap:wrap}.summary div{padding:10px;background:#f3f3f3}small{color:#666}@media print{@page{size:A4 landscape;margin:12mm}}</style></head><body><img src="${location.href.replace(/[^/]*$/,'')}logo-facilitas.png" alt="Facilitas"><h1>Matenimiento · ${safe(reportTitle(d))}</h1><p>Equipo: ${safe(document.getElementById('report-machine').selectedOptions[0].textContent)}</p><div class="summary"><div>Paradas iniciadas: <b>${d.started}</b></div><div>Horas detenidas (cerradas): <b>${d.hours.toFixed(2)}</b></div><div>Paradas abiertas: <b>${d.opened}</b></div></div><h2>Ranking por horas detenidas</h2><table><tr><th>Equipo</th><th>Paradas</th><th>Horas</th></tr>${Object.entries(d.byMachine).sort((a,b)=>b[1].hours-a[1].hours).map(([id,x])=>`<tr><td>${safe(id+' · '+x.name)}</td><td>${x.starts}</td><td>${x.hours.toFixed(2)}</td></tr>`).join('')}</table><h2>Detalle de paradas</h2><table><tr><th>Equipo</th><th>Inicio</th><th>Fin</th><th>Motivo</th><th>Repuesto</th><th>Personal</th><th>Estado</th><th>Horas</th></tr>${d.rows.map(r=>`<tr><td>${safe(r.code+' · '+r.name)}</td><td>${safe(formatDate(r.start))}</td><td>${safe(r.end?formatDate(r.end):'')}</td><td>${safe(r.reason)}</td><td>${safe(r.part)}</td><td>${safe(r.person)}</td><td>${safe(r.status)}</td><td>${r.hours.toFixed(2)}</td></tr>`).join('')}</table><small>Las horas de paradas abiertas no se contabilizan hasta registrar la puesta en marcha. Las paradas que cruzan períodos se distribuyen según su fecha y hora reales.</small></body></html>`;const w=window.open('','_blank');if(!w){alert('Permití ventanas emergentes para imprimir el informe.');return}w.document.open();w.document.write(html);w.document.close();w.focus();setTimeout(()=>w.print(),500)}
-reportPeriodChanged();
-
-selectMachine(current);initIncidentStats();refreshCatalog();
-</script><script>if("serviceWorker" in navigator && location.protocol.startsWith("http")){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=96-logo-final-20261116").catch(()=>{}));}</script><script>
-// Configuración pública de Supabase (la clave anon/publishable NO es una clave de administrador).
-const SH_URL='https://kuvzvpzqsjwpiekrxnxe.supabase.co';
-const SH_KEY='sb_publishable_tEVUpS6_hvpKjZonjw20_g_XDEMw12_';
-window.addEventListener('load',()=>{if(location.hash.includes('type=recovery'))shCompleteRecovery()});
-let shSession=null,shProfile=null,shProfiles=[];
-const shReady=()=>SH_URL.startsWith('https://')&&!SH_URL.includes('REEMPLAZAR')&&!SH_KEY.includes('REEMPLAZAR');
-const shEl=id=>document.getElementById(id);
-const shEscape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const shMsg=(id,msg)=>shEl(id).textContent=msg;
-async function shRequest(path,{method='GET',body,auth=true}={}){const headers={'apikey':SH_KEY,'Content-Type':'application/json'};if(auth&&shSession)headers.Authorization='Bearer '+shSession.access_token;let res=await fetch(SH_URL+path,{method,headers,body:body===undefined?undefined:JSON.stringify(body)});let out=await res.text();try{out=out?JSON.parse(out):null}catch{}if(!res.ok)throw Error(out?.msg||out?.message||out?.error_description||'Error de conexión ('+res.status+')');return out}
-async function shRefresh(){if(!shSession?.refresh_token)return false;try{const r=await shRequest('/auth/v1/token?grant_type=refresh_token',{method:'POST',body:{refresh_token:shSession.refresh_token},auth:false});shSession=r;sessionStorage.setItem('sh_session',JSON.stringify(r));return true}catch{shLogout();return false}}
-async function shAPI(path,opt={}){try{return await shRequest(path,opt)}catch(e){if(String(e.message).includes('401')&&await shRefresh())return shRequest(path,opt);throw e}}
-function shToggleSignup(show){const on=show===undefined?shEl('sh-signup').classList.contains('shared-hidden'):show;shEl('sh-signup').classList.toggle('shared-hidden',!on);shEl('shared-login').classList.toggle('shared-hidden',on)}
-async function shSignup(){if(!shReady())return shMsg('sh-reg-msg','Falta configurar Supabase.');const first=shEl('sh-reg-first').value.trim(),last=shEl('sh-reg-last').value.trim(),email=shEl('sh-reg-email').value.trim(),password=shEl('sh-reg-pass').value; if(!first||!last||!email||password.length<8)return shMsg('sh-reg-msg','Completá nombre, apellido, correo y una contraseña de al menos 8 caracteres.');try{await shRequest('/auth/v1/signup',{method:'POST',auth:false,body:{email,password,data:{first_name:first,last_name:last,specialty:shEl('sh-reg-specialty').value,shift_start:shEl('sh-reg-start').value||null,shift_end:shEl('sh-reg-end').value||null}}});shEl('sh-reg-pass').value='';shMsg('sh-reg-msg','Solicitud enviada. Confirmá tu correo si recibís un mensaje. Esperá la aprobación de Fernando antes de ingresar.')}catch(e){shMsg('sh-reg-msg','No se pudo registrar: '+e.message)}}
-function shInviteUser(){if(!(shProfile?.role==='supervisor' && shProfile?.approved===true))return;const email=shEl('sh-invite-email').value.trim(),name=shEl('sh-invite-name').value.trim();if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return shMsg('sh-users-msg','Ingresá un correo válido.');const url=location.origin+location.pathname;const subject='Invitación a Matenimiento Facilitas V9';const body=`Hola${name?' '+name:''},\n\nTe invitamos a registrarte en Matenimiento Facilitas.\n\nAbrí ${url}, elegí Crear cuenta, completá tus datos y elegí tu propia contraseña. Tu cuenta quedará pendiente de aprobación.\n\nNo compartas tu contraseña.`;location.href='mailto:'+encodeURIComponent(email)+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);shMsg('sh-users-msg','Se abrió tu aplicación de correo para enviar la invitación. Verificá el destinatario y presioná Enviar.');}
-async function shLoadUsers(){
- if(!(shProfile?.role==='supervisor' && shProfile?.approved===true))return;
- try{
- const rows=await shAPI('/rest/v1/profiles?select=id,first_name,last_name,specialty,role,approved,shift_start,shift_end&order=first_name.asc');
- shEl('sh-users-list').innerHTML=rows.map(x=>`<div class="shared-entry"><strong>${shEscape([x.first_name,x.last_name].filter(Boolean).join(' ')||'Sin nombre')}</strong> · ${shEscape(x.role||'Operario')} · ${x.approved?'Activo':'Pendiente / desactivado'}
- <div class="shared-grid"><div><label>Nombre</label><input id="u-first-${x.id}" value="${shEscape(x.first_name||'')}"></div><div><label>Apellido</label><input id="u-last-${x.id}" value="${shEscape(x.last_name||'')}"></div>
- <div><label>Especialidad</label><input id="u-specialty-${x.id}" value="${shEscape(x.specialty||'')}"></div><div><label>Rol</label><select id="u-role-${x.id}"><option value="operario" ${x.role==='operario'?'selected':''}>Operario</option><option value="jefe" ${x.role==='jefe'?'selected':''}>Jefe de mantenimiento</option>${x.role==='supervisor'?'<option value="supervisor" selected>Supervisor (existente)</option>':''}</select></div>
- <div><label>Entrada</label><input type="time" id="u-start-${x.id}" value="${shEscape((x.shift_start||'').slice(0,5))}"></div><div><label>Salida</label><input type="time" id="u-end-${x.id}" value="${shEscape((x.shift_end||'').slice(0,5))}"></div></div>
- <label><input type="checkbox" id="u-active-${x.id}" ${x.approved?'checked':''}> Usuario activo / aprobado</label>
- <div class="toolbar"><button onclick="shSaveUser('${x.id}')">Guardar cambios</button></div></div>`).join('')||'No hay perfiles registrados.';
- shMsg('sh-users-msg','Se cargaron '+rows.length+' perfiles.');
- }catch(e){shMsg('sh-users-msg','No se pudo cargar la lista: '+e.message)}
-}
-async function shSaveUser(id){
- if(id===shSession?.user?.id)return shMsg('sh-users-msg','Por seguridad no podés modificar tu propia cuenta desde aquí.');
- const get=(k)=>shEl('u-'+k+'-'+id).value;
- const first=get('first').trim(),last=get('last').trim();
- if(!first||!last)return shMsg('sh-users-msg','Nombre y apellido son obligatorios.');
- const payload={p_user_id:id,p_first_name:first,p_last_name:last,p_specialty:get('specialty'),p_role:get('role'),p_shift_start:get('start')||null,p_shift_end:get('end')||null,p_approved:shEl('u-active-'+id).checked};
- if(!confirm('¿Guardar cambios de este usuario?'))return;
- try{await shAPI('/rest/v1/rpc/admin_manage_maintenance_user',{method:'POST',body:payload});shMsg('sh-users-msg','Cambios guardados correctamente.');await shLoadUsers();}
- catch(e){shMsg('sh-users-msg','No se pudo guardar: '+e.message+'. Verificá que instalaste el SQL de administración.')}
-}
-async function shLoadApprovals(){if(!(shProfile?.role==='supervisor' && shProfile?.approved===true))return;try{const rows=await shAPI('/rest/v1/profiles?approved=eq.false&select=id,first_name,last_name,specialty');shEl('sh-approvals-list').innerHTML=rows.length?rows.map(x=>`<div class="shared-entry"><b>${shEscape([x.first_name,x.last_name].filter(Boolean).join(' ')||'Sin nombre')}</b> · ${shEscape(x.specialty||'')}<div class="toolbar">${x.first_name?.trim()&&x.last_name?.trim()?`<button onclick="shApprove('${shEscape(x.id)}')">Aprobar</button>`:'<span class="notice">Cuenta incompleta: no aprobar. Revisar identidad en Supabase.</span>'}</div></div>`).join(''):'No hay solicitudes pendientes.'}catch(e){shEl('sh-approvals-list').textContent='No se pudieron cargar las solicitudes: '+e.message}}
-async function shApprove(id){if(!(shProfile?.role==='supervisor' && shProfile?.approved===true)||!confirm('¿Confirmás que verificaste la identidad del empleado?'))return;try{await shAPI('/rest/v1/rpc/approve_maintenance_user',{method:'POST',body:{p_user_id:id}});await shLoadApprovals()}catch(e){alert('No se pudo aprobar: '+e.message)}}
-async function shLogin(){if(!shReady())return shMsg('sh-authmsg','Primero se debe configurar la base de datos compartida. Consultá el archivo CONFIGURACION_SUPABASE.txt.');try{const r=await shRequest('/auth/v1/token?grant_type=password',{method:'POST',auth:false,body:{email:shEl('sh-email').value.trim(),password:shEl('sh-pass').value}});shSession=r;sessionStorage.setItem('sh_session',JSON.stringify(r));shEl('sh-pass').value='';await shLoad()}catch(e){shMsg('sh-authmsg',e.message)}}
-function shLogout(){shSession=null;shProfile=null;sessionStorage.removeItem('sh_session');shEl('shared-login').classList.remove('shared-hidden');shEl('shared-main').classList.add('shared-hidden');shEl('sh-pending').classList.add('shared-hidden');shEl('shared-connection').textContent=shReady()?'Sin sesión':'Sin configurar'}
-async function shLoad(){try{const id=shSession.user.id;const ps=await shAPI('/rest/v1/profiles?id=eq.'+encodeURIComponent(id)+'&select=*');shProfile=ps[0];if(!shProfile)throw Error('No se encontró el perfil. Pedile al administrador que revise la configuración.');shEl('sh-stats-tab').classList.toggle('shared-hidden',!shStatsAdmin());if(shProfile.approved!==true){shEl('shared-login').classList.add('shared-hidden');shEl('shared-main').classList.add('shared-hidden');shEl('sh-pending').classList.remove('shared-hidden');shEl('shared-connection').textContent='Pendiente';return;}shEl('sh-pending').classList.add('shared-hidden');shEl('sh-admin-tab').classList.toggle('shared-hidden',!(shProfile?.role==='supervisor' && shProfile?.approved===true));shEl('sh-users-tab').classList.toggle('shared-hidden',!(shProfile?.role==='supervisor' && shProfile?.approved===true));shProfiles=await shAPI('/rest/v1/profiles?approved=eq.true&select=id,first_name,last_name,specialty,shift_start,shift_end&order=first_name.asc');shEl('shared-login').classList.add('shared-hidden');shEl('shared-main').classList.remove('shared-hidden');shEl('shared-connection').textContent='Conectado';shEl('sh-welcome').textContent=(shProfile.first_name||shSession.user.email)+' · '+(shProfile.role==='supervisor'?'Supervisor':shProfile.role==='jefe'?'Jefe de mantenimiento':'Operario');shEl('sh-supervisor-tab').classList.toggle('shared-hidden',!['supervisor','jefe'].includes(shProfile.role));for(const [id,val] of [['sh-first',shProfile.first_name],['sh-last',shProfile.last_name],['sh-start',shProfile.shift_start],['sh-end',shProfile.shift_end],['sh-specialty',shProfile.specialty]])shEl(id).value=val||'';shEl('sh-assignee').innerHTML='<option value="">Seleccionar empleado</option>'+shProfiles.filter(x=>x.id!==shSession.user.id && x.first_name?.trim() && x.last_name?.trim()).map(x=>`<option value="${shEscape(x.id)}">${shEscape([x.first_name,x.last_name].join(' '))}</option>`).join('');shMachineOptions();await shReload();shTab('news')}catch(e){shMsg('sh-authmsg',e.message);shLogout()}}
-function shTab(tab){document.querySelectorAll('.shared-section').forEach(el=>el.classList.add('shared-hidden'));shEl('sh-'+tab).classList.remove('shared-hidden');if(['news','tasks'].includes(tab))shReload()}
-let shInventoryRows=[];
-async function shLoadInventory(){
- if(!shSession||!shProfile?.approved)return;
- shMsg('sh-inventory-msg','Consultando existencias...');
- try{
- const rows=await shAPI('/rest/v1/spare_parts_inventory?select=id,part_code,part_name,stock_quantity,minimum_stock&order=part_code.asc&limit=1000');
- shInventoryRows=Array.isArray(rows)?rows:[];
- shEl('sh-move-part').innerHTML='<option value="">Seleccioná repuesto</option>'+shInventoryRows.map(r=>`<option value="${shEscape(r.id)}">${shEscape(r.part_code+' · '+r.part_name+' ('+r.stock_quantity+')')}</option>`).join('');
- shMsg('sh-inventory-msg',shInventoryRows.length+' repuestos encontrados.');
- shRenderInventory();
- }catch(e){shMsg('sh-inventory-msg','No se pudo consultar el inventario: '+e.message)}
-}
-function shRenderInventory(){
- const q=(shEl('sh-inventory-filter')?.value||'').toLocaleLowerCase();
- const rows=shInventoryRows.filter(r=>[r.part_code,r.part_name].some(v=>String(v||'').toLocaleLowerCase().includes(q)));
- shEl('sh-inventory-list').innerHTML=rows.map(r=>`<div class="shared-entry"><strong>${shEscape(r.part_code)} · ${shEscape(r.part_name)}</strong><p>Existencia: <b>${shEscape(r.stock_quantity)}</b> · Mínimo: ${shEscape(r.minimum_stock)} ${Number(r.stock_quantity)<=Number(r.minimum_stock)?'<strong style="color:#b42318">· Stock bajo</strong>':''}</p></div>`).join('')||'<p class="shared-muted">No hay repuestos para mostrar.</p>';
-}
-async function shSaveMovement(){
- const id=shEl('sh-move-part').value,type=shEl('sh-move-type').value,qty=Number(shEl('sh-move-qty').value);
- if(!id||!Number.isSafeInteger(qty)||qty<=0)return shMsg('sh-inventory-msg','Seleccioná un repuesto y una cantidad entera positiva.');
- const part=shInventoryRows.find(x=>x.id===id);
- if(type==='retiro'&&part&&qty>Number(part.stock_quantity))return shMsg('sh-inventory-msg','No hay stock suficiente.');
- if(!confirm(`¿Confirmás ${type} de ${qty} unidad(es) de ${part?.part_name||'repuesto'}?`))return;
- try{
- await shAPI('/rest/v1/rpc/register_spare_part_movement',{method:'POST',body:{p_part_id:id,p_movement_type:type,p_quantity:qty,p_machine_code:shEl('sh-move-machine').value.trim()||null,p_machine_name:null,p_work_task_id:null,p_unit_cost:null,p_notes:shEl('sh-move-notes').value.trim()||null,p_original_movement_id:null}});
- shMsg('sh-inventory-msg','Movimiento registrado. Actualizando stock...');
- await shLoadInventory();await shLoadMovements();
- }catch(e){shMsg('sh-inventory-msg','Movimiento no guardado: '+e.message)}
-}
-async function shLoadMovements(){
- try{
- const rows=await shAPI('/rest/v1/spare_parts_movements?select=part_id,movement_type,quantity,created_at,machine_code,notes,performed_by&order=created_at.desc&limit=30');
- const names=Object.fromEntries(shInventoryRows.map(x=>[x.id,x.part_code+' · '+x.part_name]));
- shEl('sh-movements-list').innerHTML='<h4>Últimos movimientos</h4>'+rows.map(r=>`<div class="shared-entry"><strong>${shEscape(r.movement_type)} · ${shEscape(r.quantity)} unidades</strong> — ${shEscape(names[r.part_id]||r.part_id)}<p>${shEscape(new Date(r.created_at).toLocaleString('es-AR'))} · ${shEscape(r.machine_code||'Sin máquina')} · ${shEscape(r.notes||'')}</p></div>`).join('');
- }catch(e){shMsg('sh-inventory-msg','No se pudo consultar movimientos: '+e.message)}
-}
-function shMachineOptions(){const opts=typeof machines!=='undefined'?machines.filter(m=>!m.archived).map(m=>`<option value="${shEscape(m.id+' · '+m.name)}">${shEscape(m.id+' · '+m.name)}</option>`).join(''):'';shEl('sh-machine').innerHTML='<option value="">Seleccioná equipo</option>'+opts+'<option value="__other">Otro equipo / instalación / edilicio</option>'}
-function shOtherMachine(){shEl('sh-other-box').classList.toggle('shared-hidden',shEl('sh-machine').value!=='__other')}
-async function shReload(){if(!shSession)return;try{const [parts,tasks]=await Promise.all([shAPI('/rest/v1/shift_parts?select=*&order=created_at.desc&limit=80'),shAPI('/rest/v1/work_tasks?select=*&order=created_at.desc&limit=150')]);const names=Object.fromEntries(shProfiles.map(x=>[x.id,[x.first_name,x.last_name].filter(Boolean).join(' ')||'Usuario']));const date=x=>new Date(x).toLocaleString('es-AR');shEl('sh-news-list').innerHTML=parts.length?parts.map(x=>`<div class="shared-entry"><strong>${shEscape(names[x.user_id]||'Operario')}</strong> · ${shEscape(date(x.created_at))}<p><b>${shEscape(x.machine_label||'Cierre de turno')}</b> · ${shEscape(x.status)}</p><p>${shEscape(x.description)}</p>${x.spare_parts?`<p class="shared-muted">Repuestos: ${shEscape(x.spare_parts)}</p>`:''}${x.handover_notes?`<p class="notice">Para el siguiente turno: ${shEscape(x.handover_notes)}</p>`:''}<details><summary>Ver detalle</summary><p><b>Operario:</b> ${shEscape(names[x.user_id]||'Operario')}</p><p><b>Fecha:</b> ${shEscape(date(x.created_at))}</p><p><b>Equipo:</b> ${shEscape(x.machine_label||'Sin equipo asociado')}</p><p><b>Estado:</b> ${shEscape(x.status)}</p><p><b>Trabajo realizado:</b> ${shEscape(x.description)}</p><p><b>Repuestos:</b> ${shEscape(x.spare_parts||'No informados')}</p><p><b>Para el siguiente turno:</b> ${shEscape(x.handover_notes||'Sin observaciones')}</p></details></div>`).join(''):'<p class="muted">Todavía no hay novedades compartidas.</p>';const mine=tasks;
-shEl('sh-task-list').innerHTML=mine.length?mine.map(x=>{
-const own=x.assigned_to===shSession.user.id;
-const active=x.status==='en_proceso';
-const pause=!!x.paused_at;
-const buttons=own?(x.status==='pendiente'?`<button onclick="shTaskAction('${shEscape(x.id)}','iniciar')">▶ Iniciar trabajo</button>`:active?(pause?`<button onclick="shTaskAction('${shEscape(x.id)}','reanudar')">▶ Reanudar</button>`:`<button class="secondary" onclick="shTaskAction('${shEscape(x.id)}','pausar')">⏸ Pausar</button><button onclick="shTaskAction('${shEscape(x.id)}','finalizar')">✓ Finalizar trabajo</button>`):''):'<span class="shared-muted">Solo el operario asignado registra tiempos.</span>';
-const duration=x.started_at?(x.finished_at?new Date(x.finished_at):new Date())-new Date(x.started_at)-(Number(x.total_pause_seconds)||0)*1000-(x.paused_at?((x.finished_at?new Date(x.finished_at):new Date())-new Date(x.paused_at)):0):0;
-return `<div class="shared-entry"><b>${shEscape(x.description)}</b><p class="shared-muted">${shEscape(x.machine_label||'Sin equipo')} · ${shEscape(x.priority)} · ${shEscape(x.status)} · Asignado a ${shEscape(names[x.assigned_to]||'Operario')}</p><p class="shared-muted">Inicio: ${x.started_at?shEscape(date(x.started_at)):'Pendiente'} · Fin: ${x.finished_at?shEscape(date(x.finished_at)):'—'}</p>${x.started_at?`<p>Tiempo efectivo estimado: ${Math.max(0,Math.floor(duration/60000))} minutos${pause?' · En pausa':''}</p>`:''}<div class="toolbar">${buttons}</div></div>`;
-}).join(''):'<p class="muted">No hay tareas asignadas.</p>';
-}catch(e){(shEl('sh-task-list')||shEl('sh-news-list')).textContent='Error al actualizar tareas: '+e.message}}
-function shPartData(){
- const m=shEl('sh-machine').value;
- return {user_id:shSession.user.id,machine_label:m==='__other'?shEl('sh-other').value.trim():m,description:shEl('sh-description').value.trim(),status:shEl('sh-status').value,spare_parts:shEl('sh-parts').value.trim(),handover_notes:shEl('sh-next').value.trim()};
-}
-function shClearPart(){
- ['sh-machine','sh-other','sh-parts','sh-description','sh-next'].forEach(id=>shEl(id).value='');
- shEl('sh-status').value='terminado';shOtherMachine();
-}
-async function shSavePart(){
- const data=shPartData();
- if(!data.description||!data.machine_label)return alert('Completá equipo y descripción.');
- try{await shAPI('/rest/v1/shift_parts',{method:'POST',body:data});shClearPart();shMsg('sh-part-msg','Trabajo guardado en la base compartida.');await shReload()}
- catch(e){shMsg('sh-part-msg','No se guardó: '+e.message)}
-}
-async function shCloseShift(){
- const data=shPartData();
- const hasWork=!!(data.machine_label||data.description||data.spare_parts);
- if(hasWork&&(!data.machine_label||!data.description))return alert('Hay un trabajo sin guardar. Completá equipo y descripción antes de cerrar el turno. No se descartó ningún dato.');
- const question=hasWork?'¿Guardar esta intervención y cerrar el turno? El trabajo conservará su estado actual.':'¿Cerrar el turno? Se registrará el cierre con las observaciones ingresadas.';
- if(!confirm(question))return;
- try{
-  // Un único registro evita duplicar la intervención cuando el operario cierra el turno.
-  const payload=hasWork?data:{user_id:shSession.user.id,machine_label:'',description:'Cierre de turno',status:'cierre',spare_parts:'',handover_notes:data.handover_notes};
-  await shAPI('/rest/v1/shift_parts',{method:'POST',body:payload});
-  shClearPart();shMsg('sh-part-msg',hasWork?'Intervención registrada y turno cerrado.':'Turno cerrado y registrado.');await shReload();
- }catch(e){shMsg('sh-part-msg','No se cerró el turno: '+e.message)}
-}
-async function shSaveProfile(){try{await shAPI('/rest/v1/profiles?id=eq.'+encodeURIComponent(shSession.user.id),{method:'PATCH',body:{first_name:shEl('sh-first').value.trim(),last_name:shEl('sh-last').value.trim(),shift_start:shEl('sh-start').value||null,shift_end:shEl('sh-end').value||null,specialty:shEl('sh-specialty').value}});alert('Perfil guardado');await shLoad()}catch(e){alert(e.message)}}
-async function shAssign(){if(!['supervisor','jefe'].includes(shProfile.role)||shProfile.approved!==true)return;const description=shEl('sh-assignment').value.trim();if(!shEl('sh-assignee').value)return alert('Primero registrá y aprobá un empleado con nombre y apellido.');if(!description)return alert('Escribí la tarea.');try{await shAPI('/rest/v1/work_tasks',{method:'POST',body:{assigned_by:shSession.user.id,assigned_to:shEl('sh-assignee').value,machine_label:shEl('sh-assigned-machine').value.trim(),description,priority:shEl('sh-priority').value,due_date:shEl('sh-due').value||null,status:'pendiente'}});shEl('sh-assignment').value='';alert('Tarea asignada y compartida');await shReload()}catch(e){alert(e.message)}}
-async function shTaskAction(id,action){
- if(!shSession)return;
- try{await shAPI('/rest/v1/rpc/maintenance_task_action',{method:'POST',body:{p_task_id:id,p_action:action}});await shReload()}
- catch(e){alert('No se pudo '+action+' el trabajo: '+e.message)}
-}
-async function shForgotPassword(){
- const email=shEl('sh-email').value.trim();if(!email)return alert('Primero escribí tu correo electrónico.');
- if(!shReady())return alert('Falta configurar Supabase.');
- try{await shRequest('/auth/v1/recover',{method:'POST',auth:false,body:{email}});shMsg('sh-authmsg','Si el correo está registrado, recibirás un enlace para restablecer tu contraseña.');}
- catch(e){shMsg('sh-authmsg','No se pudo solicitar la recuperación: '+e.message)}
-}
-async function shCompleteRecovery(){
- const hash=new URLSearchParams(location.hash.slice(1));
- if(hash.get('type')!=='recovery'||!hash.get('access_token'))return;
- const pass=prompt('Ingresá tu nueva contraseña (mínimo 8 caracteres):');
- if(!pass)return;if(pass.length<8)return alert('La contraseña debe tener al menos 8 caracteres.');
- try{const token=hash.get('access_token');const res=await fetch(SH_URL+'/auth/v1/user',{method:'PUT',headers:{'apikey':SH_KEY,'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({password:pass})});if(!res.ok)throw Error('Enlace vencido o no válido');history.replaceState(null,'',location.pathname);
- alert('Para completar la recuperación, ingresá nuevamente con tu contraseña.');}
- catch(e){alert('No se pudo cambiar la contraseña: '+e.message)}
+async function loadMe(){const r=await api('/rest/v1/profiles?id=eq.'+myId()+'&select=*');S.me=r[0]||null;return S.me}
+async function refresh(manual){
+  if(!session)return;
+  const b=$('syncBtn');if(manual)b.textContent='↻ …';
+  try{
+    const [profiles,tasks,parts,inv,moves]=await Promise.all([
+      api('/rest/v1/profiles?select=id,first_name,last_name,specialty,role,approved,shift_start,shift_end&order=first_name.asc'),
+      api('/rest/v1/work_tasks?select=*&order=created_at.desc&limit=400'),
+      api('/rest/v1/shift_parts?select=*&order=created_at.desc&limit=150'),
+      api('/rest/v1/spare_parts_inventory?select=*&order=part_code.asc&limit=2000'),
+      api('/rest/v1/spare_parts_movements?select=*&order=created_at.desc&limit=300')]);
+    Object.assign(S,{profiles,tasks,parts,inv,moves,loaded:true});
+    try{const cr=await api('/rest/v1/machine_criticality?select=*');S.crit=Object.fromEntries(cr.map(r=>[r.machine_code,r]));S.critMissing=false}
+    catch(e){S.critMissing=true}
+    S.me=profiles.find(p=>p.id===myId())||S.me;
+    if(manual)toast('Datos actualizados','good');
+    if(['inicio','tareas','maquinas','usuarios'].includes(S.view)||manual)render();
+  }catch(e){toast('No se pudo actualizar: '+e.message,'bad')}
+  finally{b.textContent='↻ Actualizar'}
 }
 
-function shStatsAdmin(){return shSession?.user?.email?.toLowerCase()==='feraggio@gmail.com' && shProfile?.role==='supervisor' && shProfile?.approved===true;}
-function shHours(ms){return (Math.max(0,ms)/3600000).toFixed(2);}
-let shLastStats=null;
-async function shLoadPrivateStats(){
- const body=shEl('sh-private-stats-body');const msg=shEl('sh-private-stats-msg');body.replaceChildren();shLastStats=null;
- if(!shStatsAdmin()){msg.textContent='Acceso no autorizado';return;}
- msg.textContent='Consultando tareas...';
- try{
-  const from=shEl('sh-stats-from').value,to=shEl('sh-stats-to').value;
-  const rows=await shAPI('/rest/v1/rpc/maintenance_private_time_report',{method:'POST',body:{p_from:from||null,p_to:to||null}});
-  if(!Array.isArray(rows))throw Error('Formato de informe inesperado');shLastStats={rows,from,to};
-  msg.textContent=rows.length?`Resumen de ${rows.length} operarios. Las tareas abiertas incluyen tiempo transcurrido hasta ahora.`:'No hay tareas iniciadas para el período.';
-  const table=document.createElement('table');table.className='inc-table';
-  const head=document.createElement('thead');head.innerHTML='<tr><th>Operario</th><th>Trabajos iniciados</th><th>Finalizados</th><th>Abiertos</th><th>Horas efectivas registradas</th></tr>';table.append(head);
-  const tbody=document.createElement('tbody');
-  for(const r of rows){const tr=document.createElement('tr');for(const v of [r.name,r.count,r.completed,r.active,Number(r.hours||0).toFixed(2)]){const td=document.createElement('td');td.textContent=String(v);tr.append(td);}tbody.append(tr)}table.append(tbody);body.append(table);
- }catch(e){msg.textContent='No se pudieron consultar las estadísticas: '+e.message;}
+/* ===================== NAVEGACIÓN ===================== */
+function go(v,opts){S.view=v;Object.assign(S,opts||{});render();window.scrollTo(0,0)}
+function render(){
+  const logged=!!(session&&S.me&&S.me.approved===true);
+  $('nav').classList.toggle('hidden',!logged);$('syncBtn').classList.toggle('hidden',!logged);
+  $('who').textContent=logged?(nameOf(myId())+' · '+({supervisor:'Supervisor',jefe:'Jefe de mantenimiento',operario:'Operario'}[role()]||role())):'Mundo Facilitas';
+  document.querySelectorAll('nav.bottom button').forEach(b=>b.classList.toggle('on',b.dataset.v===S.view||(b.dataset.v==='mas'&&['perfil','asignar','usuarios','informes','ayuda','maquinas','maquina'].includes(S.view))));
+  const V={login:vLogin,signup:vSignup,pending:vPending,recovery:vRecovery,inicio:vInicio,tareas:vTareas,registrar:vRegistrar,repuestos:vRepuestos,mas:vMas,perfil:vPerfil,asignar:vAsignar,usuarios:vUsuarios,informes:vInformes,ayuda:vAyuda,maquinas:vMaquinas,maquina:vMaquina};
+  if(!logged&&!['login','signup','pending','recovery','ayuda'].includes(S.view))S.view='login';
+  $('app').innerHTML=(V[S.view]||vInicio)();
+  afterRender[S.view]?.();
 }
-// Excel OOXML con estilos, varias hojas y codificación UTF-8. Sin librerías externas.
-function shXlsxEscape(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;')}
-function shXlsxColumn(n){let s='';for(n++;n;n=Math.floor((n-1)/26))s=String.fromCharCode(65+(n-1)%26)+s;return s}
-function shXlsxSheet(rows,kind){
- const widths=kind==='resumen'?[29,23,19,18,21]:kind==='operarios'?[34,21,19,19,21,18]:kind==='trabajos'?[39,29,55,30,19,17,27,27,27,19]:kind==='repuestos'?[27,19,35,22,17,25,30,18,40]:[40,50,38,28,26,28];
- const cols='<cols>'+widths.map((w,i)=>'<col min="'+(i+1)+'" max="'+(i+1)+'" width="'+w+'" customWidth="1"/>').join('')+'</cols>';
- const body=rows.map((row,i)=>'<row r="'+(i+1)+'"'+(i===0?' ht="34" customHeight="1"':'')+'>'+row.map((v,j)=>{
- const ref=shXlsxColumn(j)+(i+1),style=i===0?1:i===1?2:(kind==='operarios'&&i===5||kind==='resumen'&&i===9||(['trabajos','repuestos'].includes(kind)&&i===5))?3:(kind==='operarios'&&i>=6?4+(i-6)%5:kind==='resumen'&&i>=10?4+(i-10)%5:((kind==='trabajos'||kind==='repuestos')&&i>=6?4+(i-6)%5:0));
- return typeof v==='number'&&Number.isFinite(v)?'<c r="'+ref+'" s="'+(j===4&&kind==='operarios'?9:style)+'"><v>'+v+'</v></c>':'<c r="'+ref+'" s="'+style+'" t="inlineStr"><is><t xml:space="preserve">'+shXlsxEscape(v)+'</t></is></c>';
- }).join('')+'</row>').join('');
- return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'+'<sheetViews><sheetView workbookViewId="0" showGridLines="0"/></sheetViews>'+cols+'<sheetData>'+body+'</sheetData></worksheet>';
-}
-function shZipStored(entries){const enc=new TextEncoder(),parts=[],central=[];let offset=0;const crcTable=Array.from({length:256},(_,n)=>{for(let i=0;i<8;i++)n=n&1?0xedb88320^(n>>>1):n>>>1;return n>>>0});function crc(bytes){let c=0xffffffff;for(const b of bytes)c=crcTable[(c^b)&255]^(c>>>8);return(c^0xffffffff)>>>0}function header(len){const b=new Uint8Array(len);return {b,v:new DataView(b.buffer)}}function write(v,o,n,size){if(size===2)v.setUint16(o,n,true);else v.setUint32(o,n>>>0,true)}for(const [name,content] of entries){const nb=enc.encode(name),data=enc.encode(content),sum=crc(data),local=header(30);write(local.v,0,0x04034b50,4);write(local.v,4,20,2);write(local.v,8,0,2);write(local.v,10,0,2);write(local.v,12,0,2);write(local.v,14,0,2);write(local.v,16,sum,4);write(local.v,20,data.length,4);write(local.v,24,data.length,4);write(local.v,26,nb.length,2);parts.push(local.b,nb,data);const c=header(46);write(c.v,0,0x02014b50,4);write(c.v,4,20,2);write(c.v,6,20,2);write(c.v,16,sum,4);write(c.v,20,data.length,4);write(c.v,24,data.length,4);write(c.v,28,nb.length,2);write(c.v,30,0,2);write(c.v,32,0,2);write(c.v,42,offset,4);central.push(c.b,nb);offset+=local.b.length+nb.length+data.length}const centralSize=central.reduce((n,b)=>n+b.length,0),end=header(22);write(end.v,0,0x06054b50,4);write(end.v,8,entries.length,2);write(end.v,10,entries.length,2);write(end.v,12,centralSize,4);write(end.v,16,offset,4);return new Blob([...parts,...central,end.b],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})}
+const afterRender={};
 
-// OAuth con Google Identity Services: token temporal, sin contraseña ni secreto en el navegador.
-// Reemplazar el ID público en CONFIGURACION_GOOGLE_V96.js antes de publicar.
-let shGoogleTokenClient=null;
-function shGoogleAccessToken(){
- return new Promise((resolve,reject)=>{
-   if(!window.MAT_GOOGLE_CLIENT_ID || window.MAT_GOOGLE_CLIENT_ID.includes('PEGAR_'))
-     return reject(Error('Falta configurar el ID público de cliente OAuth de Google.'));
-   if(!window.google?.accounts?.oauth2)return reject(Error('No se pudo cargar Google Identity Services. Revisá la conexión.'));
-   shGoogleTokenClient=google.accounts.oauth2.initTokenClient({
-     client_id:window.MAT_GOOGLE_CLIENT_ID,
-     scope:'https://www.googleapis.com/auth/drive.file',
-     callback:(r)=>r?.access_token?resolve(r.access_token):reject(Error(r?.error||'Google no autorizó el acceso')),
-     error_callback:(e)=>reject(Error(e?.message||e?.type||'Autorización cancelada'))
-   });
-   shGoogleTokenClient.requestAccessToken({prompt:'consent'});
- });
+/* ===================== INGRESO ===================== */
+function vLogin(){return `<div class="login-wrap"><img class="login-logo" src="./logo-facilitas.jpg" alt="Facilitas">
+<div class="card"><h3>Ingresar</h3>
+<label>Correo electrónico</label><input id="lEmail" type="email" autocomplete="username" inputmode="email" value="${esc(store.get('mat10_last_email',''))}">
+<label>Contraseña</label><input id="lPass" type="password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin($('lBtn'))">
+<label class="small" style="font-weight:400"><input type="checkbox" id="lShow" style="width:auto" onchange="$('lPass').type=this.checked?'text':'password'"> Mostrar contraseña</label>
+<button class="btn block" id="lBtn" onclick="doLogin(this)">Ingresar</button>
+<div class="actions"><button class="btn ghost sm" onclick="doForgot(this)">Olvidé mi contraseña</button><button class="btn sec sm" onclick="go('signup')">Crear cuenta</button></div></div>
+${installBox()}<p class="muted small" style="text-align:center">Matenimiento Facilitas ${VERSION} · <a href="#" onclick="go('ayuda');return false">Cómo instalar en el celular</a></p></div>`}
+async function doLogin(btn){
+  const email=$('lEmail').value.trim(),password=$('lPass').value;
+  if(!email||!password)return toast('Completá correo y contraseña','bad');
+  await busy(btn,async()=>{try{
+    const s=await raw('/auth/v1/token?grant_type=password',{method:'POST',auth:false,body:{email,password}});
+    saveSession(s);store.set('mat10_last_email',email);await start();
+  }catch(e){toast(/invalid/i.test(e.message)?'Correo o contraseña incorrectos':e.message,'bad')}});
 }
-async function shExportStatsXlsx(){
- if(!shStatsAdmin()){alert('Acceso exclusivo de supervisor.');return}
- if(!shLastStats){alert('Primero presioná Actualizar para obtener los datos del período.');return}
- const {rows,from,to}=shLastStats,generated=new Date().toLocaleString('es-AR');
- let detail;
- try {
-   detail=await shAPI('/rest/v1/rpc/maintenance_private_detail_report',{method:'POST',body:{p_from:from||null,p_to:to||null}});
-   if(!detail || !Array.isArray(detail.trabajos) || !Array.isArray(detail.movimientos)) throw Error('Respuesta de detalle incompleta');
- } catch(e) {alert('No se pudo obtener el detalle seguro de trabajos y repuestos: '+e.message);return;}
+async function doForgot(btn){
+  const email=$('lEmail').value.trim();if(!email)return toast('Escribí tu correo arriba y tocá de nuevo','bad');
+  await busy(btn,async()=>{try{await raw('/auth/v1/recover?redirect_to='+encodeURIComponent(location.origin+location.pathname),{method:'POST',auth:false,body:{email}});toast('Si el correo está registrado, te llegará un enlace para cambiar la contraseña','good')}catch(e){toast(e.message,'bad')}});
+}
+function vSignup(){return `<div class="login-wrap"><h2>Crear cuenta</h2><div class="card">
+<div class="row"><div><label>Nombre</label><input id="rFirst" autocomplete="given-name"></div><div><label>Apellido</label><input id="rLast" autocomplete="family-name"></div></div>
+<label>Correo electrónico</label><input id="rEmail" type="email" inputmode="email" autocomplete="email">
+<label>Contraseña (mínimo 8 caracteres)</label><input id="rPass" type="password" autocomplete="new-password">
+<label>Especialidad</label><select id="rSpec">${SPECIALTIES.slice(0,3).map(s=>`<option>${s}</option>`).join('')}</select>
+<div class="row"><div><label>Entrada</label><input id="rStart" type="time"></div><div><label>Salida</label><input id="rEnd" type="time"></div></div>
+<button class="btn block" onclick="doSignup(this)">Solicitar registro</button>
+<p class="muted small">Tu cuenta queda pendiente hasta que el supervisor la apruebe.</p></div>
+<button class="btn ghost block" onclick="go('login')">← Volver</button></div>`}
+async function doSignup(btn){
+  const d={first:$('rFirst').value.trim(),last:$('rLast').value.trim(),email:$('rEmail').value.trim(),pass:$('rPass').value};
+  if(!d.first||!d.last||!d.email)return toast('Completá nombre, apellido y correo','bad');
+  if(d.pass.length<8)return toast('La contraseña debe tener al menos 8 caracteres','bad');
+  const meta={first_name:d.first,last_name:d.last,specialty:$('rSpec').value,shift_start:$('rStart').value||null,shift_end:$('rEnd').value||null};
+  await busy(btn,async()=>{try{
+    const r=await raw('/auth/v1/signup',{method:'POST',auth:false,body:{email:d.email,password:d.pass,data:meta}});
+    store.set('mat10_last_email',d.email);store.set('mat10_pending_meta',meta);
+    if(r?.access_token){saveSession(r);await start()}else{toast('Registro enviado. Si te llega un correo de confirmación, abrilo y después ingresá.','good');go('login')}
+  }catch(e){toast(/registered|exists/i.test(e.message)?'Ese correo ya está registrado. Ingresá o recuperá la contraseña.':e.message,'bad')}});
+}
+function vPending(){const p=S.me||{};const incomplete=!p.first_name||!p.last_name;return `<div class="login-wrap"><img class="login-logo" src="./logo-facilitas.jpg" alt="">
+<div class="card accent"><h3>Cuenta pendiente de aprobación</h3><p class="muted">Ya estás registrado. Avisale al supervisor para que apruebe tu cuenta. Después tocá "Ya me aprobaron".</p>
+${incomplete?`<div class="note">Completá tus datos para que puedan aprobarte:</div>
+<div class="row"><div><label>Nombre</label><input id="pFirst" value="${esc(p.first_name||'')}"></div><div><label>Apellido</label><input id="pLast" value="${esc(p.last_name||'')}"></div></div>
+<label>Especialidad</label><select id="pSpec">${SPECIALTIES.slice(0,3).map(s=>`<option ${p.specialty===s?'selected':''}>${s}</option>`).join('')}</select>
+<button class="btn block" onclick="savePendingProfile(this)">Guardar mis datos</button>`:`<p><b>${esc(p.first_name+' '+p.last_name)}</b> · ${esc(p.specialty||'')}</p>`}
+<button class="btn sec block" onclick="start()">Ya me aprobaron</button><button class="btn ghost block" onclick="logout()">Salir</button></div></div>`}
+async function savePendingProfile(btn){const first_name=$('pFirst').value.trim(),last_name=$('pLast').value.trim();if(!first_name||!last_name)return toast('Completá nombre y apellido','bad');
+  await busy(btn,async()=>{try{await api('/rest/v1/profiles?id=eq.'+myId(),{method:'PATCH',body:{first_name,last_name,specialty:$('pSpec').value}});await loadMe();toast('Datos guardados','good');render()}catch(e){toast(e.message,'bad')}})}
+function vRecovery(){return `<div class="login-wrap"><div class="card"><h3>Nueva contraseña</h3><label>Escribí tu nueva contraseña (mínimo 8)</label><input id="nPass" type="password" autocomplete="new-password"><button class="btn block" onclick="doRecovery(this)">Guardar contraseña</button></div></div>`}
+async function doRecovery(btn){const p=$('nPass').value;if(p.length<8)return toast('Mínimo 8 caracteres','bad');
+  await busy(btn,async()=>{try{await api('/auth/v1/user',{method:'PUT',body:{password:p}});toast('Contraseña cambiada','good');await start()}catch(e){toast('El enlace venció. Pedí uno nuevo. ('+e.message+')','bad')}})}
+function logout(){saveSession(null);S.me=null;S.loaded=false;go('login')}
 
- const count=(k)=>rows.reduce((s,r)=>s+Number(r[k]||0),0);
- const summary=[['MUNDO FACILITAS — MATENIMIENTO V9.6'],['INFORME DE GESTIÓN | RESUMEN'],['Desde',from||'Sin límite'],['Hasta',to||'Sin límite'],['Generado',generated],['Operarios con actividad',rows.length],['Trabajos iniciados',count('count')],['Trabajos finalizados',count('completed')],['Trabajos abiertos',count('active')],['OPERARIO','INICIADOS','FINALIZADOS','ABIERTOS','HORAS EFECTIVAS']];
- const operators=[['MUNDO FACILITAS — POR OPERARIO'],['TIEMPOS REGISTRADOS EN SUPABASE'],['Período desde',from||'Sin límite'],['Período hasta',to||'Sin límite'],['Generado',generated],['OPERARIO','INICIADOS','FINALIZADOS','ABIERTOS','HORAS EFECTIVAS','FINALIZACIÓN %']];
- rows.forEach(r=>{const c=Number(r.count||0),f=Number(r.completed||0),a=Number(r.active||0),h=Number(r.hours||0);summary.push([r.name||'',c,f,a,h]);operators.push([r.name||'',c,f,a,h,c?Math.round(f/c*100):0]);});
- const jobs=[['DETALLE DE TRABAJOS — V9.6'],['Datos obtenidos de Supabase con autorización de supervisor'],['Período desde',from||'Sin límite'],['Período hasta',to||'Sin límite'],['Generado',generated],['ID','MÁQUINA','DESCRIPCIÓN','ASIGNADO A','ESTADO','PRIORIDAD','CREADO','INICIO','FIN','HORAS EFECTIVAS']];
- for(const t of detail.trabajos){jobs.push([t.id||'',t.maquina||'',t.descripcion||'',t.asignado_a||'',t.estado||'',t.prioridad||'',t.creado||'',t.inicio||'',t.fin||'',Number(t.segundos_efectivos||0)/3600]);}
- const parts=[['MOVIMIENTOS DE REPUESTOS — V9.6'],['Datos obtenidos de Supabase con autorización de supervisor'],['Período desde',from||'Sin límite'],['Período hasta',to||'Sin límite'],['Generado',generated],['FECHA','CÓDIGO','REPUESTO','TIPO','CANTIDAD','MÁQUINA','RESPONSABLE','COSTO UNITARIO','OBSERVACIONES']];
- for(const m of detail.movimientos){parts.push([m.fecha||'',m.codigo_repuesto||'',m.repuesto||'',m.tipo||'',Number(m.cantidad||0),m.maquina_codigo||m.maquina_nombre||'',m.responsable||'',Number(m.costo_unitario||0),m.observaciones||'']);}
- const notes=[['NOTAS DE INTERPRETACIÓN'],['Horas efectivas: tiempo registrado en tareas, no jornada laboral.'],['Ausencia de tareas no equivale a tiempo ocioso.'],['Resumen: maintenance_private_time_report.'],['Detalle y movimientos: maintenance_private_detail_report.'],['Los trabajos se filtran por fecha de creación y los movimientos por fecha de movimiento.'],['El archivo se envía a Google Drive tras autorizar la cuenta. No se descarga localmente.']];
- const sheets=[['Resumen',summary,'resumen'],['Por operario',operators,'operarios'],['Detalle de trabajos',jobs,'trabajos'],['Repuestos',parts,'repuestos'],['Notas',notes,'detalle']];
- const styles='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="3"><font><sz val="11"/><name val="Aptos"/></font><font><b/><sz val="16"/><color rgb="FFFFFFFF"/><name val="Aptos Display"/></font><font><b/><sz val="11"/><color rgb="FFFFFFFF"/><name val="Aptos"/></font></fonts><fills count="9"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FFB82333"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF7E1928"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFF2DCE0"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFE3F0EB"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFE8F0FA"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFFF0D9"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFF1EAF9"/><bgColor indexed="64"/></patternFill></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="10"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFill="1" applyFont="1"/><xf numFmtId="0" fontId="2" fillId="3" borderId="0" xfId="0" applyFill="1" applyFont="1"/><xf numFmtId="0" fontId="2" fillId="2" borderId="0" xfId="0" applyFill="1" applyFont="1"/><xf numFmtId="0" fontId="0" fillId="4" borderId="0" xfId="0" applyFill="1"/><xf numFmtId="0" fontId="0" fillId="5" borderId="0" xfId="0" applyFill="1"/><xf numFmtId="0" fontId="0" fillId="6" borderId="0" xfId="0" applyFill="1"/><xf numFmtId="0" fontId="0" fillId="7" borderId="0" xfId="0" applyFill="1"/><xf numFmtId="0" fontId="0" fillId="8" borderId="0" xfId="0" applyFill="1"/><xf numFmtId="2" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>';
- const files=[['[Content_Types].xml','<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>'+sheets.map((_,i)=>'<Override PartName="/xl/worksheets/sheet'+(i+1)+'.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>').join('')+'</Types>'],['_rels/.rels','<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>'],['xl/workbook.xml','<?xml version="1.0" encoding="UTF-8"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>'+sheets.map((s,i)=>'<sheet name="'+shXlsxEscape(s[0])+'" sheetId="'+(i+1)+'" r:id="rId'+(i+1)+'"/>').join('')+'</sheets></workbook>'],['xl/_rels/workbook.xml.rels','<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+sheets.map((_,i)=>'<Relationship Id="rId'+(i+1)+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet'+(i+1)+'.xml"/>').join('')+'<Relationship Id="rId'+(sheets.length+1)+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>'],['xl/styles.xml',styles]];
- sheets.forEach((s,i)=>files.push(['xl/worksheets/sheet'+(i+1)+'.xml',shXlsxSheet(s[1],s[2])]));
- const blob=shZipStored(files);
- const filename='Matenimiento_V9.6_Informe_'+(from||'inicio')+'_'+(to||'hoy')+'_'+new Date().toISOString().replace(/[:.]/g,'-')+'.xlsx';
- try {
-   shMsg('sh-private-stats-msg','Solicitando autorización de Google Drive…');
-   const googleToken=await shGoogleAccessToken();
-   shMsg('sh-private-stats-msg','Guardando informe en Google Drive…');
-   const res=await fetch(SH_URL+'/functions/v1/matenimiento-google-drive',{
-     method:'POST',headers:{'Authorization':'Bearer '+shSession.access_token,'apikey':SH_KEY,
-       'Content-Type':'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-       'X-Google-Access-Token':googleToken,'X-File-Name':filename},body:blob
-   });
-   const result=await res.json().catch(()=>({}));
-   if(!res.ok)throw Error(result.error||'Error al guardar en Drive ('+res.status+')');
-   const msg='Informe guardado en Google Drive: '+filename;
-   shMsg('sh-private-stats-msg',msg);
-   if(result.webViewLink){const a=document.createElement('a');a.href=result.webViewLink;a.target='_blank';a.rel='noopener noreferrer';a.textContent=' Abrir informe en Google Drive';shEl('sh-private-stats-msg').append(a)}
- }catch(e){shMsg('sh-private-stats-msg','No se guardó el Excel en Drive: '+e.message)}
+/* ===================== INICIO ===================== */
+function vInicio(){
+  if(!S.loaded)return '<p class="muted">Cargando…</p>';
+  const mine=S.tasks.filter(t=>t.assigned_to===myId());
+  const pend=mine.filter(t=>t.status==='pendiente').length,proc=mine.filter(t=>t.status==='en_proceso').length;
+  const urg=S.tasks.filter(t=>t.status!=='terminado'&&t.priority==='urgente').length;
+  const low=S.inv.filter(i=>Number(i.stock_quantity)<=Number(i.minimum_stock)).length;
+  let news=S.parts;if(S.newsFilter==='pend')news=news.filter(p=>p.status!=='terminado'||p.handover_notes);
+  return `<h2>Hola, ${esc(S.me.first_name||'')} 👋</h2>
+<div class="stats">
+ <div class="stat red" onclick="go('tareas',{taskFilter:'mias',taskStatus:'activas'})"><b>${pend}</b><span>Mis tareas pendientes</span></div>
+ <div class="stat" onclick="go('tareas',{taskFilter:'mias',taskStatus:'activas'})"><b>${proc}</b><span>Mis tareas en proceso</span></div>
+ <div class="stat ${urg?'yel':''}" onclick="go('tareas',{taskFilter:'todas',taskStatus:'activas'})"><b>${urg}</b><span>Urgentes abiertas (equipo)</span></div>
+ <div class="stat ${low?'yel':''}" onclick="go('repuestos',{invLow:true})"><b>${low}</b><span>Repuestos bajo mínimo</span></div>
+</div>
+${(()=>{const hi=MACHINES.filter(m=>critOf(m.id)?.level==='ALTA');const ev=MACHINES.filter(m=>critOf(m.id)).length;
+  return `<div class="card accent" style="cursor:pointer" onclick="go('maquinas',{critF:'ALTA'})"><div class="line"><div><div class="title">🏭 Máquinas de criticidad ALTA: ${hi.length}</div><div class="muted small">${ev} de ${MACHINES.length} evaluadas · tocá para ver</div></div><span class="muted">›</span></div></div>`})()}
+<h2>Novedades de turno</h2>
+<div class="seg"><button class="${S.newsFilter==='todo'?'on':''}" onclick="S.newsFilter='todo';render()">Todo</button><button class="${S.newsFilter==='pend'?'on':''}" onclick="S.newsFilter='pend';render()">Pendientes y avisos</button></div>
+${news.slice(0,60).map(partCard).join('')||'<div class="card muted">Todavía no hay novedades registradas.</div>'}`;
+}
+function partCard(p){return `<div class="card ${p.status==='pendiente'?'alta':p.status==='cierre'?'':'accent'}">
+<div class="line"><div><div class="title">${esc(p.machine_label||'Cierre de turno')}</div><div class="muted small">${esc(nameOf(p.user_id))} · ${fmtDT(p.created_at)}</div></div>${badge(STATUS,p.status)}</div>
+${p.status!=='cierre'||p.description!=='Cierre de turno'?`<p style="margin:8px 0 0;white-space:pre-wrap">${esc(p.description)}</p>`:''}
+${p.spare_parts?`<p class="muted small" style="margin:6px 0 0">🔩 ${esc(p.spare_parts)}</p>`:''}
+${p.handover_notes?`<div class="note">➡️ Para el siguiente turno: ${esc(p.handover_notes)}</div>`:''}</div>`}
+
+/* ===================== TAREAS ===================== */
+function vTareas(){
+  let list=S.tasks;if(S.taskFilter==='mias')list=list.filter(t=>t.assigned_to===myId());
+  if(S.taskStatus==='activas')list=list.filter(t=>t.status!=='terminado');else list=list.filter(t=>t.status==='terminado');
+  const order={urgente:0,alta:1,normal:2};
+  if(S.taskStatus==='activas')list=[...list].sort((a,b)=>(a.status==='en_proceso'?-1:0)-(b.status==='en_proceso'?-1:0)||order[a.priority]-order[b.priority]||String(a.due_date||'9').localeCompare(String(b.due_date||'9')));
+  return `<h2>Tareas</h2>
+<div class="seg"><button class="${S.taskFilter==='mias'?'on':''}" onclick="S.taskFilter='mias';render()">Mis tareas</button><button class="${S.taskFilter==='todas'?'on':''}" onclick="S.taskFilter='todas';render()">Todo el equipo</button></div>
+<div class="seg"><button class="${S.taskStatus==='activas'?'on':''}" onclick="S.taskStatus='activas';render()">Pendientes y en proceso</button><button class="${S.taskStatus==='hechas'?'on':''}" onclick="S.taskStatus='hechas';render()">Terminadas</button></div>
+${isBoss()?`<button class="btn sec block" style="margin:0 0 12px" onclick="go('asignar')">＋ Asignar nueva tarea</button>`:''}
+${list.slice(0,150).map(taskCard).join('')||'<div class="card muted">No hay tareas en esta lista.</div>'}`;
+}
+function taskCard(t){
+  const own=t.assigned_to===myId(),paused=!!t.paused_at,overdue=t.due_date&&t.status!=='terminado'&&t.due_date<today();
+  let btns='';
+  if(own){if(t.status==='pendiente')btns=`<button class="btn sm" onclick="taskAct(this,'${t.id}','iniciar')">▶ Iniciar</button>`;
+    else if(t.status==='en_proceso')btns=paused?`<button class="btn sm" onclick="taskAct(this,'${t.id}','reanudar')">▶ Reanudar</button>`:`<button class="btn ghost sm" onclick="taskAct(this,'${t.id}','pausar')">⏸ Pausar</button><button class="btn ok sm" onclick="taskAct(this,'${t.id}','finalizar')">✓ Finalizar</button>`;
+    if(t.status!=='pendiente')btns+=`<button class="btn sec sm" onclick="startDraftFromTask('${t.id}')">📝 Registrar trabajo</button>`}
+  return `<div class="card ${t.priority==='urgente'?'urgent':t.priority==='alta'?'alta':'accent'}">
+<div class="line"><div><div class="title">${esc(t.description)}</div><div class="muted small">${esc(t.machine_label||'Sin equipo')} ${critBadge((t.machine_label||'').split(' · ')[0],true)}</div></div><div style="text-align:right">${badge(STATUS,t.status)}<br>${t.priority!=='normal'?badge(PRIO,t.priority):''}</div></div>
+<div class="muted small" style="margin-top:6px">👤 ${esc(nameOf(t.assigned_to))} · asignó ${esc(nameOf(t.assigned_by))}${t.due_date?` · <span style="${overdue?'color:#b42318;font-weight:700':''}">límite ${fmtD(t.due_date)}${overdue?' (vencida)':''}</span>`:''}</div>
+${t.started_at?`<div class="muted small">⏱ ${hhmm(taskSeconds(t))} efectivos${paused?' · <b>en pausa</b>':''}${t.finished_at?' · terminó '+fmtDT(t.finished_at):''}</div>`:''}
+${btns?`<div class="actions">${btns}</div>`:''}</div>`}
+async function taskAct(btn,id,action){
+  const labels={iniciar:'Iniciar',pausar:'Pausar',reanudar:'Reanudar',finalizar:'Finalizar'};
+  if(action==='finalizar'&&!confirm('¿Finalizar este trabajo? Después podés registrar el detalle y los repuestos usados.'))return;
+  await busy(btn,async()=>{try{const r=await rpc('maintenance_task_action',{p_task_id:id,p_action:action});
+    const i=S.tasks.findIndex(t=>t.id===id);if(i>=0&&r)S.tasks[i]=Array.isArray(r)?r[0]:r;toast(labels[action]+': listo','good');
+    if(action==='finalizar'&&confirm('¿Querés registrar ahora el trabajo realizado y los repuestos usados?'))return startDraftFromTask(id);render()}
+  catch(e){toast(e.message,'bad')}});
 }
 
-if(shReady()){shEl('shared-connection').textContent='Esperando ingreso';try{shSession=JSON.parse(sessionStorage.getItem('sh_session')||'null');if(shSession){shRefresh().then(ok=>ok?shLoad():null)}}catch{}}
-</script><footer class="v8-footer"><img src="./logo-facilitas.png?v=96-logo-final-20261116" alt="Facilitas"> Matenimiento V9.6 · Actualizado: 16/11/2026 06:22 (Argentina) · Mundo Facilitas</footer><script>
-(function () {
-  const target = document.getElementById('facilitas-live-clock');
-  if (!target) return;
-  function updateClock() {
-    try {
-      const date = new Intl.DateTimeFormat('es-AR', {
-        timeZone: 'America/Argentina/Buenos_Aires',
-        weekday: 'long', day: '2-digit', month: 'long', year: 'numeric',
-        hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
-      }).format(new Date());
-      target.textContent = 'Argentina · ' + date.charAt(0).toUpperCase() + date.slice(1);
-    } catch (error) {
-      target.textContent = 'No se pudo mostrar el reloj';
-    }
-  }
-  updateClock();
-  setInterval(updateClock, 1000);
+/* ===================== REGISTRAR TRABAJO ===================== */
+const emptyDraft=()=>({machine:'',other:'',taskId:'',desc:'',status:'terminado',parts:[],next:''});
+let D=store.get('mat10_draft',null)||emptyDraft();
+const saveDraft=()=>store.set('mat10_draft',D);
+function startDraftFromTask(id){const t=S.tasks.find(x=>x.id===id);if(!t)return;
+  const m=MACHINES.find(m=>machineLabel(m)===t.machine_label);
+  D={...emptyDraft(),taskId:id,machine:m?machineLabel(m):(t.machine_label?'__other':''),other:m?'':(t.machine_label||''),status:t.status==='terminado'?'terminado':'en_proceso'};saveDraft();go('registrar')}
+function machineOptions(sel,withOther=true){const groups={};MACHINES.forEach(m=>(groups[m.sector]??=[]).push(m));
+  return `<option value="">Elegí equipo…</option>`+Object.entries(groups).map(([g,ms])=>`<optgroup label="${esc(g)}">${ms.map(m=>`<option value="${esc(machineLabel(m))}" ${sel===machineLabel(m)?'selected':''}>${esc(machineLabel(m))}</option>`).join('')}</optgroup>`).join('')+(withOther?`<option value="__other" ${sel==='__other'?'selected':''}>Otro equipo / instalación / edilicio</option>`:'')}
+function partOptions(sel){return `<option value="">Elegí repuesto…</option>`+S.inv.map(i=>`<option value="${i.id}" ${sel===i.id?'selected':''} ${Number(i.stock_quantity)<=0?'disabled':''}>${esc(i.part_code+' · '+i.part_name)} (hay ${i.stock_quantity})</option>`).join('')}
+function vRegistrar(){
+  const myTasks=S.tasks.filter(t=>t.assigned_to===myId()&&(t.status!=='terminado'||t.id===D.taskId)).slice(0,40);
+  return `<h2>Registrar trabajo</h2><div class="card">
+<label>Equipo o instalación</label><select id="dMachine" onchange="D.machine=this.value;saveDraft();$('dOtherBox').classList.toggle('hidden',this.value!=='__other')">${machineOptions(D.machine)}</select>
+<div id="dOtherBox" class="${D.machine==='__other'?'':'hidden'}"><label>¿Cuál?</label><input id="dOther" value="${esc(D.other)}" oninput="D.other=this.value;saveDraft()" placeholder="Ej: Portón depósito, baño planta alta…"></div>
+${myTasks.length?`<label>¿Corresponde a una tarea asignada? (opcional)</label><select onchange="D.taskId=this.value;saveDraft()"><option value="">No, es un trabajo no programado</option>${myTasks.map(t=>`<option value="${t.id}" ${D.taskId===t.id?'selected':''}>${esc(t.description.slice(0,60))}</option>`).join('')}</select>`:''}
+<label>Trabajo realizado / falla encontrada</label><textarea id="dDesc" oninput="D.desc=this.value;saveDraft()" placeholder="Qué falla tenía y qué se hizo">${esc(D.desc)}</textarea>
+<label>Estado</label><div class="seg" style="margin:0">${['terminado','en_proceso','pendiente'].map(s=>`<button class="${D.status===s?'on':''}" onclick="D.status='${s}';saveDraft();render()">${STATUS[s][0]}</button>`).join('')}</div>
+<label>Repuestos usados <span class="muted small" style="font-weight:400">(se descuentan del inventario)</span></label>
+<div id="dParts">${D.parts.map((p,i)=>`<div class="partrow"><select onchange="D.parts[${i}].id=this.value;saveDraft()">${partOptions(p.id)}</select><input type="number" min="1" step="1" inputmode="numeric" value="${esc(p.qty)}" oninput="D.parts[${i}].qty=this.value;saveDraft()"><button onclick="D.parts.splice(${i},1);saveDraft();render()" aria-label="Quitar">×</button></div>`).join('')}</div>
+<button class="btn ghost sm" style="margin-top:8px" onclick="D.parts.push({id:'',qty:1});saveDraft();render()">＋ Agregar repuesto</button>
+<label>Aviso para el siguiente turno (opcional)</label><textarea id="dNext" style="min-height:64px" oninput="D.next=this.value;saveDraft()" placeholder="Qué quedó pendiente, qué hay que vigilar…">${esc(D.next)}</textarea>
+<button class="btn block" onclick="saveWork(this)">💾 Guardar trabajo</button>
+<button class="btn ghost block sm" onclick="if(confirm('¿Borrar lo escrito?')){D=emptyDraft();saveDraft();render()}">Limpiar formulario</button></div>
+<div class="card"><h3>Cerrar turno</h3><p class="muted small">Registra el fin de tu turno con el aviso de arriba para el turno entrante. Si hay un trabajo cargado sin guardar, primero guardalo.</p><button class="btn sec block" onclick="closeShift(this)">🔚 Cerrar mi turno</button></div>`;
+}
+function draftLabel(){return D.machine==='__other'?D.other.trim():D.machine}
+async function saveWork(btn){
+  const label=draftLabel(),desc=D.desc.trim();
+  if(!label)return toast('Elegí el equipo','bad');if(!desc)return toast('Describí el trabajo realizado','bad');
+  const parts=D.parts.filter(p=>p.id);
+  for(const p of parts){const q=Number(p.qty),it=S.inv.find(i=>i.id===p.id);
+    if(!Number.isInteger(q)||q<=0)return toast('Revisá las cantidades de repuestos','bad');
+    const total=parts.filter(x=>x.id===p.id).reduce((s,x)=>s+Number(x.qty),0);
+    if(it&&total>Number(it.stock_quantity))return toast(`No hay stock suficiente de ${it.part_name} (hay ${it.stock_quantity})`,'bad')}
+  const m=MACHINES.find(x=>machineLabel(x)===label);
+  const partsText=parts.map(p=>{const it=S.inv.find(i=>i.id===p.id);return `${it?.part_code||''} ${it?.part_name||''} x${p.qty}`.trim()}).join('; ');
+  await busy(btn,async()=>{
+    try{await api('/rest/v1/shift_parts',{method:'POST',prefer:'return=minimal',body:{user_id:myId(),machine_label:label,description:desc,status:D.status,spare_parts:partsText,handover_notes:D.next.trim()}})}
+    catch(e){return toast('No se guardó el trabajo: '+e.message,'bad')}
+    const fails=[];
+    for(const p of parts){const it=S.inv.find(i=>i.id===p.id);
+      try{await rpc('register_spare_part_movement',{p_part_id:p.id,p_movement_type:'retiro',p_quantity:Number(p.qty),p_machine_code:m?.id||null,p_machine_name:m?.name||label,p_work_task_id:D.taskId||null,p_unit_cost:null,p_notes:'Trabajo: '+desc.slice(0,120),p_original_movement_id:null})}
+      catch(e){fails.push((it?.part_name||'repuesto')+': '+e.message)}}
+    D=emptyDraft();saveDraft();
+    if(fails.length)alert('El trabajo se guardó, pero NO se descontaron estos repuestos:\n\n'+fails.join('\n')+'\n\nRegistralos desde Repuestos o avisá al jefe.');
+    else toast(parts.length?'Trabajo guardado y repuestos descontados':'Trabajo guardado','good');
+    await refresh();go('inicio');
+  });
+}
+async function closeShift(btn){
+  if(draftLabel()||D.desc.trim()||D.parts.some(p=>p.id))return toast('Tenés un trabajo cargado sin guardar. Guardalo o limpiá el formulario antes de cerrar el turno.','bad');
+  if(!confirm('¿Cerrar tu turno?'))return;
+  await busy(btn,async()=>{try{await api('/rest/v1/shift_parts',{method:'POST',prefer:'return=minimal',body:{user_id:myId(),machine_label:'',description:'Cierre de turno',status:'cierre',spare_parts:'',handover_notes:D.next.trim()}});
+    D=emptyDraft();saveDraft();toast('Turno cerrado. ¡Buen descanso!','good');await refresh();go('inicio')}catch(e){toast(e.message,'bad')}});
+}
+
+/* ===================== REPUESTOS ===================== */
+let MV={type:'retiro',part:'',qty:1,machine:'',orig:'',cost:'',notes:''};
+function myOpenWithdrawals(){
+  const returned={};S.moves.filter(m=>m.movement_type==='devolucion'&&m.original_movement_id).forEach(m=>returned[m.original_movement_id]=(returned[m.original_movement_id]||0)+m.quantity);
+  return S.moves.filter(m=>m.movement_type==='retiro'&&m.performed_by===myId()).map(m=>({...m,left:m.quantity-(returned[m.id]||0)})).filter(m=>m.left>0);
+}
+function vRepuestos(){
+  const q=S.invQ.toLowerCase();
+  let list=S.inv.filter(i=>!q||[i.part_code,i.part_name,i.machine_name,i.machine_code,i.storage_location].some(v=>String(v||'').toLowerCase().includes(q)));
+  if(S.invLow)list=list.filter(i=>Number(i.stock_quantity)<=Number(i.minimum_stock));
+  const types=[['retiro','Retiro'],['devolucion','Devolución']].concat(isBoss()?[['entrada','Ingreso de stock']]:[]);
+  const opens=myOpenWithdrawals();
+  const names=Object.fromEntries(S.inv.map(i=>[i.id,i.part_code+' · '+i.part_name]));
+  return `<h2>Repuestos</h2>
+<div class="card"><h3>Registrar movimiento</h3>
+<div class="seg" style="margin-bottom:4px">${types.map(([k,l])=>`<button class="${MV.type===k?'on':''}" onclick="MV.type='${k}';render()">${l}</button>`).join('')}</div>
+${MV.type==='devolucion'?(opens.length?`<label>¿Qué retiro tuyo devolvés?</label><select onchange="MV.orig=this.value;const o=S.moves.find(x=>x.id===this.value);MV.part=o?.part_id||''">${'<option value="">Elegí…</option>'+opens.map(o=>`<option value="${o.id}" ${MV.orig===o.id?'selected':''}>${esc(names[o.part_id]||'Repuesto')} · ${fmtDT(o.created_at)} · quedan ${o.left}</option>`).join('')}</select>`:'<div class="info" style="margin-top:10px">No tenés retiros pendientes de devolución. Solo se puede devolver algo que retiraste vos.</div>')
+ :`<label>Repuesto</label><select onchange="MV.part=this.value">${MV.type==='entrada'?'<option value="">Elegí repuesto…</option>'+S.inv.map(i=>`<option value="${i.id}" ${MV.part===i.id?'selected':''}>${esc(i.part_code+' · '+i.part_name)} (hay ${i.stock_quantity})</option>`).join(''):partOptions(MV.part)}</select>`}
+<div class="row"><div><label>Cantidad</label><input type="number" min="1" step="1" inputmode="numeric" value="${esc(MV.qty)}" oninput="MV.qty=this.value"></div>
+${MV.type==='entrada'?`<div><label>Costo unitario (opcional)</label><input type="number" min="0" step="0.01" inputmode="decimal" value="${esc(MV.cost)}" oninput="MV.cost=this.value"></div>`:''}</div>
+${MV.type==='retiro'?`<label>Para qué equipo</label><select onchange="MV.machine=this.value">${machineOptions(MV.machine,false)}</select>`:''}
+<label>Observaciones</label><input value="${esc(MV.notes)}" oninput="MV.notes=this.value" placeholder="${MV.type==='entrada'?'Proveedor, remito, factura…':'Opcional'}">
+${(MV.type!=='devolucion'||opens.length)?`<button class="btn block ${MV.type==='retiro'?'':'ok'}" onclick="saveMove(this)">${MV.type==='retiro'?'➖ Descontar del stock':'➕ Sumar al stock'}</button>`:''}
+<p class="muted small">Si usaste repuestos en un trabajo, es más cómodo cargarlos desde <b>Registrar</b>: se guardan junto con el trabajo.</p></div>
+${isBoss()?`<details class="card"><summary>＋ Dar de alta un repuesto nuevo</summary>
+<div class="row"><div><label>Código</label><input id="nCode" placeholder="Ej: ROD-6204"></div><div><label>Stock inicial</label><input id="nQty" type="number" min="0" value="0" inputmode="numeric"></div></div>
+<label>Nombre</label><input id="nName" placeholder="Ej: Rodamiento 6204 2RS">
+<div class="row"><div><label>Stock mínimo</label><input id="nMin" type="number" min="0" value="1" inputmode="numeric"></div><div><label>Ubicación</label><input id="nLoc" placeholder="Estante / cajón"></div></div>
+<label>Equipo principal (opcional)</label><select id="nMach">${machineOptions('',false)}</select>
+<button class="btn block" onclick="newPart(this)">Guardar repuesto</button></details>`:''}
+<h2>Inventario</h2>
+<input placeholder="🔎 Buscar código, nombre o equipo" value="${esc(S.invQ)}" oninput="S.invQ=this.value;clearTimeout(window._iq);window._iq=setTimeout(()=>{const y=scrollY;render();scrollTo(0,y);const e=$('invSearch');e.focus();e.setSelectionRange(e.value.length,e.value.length)},350)" id="invSearch" style="margin-bottom:8px">
+<div class="seg"><button class="${!S.invLow?'on':''}" onclick="S.invLow=false;render()">Todos (${S.inv.length})</button><button class="${S.invLow?'on':''}" onclick="S.invLow=true;render()">Bajo mínimo (${S.inv.filter(i=>Number(i.stock_quantity)<=Number(i.minimum_stock)).length})</button></div>
+<div class="card">${list.slice(0,300).map(i=>{const low=Number(i.stock_quantity)<=Number(i.minimum_stock);return `<div class="list-item"><div class="line"><div><div class="title">${esc(i.part_name)}</div><div class="muted small">${esc(i.part_code)}${i.storage_location?' · 📍 '+esc(i.storage_location):''}${i.machine_name||i.machine_code?' · '+esc(i.machine_code||i.machine_name):''}</div></div><div style="text-align:right"><b style="font-size:20px;${low?'color:#b42318':''}">${esc(i.stock_quantity)}</b><div class="muted small">mín. ${esc(i.minimum_stock)}</div></div></div>${low?'<span class="badge b-urg">Reponer</span>':''}</div>`}).join('')||'<p class="muted">No hay repuestos para mostrar.</p>'}</div>
+<h2>Últimos movimientos</h2><div class="card">${S.moves.slice(0,40).map(m=>`<div class="list-item"><div class="line"><div><div class="title">${esc(names[m.part_id]||'Repuesto')}</div><div class="muted small">${esc(nameOf(m.performed_by))} · ${fmtDT(m.created_at)}${m.machine_code||m.machine_name?' · '+esc(m.machine_code||m.machine_name):''}</div>${m.notes?`<div class="muted small">${esc(m.notes)}</div>`:''}</div><span class="badge ${m.movement_type==='retiro'?'b-urg':'b-ok'}">${m.movement_type==='retiro'?'−':'+'}${m.quantity} ${MOVE[m.movement_type]||''}</span></div></div>`).join('')||'<p class="muted">Sin movimientos.</p>'}</div>`;
+}
+async function saveMove(btn){
+  const qty=Number(MV.qty);if(!Number.isInteger(qty)||qty<=0)return toast('Cantidad inválida','bad');
+  let orig=null;if(MV.type==='devolucion'){orig=myOpenWithdrawals().find(o=>o.id===MV.orig);if(!orig)return toast('Elegí el retiro que devolvés','bad');if(qty>orig.left)return toast('No podés devolver más de '+orig.left,'bad');MV.part=orig.part_id}
+  const it=S.inv.find(i=>i.id===MV.part);if(!it)return toast('Elegí el repuesto','bad');
+  if(MV.type==='retiro'&&qty>Number(it.stock_quantity))return toast('No hay stock suficiente (hay '+it.stock_quantity+')','bad');
+  const m=MACHINES.find(x=>machineLabel(x)===MV.machine);
+  const verb={retiro:'descontar',devolucion:'devolver',entrada:'ingresar'}[MV.type];
+  if(!confirm(`¿Confirmás ${verb} ${qty} × ${it.part_name}?`))return;
+  await busy(btn,async()=>{try{
+    await rpc('register_spare_part_movement',{p_part_id:it.id,p_movement_type:MV.type,p_quantity:qty,p_machine_code:m?.id||orig?.machine_code||null,p_machine_name:m?.name||orig?.machine_name||null,p_work_task_id:null,p_unit_cost:MV.type==='entrada'&&MV.cost!==''?Number(MV.cost):null,p_notes:MV.notes.trim()||null,p_original_movement_id:orig?.id||null});
+    toast('Movimiento registrado. Stock actualizado.','good');MV={type:MV.type,part:'',qty:1,machine:'',orig:'',cost:'',notes:''};await refresh();render();
+  }catch(e){toast(/ingresos/i.test(e.message)?'Tu usuario no tiene permiso para ingresar stock. Hay que instalar el SQL de la V10.':e.message,'bad')}});
+}
+async function newPart(btn){
+  const code=$('nCode').value.trim(),name=$('nName').value.trim(),qty=Number($('nQty').value||0),min=Number($('nMin').value||0);
+  if(!code||!name)return toast('Completá código y nombre','bad');
+  if(!Number.isInteger(qty)||qty<0||!Number.isInteger(min)||min<0)return toast('Revisá las cantidades','bad');
+  if(S.inv.some(i=>i.part_code.toLowerCase()===code.toLowerCase()))return toast('Ya existe un repuesto con ese código','bad');
+  const m=MACHINES.find(x=>machineLabel(x)===$('nMach').value);
+  await busy(btn,async()=>{try{
+    await rpc('add_spare_part',{p_part_code:code,p_part_name:name,p_minimum_stock:min,p_initial_quantity:qty,p_storage_location:$('nLoc').value.trim()||null,p_machine_code:m?.id||null,p_machine_name:m?.name||null});
+    toast('Repuesto agregado','good');await refresh();render();
+  }catch(e){toast(/add_spare_part|function|schema cache/i.test(e.message)?'Falta instalar el SQL de la V10 en Supabase (función add_spare_part).':e.message,'bad')}});
+}
+
+/* ===================== MÁQUINAS ===================== */
+function vMaquinas(){const q=S.machQ.toLowerCase();
+  const lev=m=>critOf(m.id)?.level||'NONE';
+  let list=MACHINES.filter(m=>!q||[m.id,m.name,m.sector,m.location].some(v=>v.toLowerCase().includes(q)));
+  if(S.critF!=='todas')list=list.filter(m=>lev(m)===S.critF);
+  list=[...list].sort((a,b)=>(critOf(b.id)?.score||0)-(critOf(a.id)?.score||0));
+  const cnt=k=>MACHINES.filter(m=>lev(m)===k).length;
+  const open={};S.tasks.filter(t=>t.status!=='terminado').forEach(t=>{const id=(t.machine_label||'').split(' · ')[0];open[id]=(open[id]||0)+1});
+  const local=localCritToImport();
+  return `<button class="btn ghost sm" onclick="go('mas')">← Más</button><h2>Máquinas y criticidad</h2>
+${S.critMissing?'<div class="err" style="margin-bottom:12px">La criticidad todavía no está activada en la base de datos. Hay que correr el SQL de la V10 en Supabase.</div>':''}
+<div class="stats"><div class="stat red" onclick="S.critF='ALTA';render()"><b>${cnt('ALTA')}</b><span>Criticidad ALTA</span></div><div class="stat" onclick="S.critF='MEDIA';render()"><b>${cnt('MEDIA')}</b><span>Criticidad MEDIA</span></div><div class="stat" onclick="S.critF='BAJA';render()"><b>${cnt('BAJA')}</b><span>Criticidad BAJA</span></div><div class="stat ${cnt('NONE')?'yel':''}" onclick="S.critF='NONE';render()"><b>${cnt('NONE')}</b><span>Sin evaluar</span></div></div>
+${local.length&&isBoss()&&!S.critMissing?`<div class="card alta"><div class="title">📲 Hay ${local.length} evaluaciones guardadas solo en este celular (versión anterior)</div><p class="muted small">Subilas a la base compartida para que las vea todo el equipo. Solo se suben las máquinas que todavía no tienen evaluación compartida.</p><button class="btn sm" onclick="importLocalCrit(this)">Subir a la base compartida</button></div>`:''}
+<div class="seg">${[['todas','Todas'],['ALTA','Alta'],['MEDIA','Media'],['BAJA','Baja'],['NONE','Sin evaluar']].map(([k,l])=>`<button class="${S.critF===k?'on':''}" onclick="S.critF='${k}';render()">${l}</button>`).join('')}</div>
+<input id="mSearch" placeholder="🔎 Buscar máquina, código o sector" value="${esc(S.machQ)}" oninput="S.machQ=this.value;clearTimeout(window._mq);window._mq=setTimeout(()=>{render();const e=$('mSearch');e.focus();e.setSelectionRange(e.value.length,e.value.length)},300)" style="margin-bottom:10px">
+<div class="card">${list.map(m=>{const c=critOf(m.id);return `<div class="list-item" onclick="go('maquina',{mach:'${m.id}'})" style="cursor:pointer"><div class="line"><div><div class="title">${esc(m.id)} · ${esc(m.name)}</div><div class="muted small">${esc(m.sector)} · ${esc(m.location)}${open[m.id]?` · <b style="color:var(--warn)">${open[m.id]} tarea${open[m.id]>1?'s':''} abierta${open[m.id]>1?'s':''}</b>`:''}</div></div><div style="text-align:right">${critBadge(m.id,true)||'<span class="badge">—</span>'}${c?`<div class="muted small">${c.score.toFixed?c.score.toFixed(2):c.score}</div>`:''}</div></div></div>`}).join('')||'<p class="muted">No hay máquinas en esta lista.</p>'}</div>`}
+function vMaquina(){const m=MACHINES.find(x=>x.id===S.mach);if(!m)return vMaquinas();const lbl=machineLabel(m);
+  const tasks=S.tasks.filter(t=>t.machine_label===lbl),works=S.parts.filter(p=>p.machine_label===lbl),mv=S.moves.filter(x=>x.machine_code===m.id),names=Object.fromEntries(S.inv.map(i=>[i.id,i.part_name]));
+  return `<button class="btn ghost sm" onclick="go('maquinas')">← Máquinas</button><h2>${esc(lbl)}</h2><p class="muted">${esc(m.sector)} · ${esc(m.location)}</p>
+<div class="actions" style="margin-bottom:12px"><button class="btn sm" onclick="D={...emptyDraft(),machine:'${esc(lbl)}'};saveDraft();go('registrar')">📝 Registrar trabajo aquí</button>${isBoss()?`<button class="btn sec sm" onclick="go('asignar',{preMach:'${esc(lbl)}'})">＋ Asignar tarea</button>`:''}</div>
+${critCard(m)}
+<h3>Tareas (${tasks.length})</h3>${tasks.slice(0,20).map(taskCard).join('')||'<div class="card muted">Sin tareas.</div>'}
+<h3>Trabajos registrados (${works.length})</h3>${works.slice(0,20).map(partCard).join('')||'<div class="card muted">Sin trabajos registrados recientes.</div>'}
+<h3>Repuestos usados</h3><div class="card">${mv.slice(0,30).map(x=>`<div class="list-item small">${fmtDT(x.created_at)} · ${esc(MOVE[x.movement_type])} ${x.quantity} × ${esc(names[x.part_id]||'repuesto')} · ${esc(nameOf(x.performed_by))}</div>`).join('')||'<p class="muted">Sin movimientos.</p>'}</div>`}
+
+let CE=null; // evaluación en edición
+function critCard(m){
+  const c=critOf(m.id);
+  if(!isBoss()||S.critMissing){
+    if(!c)return `<div class="card"><h3>Criticidad</h3><p class="muted">${S.critMissing?'La criticidad todavía no está activada en la base de datos.':'Esta máquina todavía no fue evaluada. La evalúa el jefe o el supervisor.'}</p></div>`;
+    return `<div class="card ${c.level==='ALTA'?'urgent':c.level==='MEDIA'?'alta':'accent'}"><div class="line"><h3>Criticidad</h3>${critBadge(m.id)}</div><p style="margin:0 0 6px">Puntaje <b>${Number(c.score).toFixed(2)}</b> / 5${c.safety_risk?' · ⚠️ Riesgo de seguridad':''}</p>
+    <table class="mini">${CRIT.map(k=>`<tr><td>${k.name} <span class="muted small">(${k.w}%)</span></td><td><b>${c[k.k]}/5</b><div class="muted small">${esc(k.opts[c[k.k]-1])}</div></td></tr>`).join('')}</table>
+    ${c.notes?`<div class="note">${esc(c.notes)}</div>`:''}<p class="muted small">Evaluó ${esc(nameOf(c.updated_by))} · ${fmtDT(c.updated_at)}</p></div>`}
+  if(!CE||CE.code!==m.id)CE={code:m.id,...Object.fromEntries(CRIT.map(k=>[k.k,c?.[k.k]||0])),safety_risk:!!c?.safety_risk,notes:c?.notes||''};
+  const r=critCalc(CE);
+  return `<div class="card ${r?.level==='ALTA'?'urgent':r?.level==='MEDIA'?'alta':'accent'}"><div class="line"><h3>Criticidad</h3>${c?critBadge(m.id):'<span class="badge">Sin evaluar</span>'}</div>
+  ${CRIT.map(k=>`<label>${k.name} <span class="muted small" style="font-weight:400">(${k.w}%)</span></label><select onchange="CE['${k.k}']=Number(this.value);critRefresh()"><option value="0">Elegí 1 a 5…</option>${k.opts.map((o,i)=>`<option value="${i+1}" ${CE[k.k]===i+1?'selected':''}>${i+1} · ${esc(o)}</option>`).join('')}</select>`).join('')}
+  <label style="font-weight:400;margin-top:14px"><input type="checkbox" style="width:auto" ${CE.safety_risk?'checked':''} onchange="CE.safety_risk=this.checked;critRefresh()"> <b>Riesgo grave para la seguridad de las personas</b> (pasa a ALTA automáticamente)</label>
+  <label>Justificación / observaciones</label><textarea style="min-height:64px" oninput="CE.notes=this.value" placeholder="Ej: sin equipo alternativo; motor con entrega de 30 días">${esc(CE.notes)}</textarea>
+  <div id="critRes" class="info" style="margin-top:12px">${critResText(r)}</div>
+  <button class="btn block" onclick="saveCrit(this,'${m.id}')">Guardar evaluación</button>
+  ${c?`<p class="muted small">Última evaluación: ${esc(nameOf(c.updated_by))} · ${fmtDT(c.updated_at)}</p>`:''}</div>`}
+const critResText=r=>r?`Puntaje <b>${r.score.toFixed(2)}</b> / 5 → <b>Criticidad ${r.level}</b>`:'Completá los cuatro criterios para calcular la criticidad.';
+function critRefresh(){const e=$('critRes');if(e)e.innerHTML=critResText(critCalc(CE))}
+async function saveCrit(btn,code){const r=critCalc(CE);if(!r)return toast('Completá los cuatro criterios','bad');const m=MACHINES.find(x=>x.id===code);
+  await busy(btn,async()=>{try{const row=await rpc('save_machine_criticality',{p_machine_code:code,p_machine_name:m?.name||null,p_production_impact:CE.production_impact,p_no_alternative:CE.no_alternative,p_failure_frequency:CE.failure_frequency,p_quality_impact:CE.quality_impact,p_safety_risk:CE.safety_risk,p_notes:CE.notes||null});
+    const x=Array.isArray(row)?row[0]:row;if(x)S.crit[code]=x;CE=null;toast('Criticidad guardada: '+(x?.level||r.level),'good');render()}catch(e){toast(e.message,'bad')}})}
+function localCritToImport(){const d=store.get('facilitas_criticidad_v1',{})||{};
+  return Object.entries(d).map(([code,v])=>({code,v:{...Object.fromEntries(CRIT.map(k=>[k.k,Number(v?.[k.old])])),safety_risk:!!v?.safety,notes:v?.notes||''}})).filter(x=>!S.crit[x.code]&&MACHINES.some(m=>m.id===x.code)&&critCalc(x.v))}
+async function importLocalCrit(btn){const list=localCritToImport();if(!confirm(`¿Subir ${list.length} evaluaciones de este celular a la base compartida?`))return;
+  await busy(btn,async()=>{let ok=0,bad=0;for(const {code,v} of list){const m=MACHINES.find(x=>x.id===code);
+    try{const row=await rpc('save_machine_criticality',{p_machine_code:code,p_machine_name:m?.name||null,p_production_impact:v.production_impact,p_no_alternative:v.no_alternative,p_failure_frequency:v.failure_frequency,p_quality_impact:v.quality_impact,p_safety_risk:v.safety_risk,p_notes:v.notes||null});const x=Array.isArray(row)?row[0]:row;if(x)S.crit[code]=x;ok++}catch{bad++}}
+    toast(`Subidas ${ok} evaluaciones${bad?' · '+bad+' con error':''}`,bad?'bad':'good');render()})}
+
+/* ===================== MÁS ===================== */
+function vMas(){const it=(v,ic,t)=>`<a href="#" onclick="go('${v}');return false"><span class="ic">${ic}</span>${t}<span class="ar">›</span></a>`;
+  return `<h2>Más</h2><div class="card menu">${it('maquinas','🏭','Máquinas y criticidad')}${it('perfil','👤','Mi perfil')}${isBoss()?it('asignar','🗂️','Asignar tarea'):''}${isSup()?it('usuarios','👥','Usuarios y aprobaciones'):''}${isSup()?it('informes','📊','Informes a Google Drive (Excel)'):''}${it('ayuda','❓','Ayuda e instalación')}</div>
+${installBox()}<button class="btn ghost block" onclick="if(confirm('¿Cerrar sesión en este celular?'))logout()">Cerrar sesión</button><p class="muted small" style="text-align:center">Matenimiento Facilitas ${VERSION}</p>`}
+function vPerfil(){const p=S.me;return `<button class="btn ghost sm" onclick="go('mas')">← Más</button><h2>Mi perfil</h2><div class="card">
+<div class="row"><div><label>Nombre</label><input id="fFirst" value="${esc(p.first_name||'')}"></div><div><label>Apellido</label><input id="fLast" value="${esc(p.last_name||'')}"></div></div>
+<label>Especialidad</label><select id="fSpec">${SPECIALTIES.map(s=>`<option ${p.specialty===s?'selected':''}>${s}</option>`).join('')}</select>
+<div class="row"><div><label>Entrada</label><input id="fStart" type="time" value="${esc((p.shift_start||'').slice(0,5))}"></div><div><label>Salida</label><input id="fEnd" type="time" value="${esc((p.shift_end||'').slice(0,5))}"></div></div>
+<p class="muted small">Correo: ${esc(session.user.email)}</p><button class="btn block" onclick="saveProfile(this)">Guardar perfil</button></div>`}
+async function saveProfile(btn){await busy(btn,async()=>{try{await api('/rest/v1/profiles?id=eq.'+myId(),{method:'PATCH',body:{first_name:$('fFirst').value.trim(),last_name:$('fLast').value.trim(),specialty:$('fSpec').value,shift_start:$('fStart').value||null,shift_end:$('fEnd').value||null}});await refresh();toast('Perfil guardado','good')}catch(e){toast(e.message,'bad')}})}
+function vAsignar(){const ops=S.profiles.filter(p=>p.approved&&p.first_name);const pre=S.preMach||'';
+  return `<button class="btn ghost sm" onclick="go('tareas')">← Tareas</button><h2>Asignar tarea</h2><div class="card">
+<label>Operario</label><select id="aWho"><option value="">Elegí…</option>${ops.map(p=>`<option value="${p.id}">${esc(p.first_name+' '+(p.last_name||''))} · ${esc(p.specialty||'')}</option>`).join('')}</select>
+<label>Equipo o instalación</label><select id="aMach" onchange="$('aOtherBox').classList.toggle('hidden',this.value!=='__other')">${machineOptions(pre)}</select>
+<div id="aOtherBox" class="hidden"><label>¿Cuál?</label><input id="aOther"></div>
+<label>Qué hay que hacer</label><textarea id="aDesc"></textarea>
+<div class="row"><div><label>Prioridad</label><select id="aPrio"><option value="normal">Normal</option><option value="alta">Alta</option><option value="urgente">Urgente</option></select></div><div><label>Fecha límite</label><input id="aDue" type="date"></div></div>
+<button class="btn block" onclick="assignTask(this)">Asignar tarea</button></div>`}
+async function assignTask(btn){const who=$('aWho').value,mv=$('aMach').value,desc=$('aDesc').value.trim();const label=mv==='__other'?$('aOther').value.trim():mv;
+  if(!who)return toast('Elegí el operario','bad');if(!desc)return toast('Escribí qué hay que hacer','bad');
+  await busy(btn,async()=>{try{await api('/rest/v1/work_tasks',{method:'POST',prefer:'return=minimal',body:{assigned_by:myId(),assigned_to:who,machine_label:label,description:desc,priority:$('aPrio').value,due_date:$('aDue').value||null,status:'pendiente'}});
+    toast('Tarea asignada a '+nameOf(who),'good');S.preMach='';await refresh();go('tareas',{taskFilter:'todas',taskStatus:'activas'})}catch(e){toast(e.message,'bad')}})}
+function vUsuarios(){const pend=S.profiles.filter(p=>!p.approved),act=S.profiles.filter(p=>p.approved);
+  const link=location.origin+location.pathname,wa='https://wa.me/?text='+encodeURIComponent('Hola! Instalá la app de mantenimiento de Facilitas desde este enlace, tocá "Crear cuenta" y registrate con tu correo: '+link);
+  return `<button class="btn ghost sm" onclick="go('mas')">← Más</button><h2>Usuarios</h2>
+<div class="card"><h3>Invitar empleado</h3><p class="muted small">Mandale el enlace por WhatsApp. Se registra solo y después lo aprobás acá.</p><a class="btn ok block" style="text-decoration:none" href="${wa}" target="_blank" rel="noopener">Compartir por WhatsApp</a></div>
+<h3>Pendientes de aprobación (${pend.length})</h3>${pend.map(p=>`<div class="card alta"><div class="title">${esc([p.first_name,p.last_name].filter(Boolean).join(' ')||'Sin nombre todavía')}</div><div class="muted small">${esc(p.specialty||'')}</div>
+${p.first_name&&p.last_name?`<div class="actions"><button class="btn ok sm" onclick="approve(this,'${p.id}')">✓ Aprobar</button></div>`:'<p class="muted small">Todavía no completó nombre y apellido. Cuando entre a la app se le pedirán.</p>'}</div>`).join('')||'<div class="card muted">No hay solicitudes pendientes.</div>'}
+<h3>Activos (${act.length})</h3>${act.map(p=>p.id===myId()?'':`<details class="card"><summary>${esc((p.first_name||'')+' '+(p.last_name||''))} · ${esc({supervisor:'Supervisor',jefe:'Jefe',operario:'Operario'}[p.role]||p.role)}</summary>
+<div class="row"><div><label>Nombre</label><input id="u1${p.id}" value="${esc(p.first_name||'')}"></div><div><label>Apellido</label><input id="u2${p.id}" value="${esc(p.last_name||'')}"></div></div>
+<div class="row"><div><label>Especialidad</label><select id="u3${p.id}">${SPECIALTIES.map(s=>`<option ${p.specialty===s?'selected':''}>${s}</option>`).join('')}</select></div><div><label>Rol</label><select id="u4${p.id}"><option value="operario" ${p.role==='operario'?'selected':''}>Operario</option><option value="jefe" ${p.role==='jefe'?'selected':''}>Jefe</option>${p.role==='supervisor'?'<option value="supervisor" selected>Supervisor</option>':''}</select></div></div>
+<div class="row"><div><label>Entrada</label><input type="time" id="u5${p.id}" value="${esc((p.shift_start||'').slice(0,5))}"></div><div><label>Salida</label><input type="time" id="u6${p.id}" value="${esc((p.shift_end||'').slice(0,5))}"></div></div>
+<label style="font-weight:400"><input type="checkbox" id="u7${p.id}" style="width:auto" checked> Usuario activo (destildar para bloquear el acceso)</label>
+<button class="btn block sm" onclick="saveUser(this,'${p.id}')">Guardar cambios</button></details>`).join('')}`}
+async function approve(btn,id){if(!confirm('¿Aprobar a '+nameOf(id)+'? Verificá que sea un empleado.'))return;await busy(btn,async()=>{try{await rpc('approve_maintenance_user',{p_user_id:id});toast('Usuario aprobado','good');await refresh();render()}catch(e){toast(e.message,'bad')}})}
+async function saveUser(btn,id){const g=k=>$(k+id);await busy(btn,async()=>{try{await rpc('admin_manage_maintenance_user',{p_user_id:id,p_first_name:g('u1').value.trim(),p_last_name:g('u2').value.trim(),p_specialty:g('u3').value,p_role:g('u4').value,p_shift_start:g('u5').value||null,p_shift_end:g('u6').value||null,p_approved:g('u7').checked});toast('Cambios guardados','good');await refresh();render()}catch(e){toast(e.message,'bad')}})}
+function vAyuda(){return `<button class="btn ghost sm" onclick="go(session&&S.me?.approved?'mas':'login')">← Volver</button><h2>Ayuda</h2>
+<div class="card"><h3>📱 Instalar en iPhone</h3><ol class="small"><li>Abrí el enlace en <b>Safari</b> (si se abre en WhatsApp, tocá los tres puntos → Abrir en Safari).</li><li>Tocá el botón <b>Compartir</b> (cuadrado con flecha).</li><li>Elegí <b>Agregar a pantalla de inicio</b> → <b>Agregar</b>.</li></ol>
+<h3>🤖 Instalar en Android</h3><ol class="small"><li>Abrí el enlace en <b>Chrome</b> (si se abre dentro de WhatsApp, tocá los tres puntos → <b>Abrir en Chrome</b>).</li><li>Si aparece el botón amarillo <b>Instalar la app</b>, tocalo.</li><li>Si no, menú de tres puntos ⋮ → <b>Instalar aplicación</b> o <b>Agregar a pantalla principal</b> → <b>Instalar</b>.</li><li>Buscá el ícono de Facilitas en el menú de aplicaciones o en la pantalla principal.</li></ol>${installBox()}</div>
+<div class="card"><h3>Uso diario</h3><ul class="small"><li><b>Inicio:</b> al empezar el turno, leé las novedades y los avisos del turno anterior.</li><li><b>Tareas:</b> tocá Iniciar cuando empezás, Pausar si te interrumpen y Finalizar al terminar.</li><li><b>Registrar:</b> cargá cada trabajo con los repuestos usados. Los repuestos se descuentan solos del inventario.</li><li><b>Repuestos:</b> retiros sueltos, devoluciones e ingresos de stock (jefe).</li><li>Al terminar la jornada, <b>Cerrar mi turno</b> con un aviso para el que entra.</li></ul>
+<div class="info">Se necesita internet para guardar. Si aparece un error en rojo, el dato <b>no</b> se guardó.</div></div>`}
+
+/* ===================== INFORMES (EXCEL + DRIVE) ===================== */
+function vInformes(){const d=new Date();const first=new Date(d.getFullYear(),d.getMonth(),1).toLocaleDateString('en-CA');
+  return `<button class="btn ghost sm" onclick="go('mas')">← Más</button><h2>Informes</h2><div class="card">
+<p class="muted small">Genera un Excel con: resumen, horas por operario, trabajos realizados, tareas, movimientos de repuestos, inventario actual y criticidad de máquinas.</p>
+<div class="row"><div><label>Desde</label><input id="iFrom" type="date" value="${S.iFrom||first}"></div><div><label>Hasta</label><input id="iTo" type="date" value="${S.iTo||today()}"></div></div>
+<div class="seg" style="margin-top:10px"><button onclick="setRange('mes')">Este mes</button><button onclick="setRange('ant')">Mes anterior</button><button onclick="setRange('sem')">Últimos 7 días</button></div>
+<button class="btn block" onclick="reportToDrive(this)">☁️ Guardar en mi Google Drive</button>
+<button class="btn sec block" onclick="reportDownload(this)">⬇️ Descargar Excel en este equipo</button>
+<div id="iMsg" style="margin-top:12px"></div></div>
+<p class="muted small">Los archivos se guardan en la carpeta <b>${esc(DRIVE_FOLDER)}</b> de la cuenta de Google que autorices.</p>`}
+function setRange(k){const d=new Date();let a,b;if(k==='mes'){a=new Date(d.getFullYear(),d.getMonth(),1);b=d}else if(k==='ant'){a=new Date(d.getFullYear(),d.getMonth()-1,1);b=new Date(d.getFullYear(),d.getMonth(),0)}else{a=new Date(d-6*864e5);b=d}
+  S.iFrom=a.toLocaleDateString('en-CA');S.iTo=b.toLocaleDateString('en-CA');render()}
+async function fetchAll(path){let out=[],from=0;for(;;){const r=await api(path+'&limit=1000&offset='+from);out=out.concat(r);if(r.length<1000)return out;from+=1000}}
+async function buildReport(){
+  const from=$('iFrom').value,to=$('iTo').value;if(!from||!to||from>to)throw Error('Revisá las fechas');
+  S.iFrom=from;S.iTo=to;
+  const a=encodeURIComponent(from+'T00:00:00-03:00'),bDate=new Date(to+'T12:00:00');bDate.setDate(bDate.getDate()+1);const b=encodeURIComponent(bDate.toLocaleDateString('en-CA')+'T00:00:00-03:00');
+  const rng=`created_at=gte.${a}&created_at=lt.${b}`;
+  const [parts,tasks,moves,inv,profiles]=await Promise.all([fetchAll('/rest/v1/shift_parts?select=*&order=created_at.asc&'+rng),fetchAll('/rest/v1/work_tasks?select=*&order=created_at.asc&or=('+`and(created_at.gte.${a},created_at.lt.${b}),and(started_at.gte.${a},started_at.lt.${b}),and(finished_at.gte.${a},finished_at.lt.${b}),finished_at.is.null`+')'),fetchAll('/rest/v1/spare_parts_movements?select=*&order=created_at.asc&'+rng),fetchAll('/rest/v1/spare_parts_inventory?select=*&order=part_code.asc'),api('/rest/v1/profiles?select=id,first_name,last_name,specialty,role')]);
+  S.profiles=profiles.length?profiles.map(p=>({...S.profiles.find(x=>x.id===p.id),...p})):S.profiles;
+  const invBy=Object.fromEntries(inv.map(i=>[i.id,i]));const dt=x=>x?fmtDT(x):'';const H=s=>Math.round(s/36)/100;
+  const per={};const P=id=>per[id]??={name:nameOf(id),works:0,tasks:0,done:0,open:0,secs:0,parts:0};
+  parts.filter(p=>p.status!=='cierre').forEach(p=>P(p.user_id).works++);
+  tasks.forEach(t=>{const o=P(t.assigned_to);o.tasks++;t.status==='terminado'?o.done++:o.open++;o.secs+=taskSeconds(t)});
+  moves.filter(m=>m.movement_type==='retiro').forEach(m=>P(m.performed_by).parts+=m.quantity);
+  const sumMv=t=>moves.filter(m=>m.movement_type===t).reduce((s,m)=>s+m.quantity,0);
+  const cost=moves.filter(m=>m.movement_type==='retiro').reduce((s,m)=>s+m.quantity*Number(invBy[m.part_id]?.unit_cost||0),0);
+  const low=inv.filter(i=>Number(i.stock_quantity)<=Number(i.minimum_stock));
+  const period=`Período: ${fmtD(from)} al ${fmtD(to)} · Generado ${fmtDT(new Date())} por ${nameOf(myId())}`;
+  const sheets=[
+   {name:'Resumen',title:'MUNDO FACILITAS — Informe de mantenimiento',sub:period,head:['Indicador','Valor'],w:[46,18],rows:[
+     ['Trabajos registrados (partes de turno)',parts.filter(p=>p.status!=='cierre').length],['Cierres de turno',parts.filter(p=>p.status==='cierre').length],
+     ['Tareas en el período',tasks.length],['Tareas terminadas',tasks.filter(t=>t.status==='terminado').length],['Tareas pendientes',tasks.filter(t=>t.status==='pendiente').length],['Tareas en proceso',tasks.filter(t=>t.status==='en_proceso').length],
+     ['Tareas urgentes',tasks.filter(t=>t.priority==='urgente').length],['Horas efectivas registradas en tareas',{n:H(tasks.reduce((s,t)=>s+taskSeconds(t),0)),f:2}],
+     ['Repuestos retirados (unidades)',sumMv('retiro')],['Repuestos devueltos (unidades)',sumMv('devolucion')],['Repuestos ingresados (unidades)',sumMv('entrada')],
+     ['Costo estimado de repuestos usados',{n:Math.round(cost*100)/100,f:3}],['Repuestos bajo stock mínimo (hoy)',low.length],['Máquinas con criticidad ALTA',MACHINES.filter(m=>critOf(m.id)?.level==='ALTA').length],['Máquinas sin evaluar',MACHINES.filter(m=>!critOf(m.id)).length]]},
+   {name:'Por operario',title:'Actividad por operario',sub:period,head:['Operario','Trabajos registrados','Tareas','Terminadas','Abiertas','Horas efectivas','Repuestos retirados (u.)'],w:[30,20,10,12,10,16,22],
+     rows:Object.values(per).sort((x,y)=>y.secs-x.secs).map(o=>[o.name,o.works,o.tasks,o.done,o.open,{n:H(o.secs),f:2},o.parts])},
+   {name:'Trabajos realizados',title:'Trabajos realizados (partes de turno)',sub:period,head:['Fecha','Operario','Equipo','Estado','Trabajo realizado','Repuestos','Aviso siguiente turno'],w:[16,22,34,14,60,34,40],
+     rows:parts.map(p=>[dt(p.created_at),nameOf(p.user_id),p.machine_label||'',STATUS[p.status]?.[0]||p.status,p.description||'',p.spare_parts||'',p.handover_notes||''])},
+   {name:'Tareas',title:'Tareas asignadas',sub:period+' · Incluye tareas creadas, iniciadas o terminadas en el período y todas las abiertas',head:['Creada','Asignada a','Asignó','Equipo','Tarea','Prioridad','Estado','Fecha límite','Inicio','Fin','Horas efectivas'],w:[16,22,20,32,50,11,13,13,16,16,14],
+     rows:tasks.map(t=>[dt(t.created_at),nameOf(t.assigned_to),nameOf(t.assigned_by),t.machine_label||'',t.description||'',PRIO[t.priority]?.[0]||t.priority,STATUS[t.status]?.[0]||t.status,t.due_date?fmtD(t.due_date):'',dt(t.started_at),dt(t.finished_at),{n:H(taskSeconds(t)),f:2}])},
+   {name:'Movimientos repuestos',title:'Movimientos de repuestos',sub:period,head:['Fecha','Tipo','Código','Repuesto','Cantidad','Equipo','Responsable','Costo unitario','Observaciones'],w:[16,12,14,34,10,28,22,14,40],
+     rows:moves.map(m=>{const i=invBy[m.part_id]||{};return [dt(m.created_at),MOVE[m.movement_type]||m.movement_type,i.part_code||'',i.part_name||'',m.movement_type==='retiro'?-m.quantity:m.quantity,[m.machine_code,m.machine_name].filter(Boolean).join(' · '),nameOf(m.performed_by),m.unit_cost!=null?{n:Number(m.unit_cost),f:3}:'',m.notes||'']})},
+   {name:'Inventario actual',title:'Inventario de repuestos al '+fmtDT(new Date()),sub:'Stock en tiempo real al generar el informe',head:['Código','Repuesto','Stock','Mínimo','Estado','Ubicación','Equipo','Costo unitario','Proveedor'],w:[14,38,10,10,12,20,26,14,24],
+     rows:inv.map(i=>[i.part_code,i.part_name,Number(i.stock_quantity),Number(i.minimum_stock),Number(i.stock_quantity)<=Number(i.minimum_stock)?'REPONER':'OK',i.storage_location||'',[i.machine_code,i.machine_name].filter(Boolean).join(' · '),i.unit_cost!=null?{n:Number(i.unit_cost),f:3}:'',i.supplier||''])},
+   {name:'Criticidad máquinas',title:'Criticidad de máquinas',sub:'Ponderación: producción 45% · alternativa 25% · frecuencia 15% · inocuidad 15%. ALTA si hay riesgo de seguridad, inocuidad 5 o puntaje ≥ 3,8; MEDIA ≥ 2,5',head:['Código','Máquina','Sector','Criticidad','Puntaje','Producción','Alternativa','Frecuencia','Inocuidad','Riesgo seguridad','Tareas abiertas','Trabajos en el período','Observaciones','Evaluó','Fecha evaluación'],w:[10,30,14,12,10,11,11,11,11,10,10,12,40,20,16],
+     rows:[...MACHINES].sort((a,b)=>(critOf(b.id)?.score||0)-(critOf(a.id)?.score||0)).map(m=>{const c=critOf(m.id),lbl=machineLabel(m);return [m.id,m.name,m.sector,c?.level||'SIN EVALUAR',c?{n:Number(c.score),f:2}:'',c?.production_impact||'',c?.no_alternative||'',c?.failure_frequency||'',c?.quality_impact||'',c?(c.safety_risk?'Sí':'No'):'',S.tasks.filter(t=>t.machine_label===lbl&&t.status!=='terminado').length,parts.filter(p=>p.machine_label===lbl).length,c?.notes||'',c?nameOf(c.updated_by):'',c?dt(c.updated_at):'']})}];
+  return {blob:xlsx(sheets),name:`Mantenimiento Facilitas ${from} a ${to}.xlsx`,summary:`${parts.length} partes · ${tasks.length} tareas · ${moves.length} movimientos de repuestos`};
+}
+function iMsg(html,cls='info'){const e=$('iMsg');if(e)e.innerHTML=`<div class="${cls}">${html}</div>`}
+async function reportDownload(btn){await busy(btn,async()=>{try{const r=await buildReport();const a=document.createElement('a');a.href=URL.createObjectURL(r.blob);a.download=r.name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);iMsg('Excel generado: '+esc(r.summary),'info')}catch(e){iMsg('No se pudo generar: '+esc(e.message),'err')}})}
+let gTokenClient=null;
+function googleToken(){return new Promise((res,rej)=>{
+  if(!window.google?.accounts?.oauth2)return rej(Error('No cargó el servicio de Google. Revisá la conexión y probá de nuevo.'));
+  const cached=store.get('mat10_gtoken',null);if(cached&&cached.exp>Date.now()+60000)return res(cached.t);
+  gTokenClient=google.accounts.oauth2.initTokenClient({client_id:GOOGLE_CLIENT_ID,scope:'https://www.googleapis.com/auth/drive.file',
+    callback:r=>r?.access_token?(store.set('mat10_gtoken',{t:r.access_token,exp:Date.now()+(r.expires_in||3600)*1000}),res(r.access_token)):rej(Error(r?.error_description||r?.error||'Google no autorizó')),
+    error_callback:e=>rej(Error(e?.type==='popup_closed'?'Cerraste la ventana de Google antes de autorizar':e?.type==='popup_failed_to_open'?'El navegador bloqueó la ventana de Google. Permití ventanas emergentes.':(e?.message||'Autorización cancelada')))});
+  gTokenClient.requestAccessToken({prompt:store.get('mat10_gok',false)?'':'consent'});
+})}
+async function gfetch(url,token,opt={}){const r=await fetch(url,{...opt,headers:{Authorization:'Bearer '+token,...(opt.headers||{})}});const j=await r.json().catch(()=>({}));
+  if(r.status===401){store.del('mat10_gtoken');throw Error('El permiso de Google venció. Tocá de nuevo el botón.')}
+  if(!r.ok)throw Error(j?.error?.message||('Google Drive respondió '+r.status));return j}
+async function driveFolder(token){
+  const saved=store.get('mat10_gfolder',null);
+  if(saved){try{const f=await gfetch(`https://www.googleapis.com/drive/v3/files/${saved}?fields=id,trashed`,token);if(!f.trashed)return saved}catch{}}
+  const q=encodeURIComponent(`name='${DRIVE_FOLDER}' and mimeType='application/vnd.google-apps.folder' and trashed=false`);
+  const l=await gfetch(`https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id)&spaces=drive`,token);
+  let id=l.files?.[0]?.id;
+  if(!id)id=(await gfetch('https://www.googleapis.com/drive/v3/files?fields=id',token,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:DRIVE_FOLDER,mimeType:'application/vnd.google-apps.folder'})})).id;
+  store.set('mat10_gfolder',id);return id;
+}
+async function reportToDrive(btn){
+  // Pedir el permiso de Google primero (debe ocurrir inmediatamente después del toque, si no Safari bloquea la ventana)
+  let token;try{iMsg('Autorizando Google Drive…');token=await googleToken();store.set('mat10_gok',true)}catch(e){return iMsg(esc(e.message),'err')}
+  await busy(btn,async()=>{try{
+    iMsg('Preparando el Excel…');const r=await buildReport();
+    iMsg('Subiendo a Google Drive…');const folder=await driveFolder(token);
+    const bnd='mat'+Math.random().toString(36).slice(2),XL='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+    const body=new Blob([`--${bnd}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n`+JSON.stringify({name:r.name,parents:[folder],mimeType:XL})+`\r\n--${bnd}\r\nContent-Type: ${XL}\r\n\r\n`,r.blob,`\r\n--${bnd}--`]);
+    const f=await gfetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,webViewLink',token,{method:'POST',headers:{'Content-Type':'multipart/related; boundary='+bnd},body});
+    iMsg(`✅ Guardado en Drive: <b>${esc(f.name)}</b><br>${esc(r.summary)}<br><a href="${esc(f.webViewLink)}" target="_blank" rel="noopener">Abrir en Google Drive</a>`,'info');
+  }catch(e){iMsg('No se guardó en Drive: '+esc(e.message),'err')}});
+}
+/* Generador de .xlsx sin librerías externas (formato Office Open XML) */
+function xlsx(sheets){
+  const X=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g,'');
+  const col=n=>{let s='';for(n++;n;n=Math.floor((n-1)/26))s=String.fromCharCode(65+(n-1)%26)+s;return s};
+  // estilos: 0 normal,1 título,2 subtítulo,3 encabezado,4 celda,5 celda 0.00,6 celda $,7 celda alternada,8 alt 0.00,9 alt $
+  const cell=(r,c,v,alt)=>{const ref=col(c)+r;if(v&&typeof v==='object'){const s=v.f===3?(alt?9:6):(alt?8:5);return `<c r="${ref}" s="${s}"><v>${Number.isFinite(v.n)?v.n:0}</v></c>`}
+    if(typeof v==='number'&&Number.isFinite(v))return `<c r="${ref}" s="${alt?7:4}"><v>${v}</v></c>`;return `<c r="${ref}" s="${alt?7:4}" t="inlineStr"><is><t xml:space="preserve">${X(v)}</t></is></c>`};
+  const sheetXml=sh=>{const n=sh.head.length,last=col(n-1),end=3+sh.rows.length;
+    let rows=`<row r="1" ht="26" customHeight="1"><c r="A1" s="1" t="inlineStr"><is><t>${X(sh.title)}</t></is></c></row><row r="2"><c r="A2" s="2" t="inlineStr"><is><t>${X(sh.sub)}</t></is></c></row>`;
+    rows+=`<row r="3" ht="22" customHeight="1">${sh.head.map((h,i)=>`<c r="${col(i)}3" s="3" t="inlineStr"><is><t>${X(h)}</t></is></c>`).join('')}</row>`;
+    sh.rows.forEach((r,i)=>{rows+=`<row r="${i+4}">${r.map((v,j)=>cell(i+4,j,v,i%2===1)).join('')}</row>`});
+    return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheetViews><sheetView workbookViewId="0" showGridLines="0"><pane ySplit="3" topLeftCell="A4" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><cols>${sh.w.map((w,i)=>`<col min="${i+1}" max="${i+1}" width="${w}" customWidth="1"/>`).join('')}</cols><sheetData>${rows}</sheetData>${sh.rows.length?`<autoFilter ref="A3:${last}${end}"/>`:''}<mergeCells count="2"><mergeCell ref="A1:${n>1?last:'B'}1"/><mergeCell ref="A2:${n>1?last:'B'}2"/></mergeCells><pageSetup orientation="landscape" fitToWidth="1" fitToHeight="0"/></worksheet>`};
+  const b='<border><left style="thin"><color rgb="FFDDDDDD"/></left><right style="thin"><color rgb="FFDDDDDD"/></right><top style="thin"><color rgb="FFDDDDDD"/></top><bottom style="thin"><color rgb="FFDDDDDD"/></bottom></border>';
+  const styles=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><numFmts count="1"><numFmt numFmtId="164" formatCode="&quot;$&quot; #,##0.00"/></numFmts><fonts count="4"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="15"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font><font><i/><sz val="10"/><color rgb="FF555555"/><name val="Calibri"/></font><font><b/><sz val="11"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font></fonts><fills count="6"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FFB72C37"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF7E1928"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFBF3F4"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFFF7D1"/></patternFill></fill></fills><borders count="2"><border/>${b}</borders><cellStyleXfs count="1"><xf/></cellStyleXfs><cellXfs count="10"><xf/><xf fontId="1" fillId="2" applyFont="1" applyFill="1"><alignment vertical="center"/></xf><xf fontId="2" fillId="5" applyFont="1" applyFill="1"/><xf fontId="3" fillId="3" borderId="1" applyFont="1" applyFill="1" applyBorder="1"><alignment vertical="center" wrapText="1"/></xf><xf borderId="1" applyBorder="1"><alignment vertical="top" wrapText="1"/></xf><xf numFmtId="2" borderId="1" applyNumberFormat="1" applyBorder="1"><alignment vertical="top"/></xf><xf numFmtId="164" borderId="1" applyNumberFormat="1" applyBorder="1"><alignment vertical="top"/></xf><xf fillId="4" borderId="1" applyFill="1" applyBorder="1"><alignment vertical="top" wrapText="1"/></xf><xf numFmtId="2" fillId="4" borderId="1" applyNumberFormat="1" applyFill="1" applyBorder="1"><alignment vertical="top"/></xf><xf numFmtId="164" fillId="4" borderId="1" applyNumberFormat="1" applyFill="1" applyBorder="1"><alignment vertical="top"/></xf></cellXfs></styleSheet>`;
+  const files=[['[Content_Types].xml',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>${sheets.map((_,i)=>`<Override PartName="/xl/worksheets/sheet${i+1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join('')}</Types>`],
+    ['_rels/.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>'],
+    ['xl/workbook.xml',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>${sheets.map((s,i)=>`<sheet name="${X(s.name.slice(0,31))}" sheetId="${i+1}" r:id="rId${i+1}"/>`).join('')}</sheets><definedNames>${sheets.map((s,i)=>s.rows.length?`<definedName name="_xlnm._FilterDatabase" localSheetId="${i}" hidden="1">'${X(s.name)}'!$A$3:$${col(s.head.length-1)}$${3+s.rows.length}</definedName>`:'').join('')}</definedNames></workbook>`],
+    ['xl/_rels/workbook.xml.rels',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${sheets.map((_,i)=>`<Relationship Id="rId${i+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i+1}.xml"/>`).join('')}<Relationship Id="rId${sheets.length+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`],
+    ['xl/styles.xml',styles],...sheets.map((s,i)=>[`xl/worksheets/sheet${i+1}.xml`,sheetXml(s)])];
+  return zip(files,'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+}
+function zip(entries,type){const enc=new TextEncoder(),out=[],central=[];let off=0;
+  const T=zip.t||(zip.t=Array.from({length:256},(_,n)=>{for(let i=0;i<8;i++)n=n&1?0xedb88320^(n>>>1):n>>>1;return n>>>0}));
+  const crc=b=>{let c=~0;for(const x of b)c=T[(c^x)&255]^(c>>>8);return(~c)>>>0};
+  for(const [name,content] of entries){const nb=enc.encode(name),d=enc.encode(content),c=crc(d);
+    const l=new DataView(new ArrayBuffer(30));l.setUint32(0,0x04034b50,true);l.setUint16(4,20,true);l.setUint16(6,0x0800,true);l.setUint32(14,c,true);l.setUint32(18,d.length,true);l.setUint32(22,d.length,true);l.setUint16(26,nb.length,true);
+    out.push(l.buffer,nb,d);
+    const h=new DataView(new ArrayBuffer(46));h.setUint32(0,0x02014b50,true);h.setUint16(4,20,true);h.setUint16(6,20,true);h.setUint16(8,0x0800,true);h.setUint32(16,c,true);h.setUint32(20,d.length,true);h.setUint32(24,d.length,true);h.setUint16(28,nb.length,true);h.setUint32(42,off,true);
+    central.push(h.buffer,nb);off+=30+nb.length+d.length}
+  const cs=central.reduce((s,b)=>s+(b.byteLength),0),e=new DataView(new ArrayBuffer(22));e.setUint32(0,0x06054b50,true);e.setUint16(8,entries.length,true);e.setUint16(10,entries.length,true);e.setUint32(12,cs,true);e.setUint32(16,off,true);
+  return new Blob([...out,...central,e.buffer],{type});
+}
+
+/* ===================== INSTALACIÓN (Android / iPhone) ===================== */
+let installEvt=null;
+const isStandalone=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+const isIOS=()=>/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+const isAndroid=()=>/android/i.test(navigator.userAgent);
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installEvt=e;if(['login','mas','ayuda'].includes(S.view))render()});
+window.addEventListener('appinstalled',()=>{installEvt=null;toast('App instalada. Abrila desde el ícono de Facilitas.','good');render()});
+function installBox(){if(isStandalone())return '';
+  if(installEvt)return `<button class="btn yel block" onclick="doInstall()">📲 Instalar la app en este celular</button>`;
+  if(isIOS())return `<div class="info" style="margin-top:12px">📲 Para instalarla: en <b>Safari</b> tocá <b>Compartir</b> → <b>Agregar a pantalla de inicio</b>.</div>`;
+  if(isAndroid())return `<div class="info" style="margin-top:12px">📲 Para instalarla: en <b>Chrome</b> tocá los <b>tres puntos ⋮</b> → <b>Instalar aplicación</b> (o "Agregar a pantalla principal").</div>`;
+  return ''}
+async function doInstall(){if(!installEvt)return;installEvt.prompt();const r=await installEvt.userChoice.catch(()=>null);installEvt=null;if(r?.outcome!=='accepted')toast('Podés instalarla más tarde desde Más','');render()}
+
+/* ===================== ARRANQUE ===================== */
+async function start(){
+  if(!session){go('login');return}
+  try{if(session.expires_at*1000-Date.now()<90000&&!(await refreshToken()))return go('login');
+    await loadMe();
+    if(!S.me){toast('No se encontró tu perfil. Avisale al supervisor.','bad');return go('login')}
+    const meta=store.get('mat10_pending_meta',null);
+    if(meta&&!S.me.first_name){try{await api('/rest/v1/profiles?id=eq.'+myId(),{method:'PATCH',body:meta});await loadMe()}catch{}}
+    if(S.me.first_name)store.del('mat10_pending_meta');
+    if(S.me.approved!==true)return go('pending');
+    S.view=['login','signup','pending','recovery'].includes(S.view)?'inicio':S.view;render();await refresh();
+  }catch(e){if(!session)return go('login');$('app').innerHTML=`<div class="card"><h3>Sin conexión</h3><p class="muted">${esc(e.message)}</p><button class="btn block" onclick="start()">Reintentar</button></div>`}
+}
+(function init(){
+  const h=new URLSearchParams(location.hash.slice(1));
+  if(h.get('access_token')){saveSession({access_token:h.get('access_token'),refresh_token:h.get('refresh_token'),expires_in:Number(h.get('expires_in')||3600),user:null});
+    history.replaceState(null,'',location.pathname);
+    raw('/auth/v1/user').then(u=>{session.user=u;saveSession(session);if(h.get('type')==='recovery'){S.view='recovery';render()}else start()}).catch(()=>{toast('El enlace venció. Pedí uno nuevo.','bad');logout()});return}
+  if(h.get('error_description')){history.replaceState(null,'',location.pathname);toast(h.get('error_description'),'bad')}
+  start();
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&session&&S.me?.approved)refresh()});
+  setInterval(()=>{if(document.visibilityState==='visible'&&session&&S.me?.approved&&['inicio','tareas'].includes(S.view))refresh()},120000);
+  if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
 })();
-</script></body></html>
+</script>
+</body>
+</html>
