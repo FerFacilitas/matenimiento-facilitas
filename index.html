@@ -86,6 +86,16 @@ details summary{cursor:pointer;color:var(--red);font-weight:600;font-size:14px;m
 table.mini{width:100%;border-collapse:collapse;font-size:14px}
 table.mini td,table.mini th{padding:7px 4px;border-bottom:1px solid var(--line);text-align:left}
 table.mini th{font-size:12px;color:var(--mut);text-transform:uppercase}
+.thumbs{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.thumbs a,.thumbs div{position:relative;display:block;width:76px;height:76px;border-radius:10px;overflow:hidden;background:#eee}
+.thumbs img{width:100%;height:100%;object-fit:cover;display:block}
+.thumbs button{position:absolute;top:3px;right:3px;border:0;background:rgba(0,0,0,.6);color:#fff;border-radius:50%;width:24px;height:24px;font-size:15px;line-height:1}
+.chk{display:flex;align-items:center;gap:10px;font-weight:400;margin:0;padding:10px 4px;border-bottom:1px solid var(--line)}
+.chk input{width:22px;height:22px;flex:none}
+.helpers{font-size:13px;margin-top:6px;color:#123d6b}
+.helpers .x{border:0;background:#e6effa;color:#123d6b;border-radius:999px;padding:1px 7px;margin-left:2px;font-size:12px}
+.b-em{background:#d92d20;color:#fff}
+.btn.em{background:#d92d20}
 .spin{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.5);border-top-color:#fff;border-radius:50%;animation:s .7s linear infinite}
 @keyframes s{to{transform:rotate(360deg)}}
 </style>
@@ -107,12 +117,15 @@ table.mini th{font-size:12px;color:var(--mut);text-transform:uppercase}
 <script>
 'use strict';
 /* ===================== CONFIGURACIÓN ===================== */
-const VERSION='V10.1';
+const VERSION='V11';
 const SB_URL='https://kuvzvpzqsjwpiekrxnxe.supabase.co';
 const SB_KEY='sb_publishable_tEVUpS6_hvpKjZonjw20_g_XDEMw12_'; // clave pública (no es de administrador)
 const GOOGLE_CLIENT_ID='586047120992-v6evqrq8q6n54vgfj3pcg1l3ac73c4o6.apps.googleusercontent.com';
 const DRIVE_FOLDER='Matenimiento Facilitas - Informes';
 const TZ='America/Argentina/Buenos_Aires';
+const VAPID_PUBLIC='BK6yXdh8j7b12KrjgLvOh43qe1SlPIkzYY0uvkkZaTKOlVExDV7vK_WtVNYWrTmVL2YCEoS-z_7JlJuOek1WLRI'; // clave pública de avisos (la privada está solo en Supabase)
+const PHOTO_BUCKET='fotos-trabajos';
+const MAX_PHOTOS=3;
 const MACHINES=[["AMC-01","Amasadora chica N1","Producción","Inicio de bollería"],["AMC-02","Amasadora chica N2","Producción","Inicio de bollería"],["DIV-01","Divisora","Producción","2do proceso bollería"],["REB-01","Rebolladora","Producción","3er proceso bollería"],["DES-01","Descansadora","Producción","4to proceso bollería"],["AR-01","Armadora","Producción","5to proceso bollería"],["SOB-01","Sobadora","Producción","Sin ubicación"],["TRI-01","Trinchadora","Producción","Sin ubicación"],["MPI-01","Máquina de pizzas","Producción","Bollería"],["AMG-01","Amasadora grande N1","Producción","Inicio pan de molde"],["AMG-02","Amasadora grande N2","Producción","Inicio pan de molde"],["ELE-01","Elevadora","Producción","2do proceso pan de molde"],["DIV-02","Divisora","Producción","3er proceso pan de molde"],["REB-02","Rebolladora","Producción","4to proceso pan de molde"],["DES-02","Descansadora","Producción","5to proceso pan de molde"],["AR-02","Armadora","Producción","6to proceso pan de molde"],["FER-01","Fermentadora 1","Producción","Cámara de fermentación"],["FER-02","Fermentadora 2","Producción","Cámara de fermentación"],["FER-03","Fermentadora 3","Producción","Cámara de fermentación"],["FER-04","Fermentadora 4","Producción","Cámara de fermentación"],["FER-05","Fermentadora 5","Producción","Cámara de fermentación"],["HOR-01","Horno rotativo 1","Producción","Hornos"],["HOR-02","Horno rotativo 2","Producción","Hornos"],["HOR-03","Horno rotativo 3","Producción","Hornos"],["HOR-04","Horno rotativo 4","Producción","Hornos"],["HOR-05","Horno rotativo 5","Producción","Hornos"],["HOR-06","Horno rotativo 6","Producción","Hornos"],["HOR-07","Horno rotativo 7","Producción","Hornos"],["HOR-08","Horno rotativo 8","Producción","Hornos"],["HOR-09","Horno rotativo 9","Producción","Hornos"],["HOR-10","Horno rotativo 10","Producción","Hornos"],["HOR-11","Horno rotativo 11","Producción","Hornos"],["HEL-04","Heladera","Producción","Producción"],["ESC-01","Escamadora","Producción","Producción"],["ROC-01","Rociadora 1","Envasado","Sobre envasadora ADK bollería"],["ROC-02","Rociadora 2","Envasado","Inicio línea ADK 400"],["SUN-01","Sunchadora 1","Envasado","Fin de línea"],["SUN-02","Sunchadora 2","Envasado","Fin de línea"],["SUN-03","Sunchadora 3","Envasado","Back Up"],["ADK-01","Flow pack ADK bollería","Envasado","Línea de bollería"],["FEC-01","Fechadora 1","Envasado","Panes"],["FEC-02","Fechadora 2","Envasado","Panes"],["SOP-01","Sopladora 1","Envasado","Fin de línea manual"],["CTR-01","Cinta transportadora 1","Envasado","Fin de línea"],["CTR-02","Cinta transportadora 2","Envasado","Fin de línea"],["SOP-02","Sopladora 2","Envasado","Fin de línea manual"],["SEL-01","Selladora","Envasado","Bollería"],["ADK-02","ADK 400 pan de molde","Envasado","Línea pan de molde"],["ARM-01","Armadora de empanadas","CHE",""],["FRE-01","Freidora","CHE",""],["HOR-12","Horno rotativo","CHE",""],["ABA-11","Abatidor","CHE",""],["MPR-01","Multiprocesadora","CHE",""],["FIA-01","Fiambrera automática 1","CHE",""],["FIA-02","Fiambrera automática 2","CHE",""],["FIA-03","Fiambrera 3","CHE",""],["ADK-03","Flowpack ADK","CHE",""],["TER-01","Termoselladora","CHE",""],["MAP-01","Envasadora al vacío","CHE",""],["COM-01","Compresor grande","Planta","Depósito de residuos"],["COM-02","Compresor chico","Planta",""],["COM-03","Compresor logística","Logística","Depósito de PT"],["CAM-01","Cámara de frío","CHE","Depósito de PT"],["HEL-01","Heladera 1","CHE",""],["HEL-02","Heladera 2","CHE",""],["HEL-03","Heladera 3","CHE",""],["FRE-02","Freezer","CHE",""],["CAM-02","Cámara de frío PT","Logística","Depósito de PT"],["COR-01","Cortadora","Tapas",""],["AMT-01","Amasadora 1","Tapas","Inicio línea Tapas"],["AMT-02","Amasadora 2","Tapas","Inicio línea Tapas"],["AMT-03","Amasadora 3","Tapas","Inicio línea Tapas"],["LAM-01","Laminadora","Tapas",""],["EMP-01","Empastadora","Tapas",""],["ADK-04","Envasadora ADK Tapas Emp","Tapas",""],["STC-01","Envasadora STC Pascu y Tarta","Tapas",""],["TQG-01","Tanque principal 1.000 lts","Planta","Techo"],["CST-01","Cisterna de producción 3.000 lts","Planta","Depósito"],["TQC-01","Tanque 1 CHE 1.000 lts","Planta","CHE"],["TQC-02","Tanque 2 CHE 1.000 lts","Planta","Techo"],["EFR-01","Enfriador de agua 1.000 lts","Planta","Techo"],["TQ-01","Tanque cilíndrico 1 500 lts","Planta","Techo"],["TQ-02","Tanque cilíndrico 2 500 lts","Planta","Mantenimiento"],["CIS-01","Cisterna 1.000 lts","Planta","Mantenimiento"],["TQG-02","Tanque 1.000 lts","Planta","Mantenimiento"]].map(([id,name,sector,location])=>({id,name,sector,location}));
 const SPECIALTIES=['Mantenimiento','Herrería','Mantenimiento edilicio','Supervisión'];
 /* Criticidad: mismo criterio que la V9.6 y que la función save_machine_criticality de Supabase */
@@ -172,12 +185,16 @@ async function api(path,opt={}){
 const rpc=(fn,body)=>api('/rest/v1/rpc/'+fn,{method:'POST',body});
 
 /* ===================== ESTADO ===================== */
-const S={crit:{},critMissing:false,critF:'todas',me:null,profiles:[],tasks:[],parts:[],inv:[],moves:[],view:'inicio',taskFilter:'mias',taskStatus:'activas',invQ:'',invLow:false,machQ:'',newsFilter:'todo',loaded:false};
+const S={helpers:[],reqs:[],v11Missing:false,pushOn:null,reqF:'abiertos',crit:{},critMissing:false,critF:'todas',me:null,profiles:[],tasks:[],parts:[],inv:[],moves:[],view:'inicio',taskFilter:'mias',taskStatus:'activas',invQ:'',invLow:false,machQ:'',newsFilter:'todo',loaded:false};
 const role=()=>S.me?.role||'operario';
 const isBoss=()=>['jefe','supervisor'].includes(role());
 const isSup=()=>role()==='supervisor';
 const nameOf=id=>{const p=S.profiles.find(x=>x.id===id);return p?([p.first_name,p.last_name].filter(Boolean).join(' ')||'Sin nombre'):'—'};
 const myId=()=>session?.user?.id;
+const helpersOf=id=>S.helpers.filter(h=>h.task_id===id).map(h=>h.user_id);
+const isHelper=t=>helpersOf(t.id).includes(myId());
+const isMine=t=>t.assigned_to===myId()||isHelper(t);
+const REQST={pendiente:['Pendiente','b-pend'],pedido:['Pedido','b-proc'],recibido:['Recibido','b-ok'],rechazado:['Rechazado','b-urg']};
 
 async function loadMe(){const r=await api('/rest/v1/profiles?id=eq.'+myId()+'&select=*');S.me=r[0]||null;return S.me}
 async function refresh(manual){
@@ -193,9 +210,11 @@ async function refresh(manual){
     Object.assign(S,{profiles,tasks,parts,inv,moves,loaded:true});
     try{const cr=await api('/rest/v1/machine_criticality?select=*');S.crit=Object.fromEntries(cr.map(r=>[r.machine_code,r]));S.critMissing=false}
     catch(e){S.critMissing=true}
+    try{const [h,r]=await Promise.all([api('/rest/v1/work_task_helpers?select=*&order=created_at.asc&limit=3000'),api('/rest/v1/part_requests?select=*&order=created_at.desc&limit=300')]);S.helpers=h;S.reqs=r;S.v11Missing=false}
+    catch(e){S.v11Missing=true}
     S.me=profiles.find(p=>p.id===myId())||S.me;
     if(manual)toast('Datos actualizados','good');
-    if(['inicio','tareas','maquinas','usuarios'].includes(S.view)||manual)render();
+    if(['inicio','tareas','maquinas','usuarios','pedidos'].includes(S.view)||manual)render();
   }catch(e){toast('No se pudo actualizar: '+e.message,'bad')}
   finally{b.textContent='↻ Actualizar'}
 }
@@ -206,8 +225,8 @@ function render(){
   const logged=!!(session&&S.me&&S.me.approved===true);
   $('nav').classList.toggle('hidden',!logged);$('syncBtn').classList.toggle('hidden',!logged);
   $('who').textContent=logged?(nameOf(myId())+' · '+({supervisor:'Supervisor',jefe:'Jefe de mantenimiento',operario:'Operario'}[role()]||role())):'Mundo Facilitas';
-  document.querySelectorAll('nav.bottom button').forEach(b=>b.classList.toggle('on',b.dataset.v===S.view||(b.dataset.v==='mas'&&['perfil','asignar','usuarios','informes','ayuda','maquinas','maquina'].includes(S.view))));
-  const V={login:vLogin,signup:vSignup,pending:vPending,recovery:vRecovery,inicio:vInicio,tareas:vTareas,registrar:vRegistrar,repuestos:vRepuestos,mas:vMas,perfil:vPerfil,asignar:vAsignar,usuarios:vUsuarios,informes:vInformes,ayuda:vAyuda,maquinas:vMaquinas,maquina:vMaquina};
+  document.querySelectorAll('nav.bottom button').forEach(b=>b.classList.toggle('on',b.dataset.v===S.view||(b.dataset.v==='mas'&&['perfil','asignar','usuarios','informes','ayuda','maquinas','maquina'].includes(S.view))||(b.dataset.v==='tareas'&&S.view==='emergencia')||(b.dataset.v==='repuestos'&&S.view==='pedidos')));
+  const V={login:vLogin,signup:vSignup,pending:vPending,recovery:vRecovery,inicio:vInicio,tareas:vTareas,registrar:vRegistrar,repuestos:vRepuestos,mas:vMas,perfil:vPerfil,asignar:vAsignar,usuarios:vUsuarios,informes:vInformes,ayuda:vAyuda,maquinas:vMaquinas,maquina:vMaquina,emergencia:vEmergencia,pedidos:vPedidos};
   if(!logged&&!['login','signup','pending','recovery','ayuda'].includes(S.view))S.view='login';
   $('app').innerHTML=(V[S.view]||vInicio)();
   afterRender[S.view]?.();
@@ -267,22 +286,27 @@ async function savePendingProfile(btn){const first_name=$('pFirst').value.trim()
 function vRecovery(){return `<div class="login-wrap"><div class="card"><h3>Nueva contraseña</h3><label>Escribí tu nueva contraseña (mínimo 8)</label><input id="nPass" type="password" autocomplete="new-password"><button class="btn block" onclick="doRecovery(this)">Guardar contraseña</button></div></div>`}
 async function doRecovery(btn){const p=$('nPass').value;if(p.length<8)return toast('Mínimo 8 caracteres','bad');
   await busy(btn,async()=>{try{await api('/auth/v1/user',{method:'PUT',body:{password:p}});toast('Contraseña cambiada','good');await start()}catch(e){toast('El enlace venció. Pedí uno nuevo. ('+e.message+')','bad')}})}
-function logout(){saveSession(null);S.me=null;S.loaded=false;go('login')}
+async function logout(){await unlinkPush();saveSession(null);S.pushOn=null;S.me=null;S.loaded=false;go('login')}
 
 /* ===================== INICIO ===================== */
 function vInicio(){
   if(!S.loaded)return '<p class="muted">Cargando…</p>';
-  const mine=S.tasks.filter(t=>t.assigned_to===myId());
+  const mine=S.tasks.filter(isMine);
   const pend=mine.filter(t=>t.status==='pendiente').length,proc=mine.filter(t=>t.status==='en_proceso').length;
   const urg=S.tasks.filter(t=>t.status!=='terminado'&&t.priority==='urgente').length;
   const low=S.inv.filter(i=>Number(i.stock_quantity)<=Number(i.minimum_stock)).length;
+  const reqOpen=S.reqs.filter(r=>r.status==='pendiente').length;
   let news=S.parts;if(S.newsFilter==='pend')news=news.filter(p=>p.status!=='terminado'||p.handover_notes);
   return `<h2>Hola, ${esc(S.me.first_name||'')} 👋</h2>
+${S.v11Missing&&isSup()?`<div class="err" style="margin-bottom:12px">Falta instalar el SQL de la V11 en Supabase (compañeros, emergencias, pedidos y avisos).</div>`:''}
+${pushBanner()}
 <div class="stats">
  <div class="stat red" onclick="go('tareas',{taskFilter:'mias',taskStatus:'activas'})"><b>${pend}</b><span>Mis tareas pendientes</span></div>
  <div class="stat" onclick="go('tareas',{taskFilter:'mias',taskStatus:'activas'})"><b>${proc}</b><span>Mis tareas en proceso</span></div>
  <div class="stat ${urg?'yel':''}" onclick="go('tareas',{taskFilter:'todas',taskStatus:'activas'})"><b>${urg}</b><span>Urgentes abiertas (equipo)</span></div>
  <div class="stat ${low?'yel':''}" onclick="go('repuestos',{invLow:true})"><b>${low}</b><span>Repuestos bajo mínimo</span></div>
+${isBoss()?`<div class="stat ${reqOpen?'yel':''}" onclick="go('pedidos',{reqF:'abiertos'})"><b>${reqOpen}</b><span>Pedidos de repuestos/insumos sin pedir</span></div>`:''}
+<div class="stat" style="background:#fde4e1;border-color:#f5b5ad" onclick="go('emergencia')"><b style="color:#b42318">🚨</b><span><b style="font-size:13px;display:inline;color:#b42318">Cargar emergencia</b></span></div>
 </div>
 ${(()=>{const hi=MACHINES.filter(m=>critOf(m.id)?.level==='ALTA');const ev=MACHINES.filter(m=>critOf(m.id)).length;
   return `<div class="card accent" style="cursor:pointer" onclick="go('maquinas',{critF:'ALTA'})"><div class="line"><div><div class="title">🏭 Máquinas de criticidad ALTA: ${hi.length}</div><div class="muted small">${ev} de ${MACHINES.length} evaluadas · tocá para ver</div></div><span class="muted">›</span></div></div>`})()}
@@ -294,31 +318,62 @@ function partCard(p){return `<div class="card ${p.status==='pendiente'?'alta':p.
 <div class="line"><div><div class="title">${esc(p.machine_label||'Cierre de turno')}</div><div class="muted small">${esc(nameOf(p.user_id))} · ${fmtDT(p.created_at)}</div></div>${badge(STATUS,p.status)}</div>
 ${p.status!=='cierre'||p.description!=='Cierre de turno'?`<p style="margin:8px 0 0;white-space:pre-wrap">${esc(p.description)}</p>`:''}
 ${p.spare_parts?`<p class="muted small" style="margin:6px 0 0">🔩 ${esc(p.spare_parts)}</p>`:''}
+${p.photo_urls?.length?`<div class="thumbs">${p.photo_urls.map(u=>`<a href="${esc(u)}" target="_blank" rel="noopener"><img src="${esc(u)}" loading="lazy" alt="Foto"></a>`).join('')}</div>`:''}
 ${p.handover_notes?`<div class="note">➡️ Para el siguiente turno: ${esc(p.handover_notes)}</div>`:''}</div>`}
 
 /* ===================== TAREAS ===================== */
 function vTareas(){
-  let list=S.tasks;if(S.taskFilter==='mias')list=list.filter(t=>t.assigned_to===myId());
+  let list=S.tasks;if(S.taskFilter==='mias')list=list.filter(isMine);
   if(S.taskStatus==='activas')list=list.filter(t=>t.status!=='terminado');else list=list.filter(t=>t.status==='terminado');
   const order={urgente:0,alta:1,normal:2};
   if(S.taskStatus==='activas')list=[...list].sort((a,b)=>(a.status==='en_proceso'?-1:0)-(b.status==='en_proceso'?-1:0)||order[a.priority]-order[b.priority]||String(a.due_date||'9').localeCompare(String(b.due_date||'9')));
   return `<h2>Tareas</h2>
 <div class="seg"><button class="${S.taskFilter==='mias'?'on':''}" onclick="S.taskFilter='mias';render()">Mis tareas</button><button class="${S.taskFilter==='todas'?'on':''}" onclick="S.taskFilter='todas';render()">Todo el equipo</button></div>
 <div class="seg"><button class="${S.taskStatus==='activas'?'on':''}" onclick="S.taskStatus='activas';render()">Pendientes y en proceso</button><button class="${S.taskStatus==='hechas'?'on':''}" onclick="S.taskStatus='hechas';render()">Terminadas</button></div>
-${isBoss()?`<button class="btn sec block" style="margin:0 0 12px" onclick="go('asignar')">＋ Asignar nueva tarea</button>`:''}
+<div class="row" style="margin:0 0 12px">${isBoss()?`<button class="btn sec" onclick="go('asignar')">＋ Asignar tarea</button>`:''}<button class="btn em" onclick="go('emergencia')">🚨 Cargar emergencia</button></div>
 ${list.slice(0,150).map(taskCard).join('')||'<div class="card muted">No hay tareas en esta lista.</div>'}`;
 }
 function taskCard(t){
-  const own=t.assigned_to===myId(),paused=!!t.paused_at,overdue=t.due_date&&t.status!=='terminado'&&t.due_date<today();
+  const own=t.assigned_to===myId(),helper=isHelper(t),paused=!!t.paused_at,overdue=t.due_date&&t.status!=='terminado'&&t.due_date<today();
+  const canHelp=own||isBoss(),hs=helpersOf(t.id);
   let btns='';
   if(own){if(t.status==='pendiente')btns=`<button class="btn sm" onclick="taskAct(this,'${t.id}','iniciar')">▶ Iniciar</button>`;
     else if(t.status==='en_proceso')btns=paused?`<button class="btn sm" onclick="taskAct(this,'${t.id}','reanudar')">▶ Reanudar</button>`:`<button class="btn ghost sm" onclick="taskAct(this,'${t.id}','pausar')">⏸ Pausar</button><button class="btn ok sm" onclick="taskAct(this,'${t.id}','finalizar')">✓ Finalizar</button>`;
     if(t.status!=='pendiente')btns+=`<button class="btn sec sm" onclick="startDraftFromTask('${t.id}')">📝 Registrar trabajo</button>`}
+  else if(helper&&t.status!=='pendiente')btns=`<button class="btn sec sm" onclick="startDraftFromTask('${t.id}')">📝 Registrar trabajo</button>`;
+  const free=S.profiles.filter(p=>p.approved&&p.first_name&&p.id!==t.assigned_to&&!hs.includes(p.id));
+  const helpBox=canHelp&&!S.v11Missing&&free.length?`<details style="margin-top:8px"><summary>👥 Sumar compañero que ayudó</summary><div class="row" style="margin-top:8px"><select id="hp_${t.id}"><option value="">Elegí compañero…</option>${free.map(p=>`<option value="${p.id}">${esc(p.first_name+' '+(p.last_name||''))}</option>`).join('')}</select><button class="btn sm" style="flex:0 0 auto" onclick="addHelper(this,'${t.id}')">Sumar</button></div></details>`:'';
   return `<div class="card ${t.priority==='urgente'?'urgent':t.priority==='alta'?'alta':'accent'}">
-<div class="line"><div><div class="title">${esc(t.description)}</div><div class="muted small">${esc(t.machine_label||'Sin equipo')} ${critBadge((t.machine_label||'').split(' · ')[0],true)}</div></div><div style="text-align:right">${badge(STATUS,t.status)}<br>${t.priority!=='normal'?badge(PRIO,t.priority):''}</div></div>
-<div class="muted small" style="margin-top:6px">👤 ${esc(nameOf(t.assigned_to))} · asignó ${esc(nameOf(t.assigned_by))}${t.due_date?` · <span style="${overdue?'color:#b42318;font-weight:700':''}">límite ${fmtD(t.due_date)}${overdue?' (vencida)':''}</span>`:''}</div>
+<div class="line"><div>${t.is_emergency?'<span class="badge b-em">🚨 EMERGENCIA</span> ':''}<div class="title">${esc(t.description)}</div><div class="muted small">${esc(t.machine_label||'Sin equipo')} ${critBadge((t.machine_label||'').split(' · ')[0],true)}</div></div><div style="text-align:right">${badge(STATUS,t.status)}<br>${t.priority!=='normal'?badge(PRIO,t.priority):''}</div></div>
+<div class="muted small" style="margin-top:6px">👤 ${esc(nameOf(t.assigned_to))}${t.is_emergency?' · cargada por el operario':' · asignó '+esc(nameOf(t.assigned_by))}${t.due_date?` · <span style="${overdue?'color:#b42318;font-weight:700':''}">límite ${fmtD(t.due_date)}${overdue?' (vencida)':''}</span>`:''}</div>
 ${t.started_at?`<div class="muted small">⏱ ${hhmm(taskSeconds(t))} efectivos${paused?' · <b>en pausa</b>':''}${t.finished_at?' · terminó '+fmtDT(t.finished_at):''}</div>`:''}
-${btns?`<div class="actions">${btns}</div>`:''}</div>`}
+${hs.length?`<div class="helpers">👥 Con: ${hs.map(u=>`${esc(nameOf(u))}${canHelp?`<button class="x" onclick="removeHelper(this,'${t.id}','${u}')" aria-label="Quitar">×</button>`:''}`).join(', ')}${helper?' <b>(vos ayudás en esta)</b>':''}</div>`:''}
+${btns?`<div class="actions">${btns}</div>`:''}${helpBox}</div>`}
+async function addHelper(btn,id){const u=$('hp_'+id)?.value;if(!u)return toast('Elegí el compañero','bad');
+  await busy(btn,async()=>{try{await rpc('add_task_helper',{p_task_id:id,p_user_id:u});S.helpers.push({task_id:id,user_id:u,added_by:myId()});toast(nameOf(u)+' sumado a la tarea','good');render()}catch(e){toast(e.message,'bad')}})}
+async function removeHelper(btn,id,u){if(!confirm('¿Quitar a '+nameOf(u)+' de esta tarea?'))return;
+  await busy(btn,async()=>{try{await rpc('remove_task_helper',{p_task_id:id,p_user_id:u});S.helpers=S.helpers.filter(h=>!(h.task_id===id&&h.user_id===u));render()}catch(e){toast(e.message,'bad')}})}
+
+/* ===================== EMERGENCIAS ===================== */
+let E={machine:'',other:'',desc:'',helpers:[],finished:false};
+function vEmergencia(){const ops=S.profiles.filter(p=>p.approved&&p.first_name&&p.id!==myId());
+  return `<button class="btn ghost sm" onclick="go('tareas')">← Tareas</button><h2>🚨 Cargar emergencia</h2>
+<div class="card urgent"><p class="muted small" style="margin-top:0">Para fallas que hubo que atender sin que nadie te asignara la tarea. Al guardar le llega un aviso al supervisor.</p>
+<label>Equipo o instalación</label><select onchange="E.machine=this.value;$('eOtherBox').classList.toggle('hidden',this.value!=='__other')">${machineOptions(E.machine)}</select>
+<div id="eOtherBox" class="${E.machine==='__other'?'':'hidden'}"><label>¿Cuál?</label><input value="${esc(E.other)}" oninput="E.other=this.value" placeholder="Ej: Tablero eléctrico, portón…"></div>
+<label>Qué pasó y qué se hizo</label><textarea oninput="E.desc=this.value" placeholder="Ej: Se cortó la correa de la amasadora, se cambió y quedó funcionando">${esc(E.desc)}</textarea>
+<label>¿Quién te ayudó? <span class="muted small" style="font-weight:400">(opcional, podés marcar varios)</span></label>
+<div>${ops.map(p=>`<label class="chk"><input type="checkbox" ${E.helpers.includes(p.id)?'checked':''} onchange="E.helpers=this.checked?[...E.helpers,'${p.id}']:E.helpers.filter(x=>x!=='${p.id}')">${esc(p.first_name+' '+(p.last_name||''))} <span class="muted small">${esc(p.specialty||'')}</span></label>`).join('')||'<p class="muted small">No hay otros usuarios.</p>'}</div>
+<label>Estado</label><div class="seg" style="margin:0"><button class="${!E.finished?'on':''}" onclick="E.finished=false;render()">La estoy atendiendo</button><button class="${E.finished?'on':''}" onclick="E.finished=true;render()">Ya está resuelta</button></div>
+<p class="muted small">${E.finished?'Queda como terminada. Después podés registrar el trabajo con fotos y repuestos.':'Arranca el reloj. Cuando termines, tocá Finalizar en la tarea.'}</p>
+<button class="btn em block" onclick="saveEmergency(this)">🚨 Guardar emergencia y avisar</button></div>`}
+async function saveEmergency(btn){const label=E.machine==='__other'?E.other.trim():E.machine,desc=E.desc.trim();
+  if(!label)return toast('Elegí el equipo','bad');if(!desc)return toast('Contá qué pasó','bad');
+  await busy(btn,async()=>{try{const id=await rpc('create_emergency_task',{p_machine_label:label,p_description:desc,p_helpers:E.helpers,p_finished:E.finished});
+    const fin=E.finished;E={machine:'',other:'',desc:'',helpers:[],finished:false};toast('Emergencia guardada. Se avisó al supervisor.','good');await refresh();
+    if(fin&&id&&confirm('¿Registrar ahora el trabajo con fotos y repuestos usados?'))return startDraftFromTask(id);
+    go('tareas',{taskFilter:'mias',taskStatus:fin?'hechas':'activas'})}
+  catch(e){toast(/create_emergency_task|schema cache/i.test(e.message)?'Falta instalar el SQL de la V11 en Supabase.':e.message,'bad')}})}
 async function taskAct(btn,id,action){
   const labels={iniciar:'Iniciar',pausar:'Pausar',reanudar:'Reanudar',finalizar:'Finalizar'};
   if(action==='finalizar'&&!confirm('¿Finalizar este trabajo? Después podés registrar el detalle y los repuestos usados.'))return;
@@ -329,8 +384,8 @@ async function taskAct(btn,id,action){
 }
 
 /* ===================== REGISTRAR TRABAJO ===================== */
-const emptyDraft=()=>({machine:'',other:'',taskId:'',desc:'',status:'terminado',parts:[],next:''});
-let D=store.get('mat10_draft',null)||emptyDraft();
+const emptyDraft=()=>({machine:'',other:'',taskId:'',desc:'',status:'terminado',parts:[],next:'',photos:[]});
+let D={...emptyDraft(),...(store.get('mat10_draft',null)||{})};
 const saveDraft=()=>store.set('mat10_draft',D);
 function startDraftFromTask(id){const t=S.tasks.find(x=>x.id===id);if(!t)return;
   const m=MACHINES.find(m=>machineLabel(m)===t.machine_label);
@@ -339,7 +394,7 @@ function machineOptions(sel,withOther=true){const groups={};MACHINES.forEach(m=>
   return `<option value="">Elegí equipo…</option>`+Object.entries(groups).map(([g,ms])=>`<optgroup label="${esc(g)}">${ms.map(m=>`<option value="${esc(machineLabel(m))}" ${sel===machineLabel(m)?'selected':''}>${esc(machineLabel(m))}</option>`).join('')}</optgroup>`).join('')+(withOther?`<option value="__other" ${sel==='__other'?'selected':''}>Otro equipo / instalación / edilicio</option>`:'')}
 function partOptions(sel){return `<option value="">Elegí repuesto…</option>`+S.inv.map(i=>`<option value="${i.id}" ${sel===i.id?'selected':''} ${Number(i.stock_quantity)<=0?'disabled':''}>${esc(i.part_code+' · '+i.part_name)} (hay ${i.stock_quantity})</option>`).join('')}
 function vRegistrar(){
-  const myTasks=S.tasks.filter(t=>t.assigned_to===myId()&&(t.status!=='terminado'||t.id===D.taskId)).slice(0,40);
+  const myTasks=S.tasks.filter(t=>isMine(t)&&(t.status!=='terminado'||t.id===D.taskId)).slice(0,40);
   return `<h2>Registrar trabajo</h2><div class="card">
 <label>Equipo o instalación</label><select id="dMachine" onchange="D.machine=this.value;saveDraft();$('dOtherBox').classList.toggle('hidden',this.value!=='__other')">${machineOptions(D.machine)}</select>
 <div id="dOtherBox" class="${D.machine==='__other'?'':'hidden'}"><label>¿Cuál?</label><input id="dOther" value="${esc(D.other)}" oninput="D.other=this.value;saveDraft()" placeholder="Ej: Portón depósito, baño planta alta…"></div>
@@ -349,12 +404,30 @@ ${myTasks.length?`<label>¿Corresponde a una tarea asignada? (opcional)</label><
 <label>Repuestos usados <span class="muted small" style="font-weight:400">(se descuentan del inventario)</span></label>
 <div id="dParts">${D.parts.map((p,i)=>`<div class="partrow"><select onchange="D.parts[${i}].id=this.value;saveDraft()">${partOptions(p.id)}</select><input type="number" min="1" step="1" inputmode="numeric" value="${esc(p.qty)}" oninput="D.parts[${i}].qty=this.value;saveDraft()"><button onclick="D.parts.splice(${i},1);saveDraft();render()" aria-label="Quitar">×</button></div>`).join('')}</div>
 <button class="btn ghost sm" style="margin-top:8px" onclick="D.parts.push({id:'',qty:1});saveDraft();render()">＋ Agregar repuesto</button>
+<label>📷 Fotos del trabajo <span class="muted small" style="font-weight:400">(hasta ${MAX_PHOTOS}, van al informe diario)</span></label>
+<div class="thumbs">${D.photos.map((u,i)=>`<div><img src="${esc(u)}" alt="Foto ${i+1}"><button onclick="D.photos.splice(${i},1);saveDraft();render()" aria-label="Quitar foto">×</button></div>`).join('')}</div>
+${D.photos.length<MAX_PHOTOS?`<label class="btn ghost sm" style="margin-top:8px;display:inline-flex;font-weight:700" id="phBtn">📷 Sacar o elegir foto<input type="file" accept="image/*" multiple class="hidden" onchange="addPhotos(this)"></label>`:''}
 <label>Aviso para el siguiente turno (opcional)</label><textarea id="dNext" style="min-height:64px" oninput="D.next=this.value;saveDraft()" placeholder="Qué quedó pendiente, qué hay que vigilar…">${esc(D.next)}</textarea>
 <button class="btn block" onclick="saveWork(this)">💾 Guardar trabajo</button>
 <button class="btn ghost block sm" onclick="if(confirm('¿Borrar lo escrito?')){D=emptyDraft();saveDraft();render()}">Limpiar formulario</button></div>
 <div class="card"><h3>Cerrar turno</h3><p class="muted small">Registra el fin de tu turno con el aviso de arriba para el turno entrante. Si hay un trabajo cargado sin guardar, primero guardalo.</p><button class="btn sec block" onclick="closeShift(this)">🔚 Cerrar mi turno</button></div>`;
 }
 function draftLabel(){return D.machine==='__other'?D.other.trim():D.machine}
+/* Fotos: se achican en el celular (máx. 1600 px) y se suben a Supabase Storage */
+function loadImg(file){return new Promise((res,rej)=>{const u=URL.createObjectURL(file),i=new Image();i.onload=()=>res(i);i.onerror=()=>{URL.revokeObjectURL(u);rej(Error('No se pudo leer la foto'))};i.src=u})}
+async function shrinkPhoto(file){const img=await loadImg(file);const k=Math.min(1,1600/Math.max(img.naturalWidth,img.naturalHeight));
+  const c=document.createElement('canvas');c.width=Math.round(img.naturalWidth*k);c.height=Math.round(img.naturalHeight*k);c.getContext('2d').drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(img.src);
+  return new Promise(r=>c.toBlob(b=>r(b||file),'image/jpeg',0.8))}
+const uid=()=>crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2);
+async function uploadPhoto(blob){if(session.expires_at*1000-Date.now()<90000)await refreshToken();
+  const path=`${myId()}/${today()}/${uid()}.jpg`;
+  const r=await fetch(`${SB_URL}/storage/v1/object/${PHOTO_BUCKET}/${path}`,{method:'POST',headers:{apikey:SB_KEY,Authorization:'Bearer '+session.access_token,'Content-Type':'image/jpeg','x-upsert':'false'},body:blob});
+  if(!r.ok){const j=await r.json().catch(()=>({}));throw Error(/bucket/i.test(j.message||'')?'Falta instalar el SQL de la V11 (carpeta de fotos).':(j.message||j.error||('Error '+r.status)))}
+  return `${SB_URL}/storage/v1/object/public/${PHOTO_BUCKET}/${path}`}
+async function addPhotos(input){const files=[...input.files].slice(0,MAX_PHOTOS-D.photos.length);input.value='';if(!files.length)return;
+  const b=$('phBtn');if(b)b.innerHTML='<span class="spin" style="border-color:#bbb;border-top-color:#333"></span> Subiendo foto…';
+  let ok=0;for(const f of files){try{D.photos.push(await uploadPhoto(await shrinkPhoto(f)));saveDraft();ok++}catch(e){toast('Foto no subida: '+e.message,'bad')}}
+  if(ok)toast(ok===1?'Foto agregada':ok+' fotos agregadas','good');if(S.view==='registrar')render()}
 async function saveWork(btn){
   const label=draftLabel(),desc=D.desc.trim();
   if(!label)return toast('Elegí el equipo','bad');if(!desc)return toast('Describí el trabajo realizado','bad');
@@ -366,7 +439,9 @@ async function saveWork(btn){
   const m=MACHINES.find(x=>machineLabel(x)===label);
   const partsText=parts.map(p=>{const it=S.inv.find(i=>i.id===p.id);return `${it?.part_code||''} ${it?.part_name||''} x${p.qty}`.trim()}).join('; ');
   await busy(btn,async()=>{
-    try{await api('/rest/v1/shift_parts',{method:'POST',prefer:'return=minimal',body:{user_id:myId(),machine_label:label,description:desc,status:D.status,spare_parts:partsText,handover_notes:D.next.trim()}})}
+    const body={user_id:myId(),machine_label:label,description:desc,status:D.status,spare_parts:partsText,handover_notes:D.next.trim()};
+    if(!S.v11Missing){body.photo_urls=D.photos;body.work_task_id=D.taskId||null}
+    try{await api('/rest/v1/shift_parts',{method:'POST',prefer:'return=minimal',body})}
     catch(e){return toast('No se guardó el trabajo: '+e.message,'bad')}
     const fails=[];
     for(const p of parts){const it=S.inv.find(i=>i.id===p.id);
@@ -379,7 +454,7 @@ async function saveWork(btn){
   });
 }
 async function closeShift(btn){
-  if(draftLabel()||D.desc.trim()||D.parts.some(p=>p.id))return toast('Tenés un trabajo cargado sin guardar. Guardalo o limpiá el formulario antes de cerrar el turno.','bad');
+  if(draftLabel()||D.desc.trim()||D.parts.some(p=>p.id)||D.photos.length)return toast('Tenés un trabajo cargado sin guardar. Guardalo o limpiá el formulario antes de cerrar el turno.','bad');
   if(!confirm('¿Cerrar tu turno?'))return;
   await busy(btn,async()=>{try{await api('/rest/v1/shift_parts',{method:'POST',prefer:'return=minimal',body:{user_id:myId(),machine_label:'',description:'Cierre de turno',status:'cierre',spare_parts:'',handover_notes:D.next.trim()}});
     D=emptyDraft();saveDraft();toast('Turno cerrado. ¡Buen descanso!','good');await refresh();go('inicio')}catch(e){toast(e.message,'bad')}});
@@ -398,7 +473,9 @@ function vRepuestos(){
   const types=[['retiro','Retiro'],['devolucion','Devolución']].concat(isBoss()?[['entrada','Ingreso de stock']]:[]);
   const opens=myOpenWithdrawals();
   const names=Object.fromEntries(S.inv.map(i=>[i.id,i.part_code+' · '+i.part_name]));
+  const myReq=S.reqs.filter(r=>r.requested_by===myId()&&['pendiente','pedido'].includes(r.status)).length,openReq=S.reqs.filter(r=>r.status==='pendiente').length;
   return `<h2>Repuestos</h2>
+<div class="card alta" style="cursor:pointer" onclick="go('pedidos')"><div class="line"><div><div class="title">📦 Pedir repuestos o insumos</div><div class="muted small">${isBoss()?`${openReq} pedido${openReq===1?'':'s'} sin pedir todavía`:`Le avisa al supervisor · tenés ${myReq} pedido${myReq===1?'':'s'} abierto${myReq===1?'':'s'}`}</div></div><span class="muted">›</span></div></div>
 <div class="card"><h3>Registrar movimiento</h3>
 <div class="seg" style="margin-bottom:4px">${types.map(([k,l])=>`<button class="${MV.type===k?'on':''}" onclick="MV.type='${k}';render()">${l}</button>`).join('')}</div>
 ${MV.type==='devolucion'?(opens.length?`<label>¿Qué retiro tuyo devolvés?</label><select onchange="MV.orig=this.value;const o=S.moves.find(x=>x.id===this.value);MV.part=o?.part_id||''">${'<option value="">Elegí…</option>'+opens.map(o=>`<option value="${o.id}" ${MV.orig===o.id?'selected':''}>${esc(names[o.part_id]||'Repuesto')} · ${fmtDT(o.created_at)} · quedan ${o.left}</option>`).join('')}</select>`:'<div class="info" style="margin-top:10px">No tenés retiros pendientes de devolución. Solo se puede devolver algo que retiraste vos.</div>')
@@ -445,6 +522,69 @@ async function newPart(btn){
     toast('Repuesto agregado','good');await refresh();render();
   }catch(e){toast(/add_spare_part|function|schema cache/i.test(e.message)?'Falta instalar el SQL de la V10 en Supabase (función add_spare_part).':e.message,'bad')}});
 }
+
+/* ===================== PEDIDOS DE REPUESTOS E INSUMOS ===================== */
+let PQ={kind:'repuesto',part:'',item:'',qty:1,unit:'',machine:'',urg:'normal',notes:''};
+function vPedidos(){
+  let list=S.reqs;if(S.reqF==='abiertos')list=list.filter(r=>['pendiente','pedido'].includes(r.status));else if(S.reqF==='mios')list=list.filter(r=>r.requested_by===myId());
+  return `<button class="btn ghost sm" onclick="go('repuestos')">← Repuestos</button><h2>📦 Pedido de repuestos e insumos</h2>
+${S.v11Missing?'<div class="err" style="margin-bottom:12px">Falta instalar el SQL de la V11 en Supabase.</div>':''}
+<div class="card"><h3>Nuevo pedido</h3>
+<div class="seg" style="margin-bottom:4px"><button class="${PQ.kind==='repuesto'?'on':''}" onclick="PQ.kind='repuesto';render()">🔩 Repuesto</button><button class="${PQ.kind==='insumo'?'on':''}" onclick="PQ.kind='insumo';PQ.part='';render()">🧴 Insumo</button></div>
+${PQ.kind==='repuesto'?`<label>Del inventario <span class="muted small" style="font-weight:400">(si está cargado)</span></label><select onchange="PQ.part=this.value;render()"><option value="">No está en la lista / es otro</option>${S.inv.map(i=>`<option value="${i.id}" ${PQ.part===i.id?'selected':''}>${esc(i.part_code+' · '+i.part_name)} (hay ${i.stock_quantity})</option>`).join('')}</select>`:''}
+${PQ.part?'':`<label>${PQ.kind==='insumo'?'Qué insumo hace falta':'Qué repuesto hace falta'}</label><input value="${esc(PQ.item)}" oninput="PQ.item=this.value" placeholder="${PQ.kind==='insumo'?'Ej: Grasa grado alimenticio, electrodos 2,5 mm, WD-40…':'Ej: Rodamiento 6205 2RS, correa A-42…'}">`}
+<div class="row"><div><label>Cantidad</label><input type="number" min="0" step="any" inputmode="decimal" value="${esc(PQ.qty)}" oninput="PQ.qty=this.value"></div><div><label>Unidad</label><input value="${esc(PQ.unit)}" oninput="PQ.unit=this.value" placeholder="u., kg, litros, m…"></div></div>
+<label>Para qué equipo (opcional)</label><select onchange="PQ.machine=this.value">${machineOptions(PQ.machine,false).replace('Elegí equipo…','General / sin equipo')}</select>
+<label>Urgencia</label><div class="seg" style="margin:0"><button class="${PQ.urg==='normal'?'on':''}" onclick="PQ.urg='normal';render()">Normal</button><button class="${PQ.urg==='urgente'?'on':''}" onclick="PQ.urg='urgente';render()">🔴 Urgente (equipo parado)</button></div>
+<label>Observaciones</label><input value="${esc(PQ.notes)}" oninput="PQ.notes=this.value" placeholder="Marca, medida, proveedor sugerido…">
+<button class="btn block" onclick="saveRequest(this)">📦 Enviar pedido al supervisor</button></div>
+<div class="seg"><button class="${S.reqF==='abiertos'?'on':''}" onclick="S.reqF='abiertos';render()">Sin resolver</button><button class="${S.reqF==='mios'?'on':''}" onclick="S.reqF='mios';render()">Mis pedidos</button><button class="${S.reqF==='todos'?'on':''}" onclick="S.reqF='todos';render()">Todos</button></div>
+${list.map(reqCard).join('')||'<div class="card muted">No hay pedidos en esta lista.</div>'}`}
+function reqCard(r){const q=String(Number(r.quantity)).replace('.',',')+(r.unit?' '+r.unit:'');
+  const act=(st,l,cls)=>`<button class="btn ${cls} sm" onclick="setRequest(this,'${r.id}','${st}')">${l}</button>`;
+  return `<div class="card ${r.urgency==='urgente'&&['pendiente','pedido'].includes(r.status)?'urgent':'alta'}">
+<div class="line"><div><div class="title">${esc(q)} × ${esc(r.item)}</div><div class="muted small">${r.kind==='insumo'?'🧴 Insumo':'🔩 Repuesto'}${r.machine_label?' · '+esc(r.machine_label):''}</div></div><div style="text-align:right">${badge(REQST,r.status)}${r.urgency==='urgente'?'<br><span class="badge b-urg">Urgente</span>':''}</div></div>
+<div class="muted small" style="margin-top:6px">Pidió ${esc(nameOf(r.requested_by))} · ${fmtDT(r.created_at)}${r.handled_by?' · '+esc(REQST[r.status]?.[0]||'')+' por '+esc(nameOf(r.handled_by))+' '+fmtDT(r.handled_at):''}</div>
+${r.notes?`<div class="muted small">📝 ${esc(r.notes)}</div>`:''}${r.answer?`<div class="note">💬 ${esc(r.answer)}</div>`:''}
+${isBoss()?`<div class="actions">${r.status==='pendiente'?act('pedido','🛒 Ya lo pedí','sec')+act('rechazado','✕ No se pide','ghost'):''}${r.status==='pedido'?act('recibido','✓ Llegó','ok')+act('pendiente','↩ Volver a pendiente','ghost'):''}${['recibido','rechazado'].includes(r.status)?act('pendiente','↩ Reabrir','ghost'):''}</div>`:''}</div>`}
+async function saveRequest(btn){const it=S.inv.find(i=>i.id===PQ.part),qty=Number(String(PQ.qty).replace(',','.'));
+  if(!it&&!PQ.item.trim())return toast('Escribí qué hace falta','bad');if(!(qty>0))return toast('Cantidad inválida','bad');
+  await busy(btn,async()=>{try{await rpc('create_part_request',{p_kind:PQ.kind,p_part_id:it?.id||null,p_item:it?it.part_code+' · '+it.part_name:PQ.item.trim(),p_quantity:qty,p_unit:PQ.unit.trim()||null,p_machine_label:PQ.machine||null,p_urgency:PQ.urg,p_notes:PQ.notes.trim()||null});
+    PQ={kind:PQ.kind,part:'',item:'',qty:1,unit:'',machine:'',urg:'normal',notes:''};toast('Pedido enviado. Se avisó al supervisor.','good');await refresh();S.reqF='mios';render()}
+  catch(e){toast(/create_part_request|schema cache/i.test(e.message)?'Falta instalar el SQL de la V11 en Supabase.':e.message,'bad')}})}
+async function setRequest(btn,id,st){const r=S.reqs.find(x=>x.id===id);let ans=null;
+  if(st==='rechazado'){ans=prompt('¿Por qué no se pide? (opcional, le llega al operario)','');if(ans===null)return}
+  if(st==='pedido'){ans=prompt('¿Algún dato para el operario? (proveedor, fecha estimada… opcional)','');if(ans===null)return}
+  await busy(btn,async()=>{try{await rpc('update_part_request',{p_id:id,p_status:st,p_answer:ans||null});toast('Pedido actualizado','good');await refresh();render();
+    if(st==='recibido'&&r?.part_id&&confirm('¿Cargar ahora el ingreso al stock de este repuesto?')){MV={type:'entrada',part:r.part_id,qty:Math.round(Number(r.quantity))||1,machine:'',orig:'',cost:'',notes:'Pedido recibido'};go('repuestos')}}
+  catch(e){toast(e.message,'bad')}})}
+
+/* ===================== AVISOS PUSH ===================== */
+const pushSupported=()=>'serviceWorker' in navigator&&'PushManager' in window&&'Notification' in window;
+const b64u=s=>{const b=atob((s+'='.repeat((4-s.length%4)%4)).replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from(b,c=>c.charCodeAt(0))};
+async function pushState(){if(isIOS()&&!isStandalone())return 'instalar';if(!pushSupported())return 'nosoporta';if(Notification.permission==='denied')return 'bloqueado';
+  try{const reg=await navigator.serviceWorker.ready;return (await reg.pushManager.getSubscription())?'on':'off'}catch{return 'off'}}
+async function saveSub(sub){const j=sub.toJSON();await rpc('save_push_subscription',{p_endpoint:j.endpoint,p_p256dh:j.keys.p256dh,p_auth:j.keys.auth,p_user_agent:navigator.userAgent})}
+async function enablePush(btn){
+  if(isIOS()&&!isStandalone())return toast('En iPhone primero instalá la app (Compartir → Agregar a pantalla de inicio) y abrila desde el ícono.','bad');
+  if(!pushSupported())return toast('Este navegador no permite avisos. En Android usá Chrome.','bad');
+  const perm=Notification.requestPermission(); // tiene que ser lo primero después del toque (iPhone)
+  await busy(btn,async()=>{try{
+    if(await perm!=='granted'){S.pushOn=Notification.permission==='denied'?'bloqueado':'off';render();return toast('No diste permiso para los avisos','bad')}
+    const reg=await navigator.serviceWorker.ready;let sub=await reg.pushManager.getSubscription();
+    if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64u(VAPID_PUBLIC)});
+    await saveSub(sub);S.pushOn='on';toast('Avisos activados en este celular 🔔','good');render();
+  }catch(e){toast('No se pudieron activar: '+(/save_push|schema cache/i.test(e.message)?'falta instalar el SQL de la V11.':e.message),'bad')}})}
+async function testPush(btn){await busy(btn,async()=>{try{const n=await rpc('test_push');toast(n?'Aviso de prueba enviado. Tiene que llegar en unos segundos.':'Este usuario no tiene avisos activados en ningún celular.',n?'good':'bad')}catch(e){toast(e.message,'bad')}})}
+async function syncPush(){S.pushOn=await pushState();if(S.pushOn!=='on')return;try{const reg=await navigator.serviceWorker.ready;const sub=await reg.pushManager.getSubscription();if(sub)await saveSub(sub)}catch{}}
+async function unlinkPush(){try{const reg=await navigator.serviceWorker.ready;const sub=await reg.pushManager.getSubscription();if(sub){await rpc('delete_push_subscription',{p_endpoint:sub.endpoint}).catch(()=>{});await sub.unsubscribe()}}catch{}}
+function pushBanner(){const st=S.pushOn;if(!st||st==='on'||st==='nosoporta'||S.v11Missing)return '';
+  if(st==='instalar')return `<div class="note" style="margin-bottom:12px">🔔 Para recibir avisos de tareas nuevas en el iPhone, instalá la app: <b>Compartir → Agregar a pantalla de inicio</b> y abrila desde el ícono.</div>`;
+  if(st==='bloqueado')return `<div class="note" style="margin-bottom:12px">🔕 Los avisos están bloqueados en este celular. Activalos en Ajustes → Notificaciones → Matenimiento (o en los permisos del sitio en Chrome).</div>`;
+  return `<div class="card alta"><div class="title">🔔 Activá los avisos</div><p class="muted small" style="margin:6px 0 0">Así te llega una notificación cuando te asignan una tarea, aunque tengas la app cerrada.</p><button class="btn yel block" onclick="enablePush(this)">Activar avisos en este celular</button></div>`}
+function pushCard(){const st=S.pushOn;const t={on:'✅ Activados en este celular',off:'Desactivados',bloqueado:'🔕 Bloqueados en los ajustes del celular',instalar:'Primero hay que instalar la app (iPhone)',nosoporta:'Este navegador no permite avisos'}[st]||'…';
+  return `<div class="card"><h3>🔔 Avisos</h3><p class="muted small" style="margin-top:0">Estado: <b>${t}</b></p>
+${st==='off'?'<button class="btn yel block" onclick="enablePush(this)">Activar avisos</button>':''}${st==='on'?'<button class="btn ghost block sm" onclick="testPush(this)">Mandarme un aviso de prueba</button>':''}</div>`}
 
 /* ===================== MÁQUINAS ===================== */
 function vMaquinas(){const q=S.machQ.toLowerCase();
@@ -502,13 +642,13 @@ async function importLocalCrit(btn){const list=localCritToImport();if(!confirm(`
 
 /* ===================== MÁS ===================== */
 function vMas(){const it=(v,ic,t)=>`<a href="#" onclick="go('${v}');return false"><span class="ic">${ic}</span>${t}<span class="ar">›</span></a>`;
-  return `<h2>Más</h2><div class="card menu">${it('maquinas','🏭','Máquinas y criticidad')}${it('perfil','👤','Mi perfil')}${isBoss()?it('asignar','🗂️','Asignar tarea'):''}${isSup()?it('usuarios','👥','Usuarios y aprobaciones'):''}${isSup()?it('informes','📊','Informes a Google Drive (Excel)'):''}${it('ayuda','❓','Ayuda e instalación')}</div>
+  return `<h2>Más</h2><div class="card menu">${it('maquinas','🏭','Máquinas y criticidad')}${it('pedidos','📦','Pedidos de repuestos e insumos')}${it('perfil','👤','Mi perfil y avisos')}${isBoss()?it('asignar','🗂️','Asignar tarea'):''}${isSup()?it('usuarios','👥','Usuarios y aprobaciones'):''}${isSup()?it('informes','📊','Informes a Google Drive (Excel)'):''}${it('ayuda','❓','Ayuda e instalación')}</div>
 ${installBox()}<button class="btn ghost block" onclick="if(confirm('¿Cerrar sesión en este celular?'))logout()">Cerrar sesión</button><p class="muted small" style="text-align:center">Matenimiento Facilitas ${VERSION}</p>`}
 function vPerfil(){const p=S.me;return `<button class="btn ghost sm" onclick="go('mas')">← Más</button><h2>Mi perfil</h2><div class="card">
 <div class="row"><div><label>Nombre</label><input id="fFirst" value="${esc(p.first_name||'')}"></div><div><label>Apellido</label><input id="fLast" value="${esc(p.last_name||'')}"></div></div>
 <label>Especialidad</label><select id="fSpec">${SPECIALTIES.map(s=>`<option ${p.specialty===s?'selected':''}>${s}</option>`).join('')}</select>
 <div class="row"><div><label>Entrada</label><input id="fStart" type="time" value="${esc((p.shift_start||'').slice(0,5))}"></div><div><label>Salida</label><input id="fEnd" type="time" value="${esc((p.shift_end||'').slice(0,5))}"></div></div>
-<p class="muted small">Correo: ${esc(session.user.email)}</p><button class="btn block" onclick="saveProfile(this)">Guardar perfil</button></div>`}
+<p class="muted small">Correo: ${esc(session.user.email)}</p><button class="btn block" onclick="saveProfile(this)">Guardar perfil</button></div>${pushCard()}`}
 async function saveProfile(btn){await busy(btn,async()=>{try{await api('/rest/v1/profiles?id=eq.'+myId(),{method:'PATCH',body:{first_name:$('fFirst').value.trim(),last_name:$('fLast').value.trim(),specialty:$('fSpec').value,shift_start:$('fStart').value||null,shift_end:$('fEnd').value||null}});await refresh();toast('Perfil guardado','good')}catch(e){toast(e.message,'bad')}})}
 function vAsignar(){const ops=S.profiles.filter(p=>p.approved&&p.first_name);const pre=S.preMach||'';
   return `<button class="btn ghost sm" onclick="go('tareas')">← Tareas</button><h2>Asignar tarea</h2><div class="card">
@@ -522,13 +662,14 @@ async function assignTask(btn){const who=$('aWho').value,mv=$('aMach').value,des
   if(!who)return toast('Elegí el operario','bad');if(!desc)return toast('Escribí qué hay que hacer','bad');
   await busy(btn,async()=>{try{await api('/rest/v1/work_tasks',{method:'POST',prefer:'return=minimal',body:{assigned_by:myId(),assigned_to:who,machine_label:label,description:desc,priority:$('aPrio').value,due_date:$('aDue').value||null,status:'pendiente'}});
     toast('Tarea asignada a '+nameOf(who),'good');S.preMach='';await refresh();go('tareas',{taskFilter:'todas',taskStatus:'activas'})}catch(e){toast(e.message,'bad')}})}
+afterRender.usuarios=async()=>{if(S.pushDev||S.v11Missing)return;try{const r=await rpc('push_status');S.pushDev=Object.fromEntries(r.map(x=>[x.user_id,x.devices]));if(S.view==='usuarios')render()}catch{S.pushDev={}}};
 function vUsuarios(){const pend=S.profiles.filter(p=>!p.approved),act=S.profiles.filter(p=>p.approved);
   const link=location.origin+location.pathname,wa='https://wa.me/?text='+encodeURIComponent('Hola! Instalá la app de mantenimiento de Facilitas desde este enlace, tocá "Crear cuenta" y registrate con tu correo: '+link);
   return `<button class="btn ghost sm" onclick="go('mas')">← Más</button><h2>Usuarios</h2>
 <div class="card"><h3>Invitar empleado</h3><p class="muted small">Mandale el enlace por WhatsApp. Se registra solo y después lo aprobás acá.</p><a class="btn ok block" style="text-decoration:none" href="${wa}" target="_blank" rel="noopener">Compartir por WhatsApp</a></div>
 <h3>Pendientes de aprobación (${pend.length})</h3>${pend.map(p=>`<div class="card alta"><div class="title">${esc([p.first_name,p.last_name].filter(Boolean).join(' ')||'Sin nombre todavía')}</div><div class="muted small">${esc(p.specialty||'')}</div>
 ${p.first_name&&p.last_name?`<div class="actions"><button class="btn ok sm" onclick="approve(this,'${p.id}')">✓ Aprobar</button></div>`:'<p class="muted small">Todavía no completó nombre y apellido. Cuando entre a la app se le pedirán.</p>'}</div>`).join('')||'<div class="card muted">No hay solicitudes pendientes.</div>'}
-<h3>Activos (${act.length})</h3>${act.map(p=>p.id===myId()?'':`<details class="card"><summary>${esc((p.first_name||'')+' '+(p.last_name||''))} · ${esc({supervisor:'Supervisor',jefe:'Jefe',operario:'Operario'}[p.role]||p.role)}</summary>
+<h3>Activos (${act.length})</h3><p class="muted small">🔔 = tiene los avisos activados en al menos un celular.</p>${act.map(p=>p.id===myId()?'':`<details class="card"><summary>${esc((p.first_name||'')+' '+(p.last_name||''))} · ${esc({supervisor:'Supervisor',jefe:'Jefe',operario:'Operario'}[p.role]||p.role)} ${S.pushDev?(S.pushDev[p.id]?'🔔':'<span class="muted small">🔕 sin avisos</span>'):''}</summary>
 <div class="row"><div><label>Nombre</label><input id="u1${p.id}" value="${esc(p.first_name||'')}"></div><div><label>Apellido</label><input id="u2${p.id}" value="${esc(p.last_name||'')}"></div></div>
 <div class="row"><div><label>Especialidad</label><select id="u3${p.id}">${SPECIALTIES.map(s=>`<option ${p.specialty===s?'selected':''}>${s}</option>`).join('')}</select></div><div><label>Rol</label><select id="u4${p.id}"><option value="operario" ${p.role==='operario'?'selected':''}>Operario</option><option value="jefe" ${p.role==='jefe'?'selected':''}>Jefe</option>${p.role==='supervisor'?'<option value="supervisor" selected>Supervisor</option>':''}</select></div></div>
 <div class="row"><div><label>Entrada</label><input type="time" id="u5${p.id}" value="${esc((p.shift_start||'').slice(0,5))}"></div><div><label>Salida</label><input type="time" id="u6${p.id}" value="${esc((p.shift_end||'').slice(0,5))}"></div></div>
@@ -539,19 +680,29 @@ async function saveUser(btn,id){const g=k=>$(k+id);await busy(btn,async()=>{try{
 function vAyuda(){return `<button class="btn ghost sm" onclick="go(session&&S.me?.approved?'mas':'login')">← Volver</button><h2>Ayuda</h2>
 <div class="card"><h3>📱 Instalar en iPhone</h3><ol class="small"><li>Abrí el enlace en <b>Safari</b> (si se abre en WhatsApp, tocá los tres puntos → Abrir en Safari).</li><li>Tocá el botón <b>Compartir</b> (cuadrado con flecha).</li><li>Elegí <b>Agregar a pantalla de inicio</b> → <b>Agregar</b>.</li></ol>
 <h3>🤖 Instalar en Android</h3><ol class="small"><li>Abrí el enlace en <b>Chrome</b> (si se abre dentro de WhatsApp, tocá los tres puntos → <b>Abrir en Chrome</b>).</li><li>Si aparece el botón amarillo <b>Instalar la app</b>, tocalo.</li><li>Si no, menú de tres puntos ⋮ → <b>Instalar aplicación</b> o <b>Agregar a pantalla principal</b> → <b>Instalar</b>.</li><li>Buscá el ícono de Facilitas en el menú de aplicaciones o en la pantalla principal.</li></ol>${installBox()}</div>
-<div class="card"><h3>Uso diario</h3><ul class="small"><li><b>Inicio:</b> al empezar el turno, leé las novedades y los avisos del turno anterior.</li><li><b>Tareas:</b> tocá Iniciar cuando empezás, Pausar si te interrumpen y Finalizar al terminar.</li><li><b>Registrar:</b> cargá cada trabajo con los repuestos usados. Los repuestos se descuentan solos del inventario.</li><li><b>Repuestos:</b> retiros sueltos, devoluciones e ingresos de stock (jefe).</li><li>Al terminar la jornada, <b>Cerrar mi turno</b> con un aviso para el que entra.</li></ul>
+<div class="card"><h3>Uso diario</h3><ul class="small"><li><b>Inicio:</b> al empezar el turno, leé las novedades y los avisos del turno anterior.</li><li><b>Tareas:</b> tocá Iniciar cuando empezás, Pausar si te interrumpen y Finalizar al terminar. Si te ayudó un compañero, tocá <b>👥 Sumar compañero</b> en la tarea.</li><li><b>🚨 Emergencias:</b> si tuviste que atender una falla sin tarea asignada, cargala con <b>Cargar emergencia</b> (en Inicio o Tareas) y marcá quién te ayudó. Le llega el aviso al supervisor.</li><li><b>Fotos:</b> al registrar el trabajo, sacá hasta 3 fotos. Van al informe diario.</li><li><b>📦 Pedidos:</b> en Repuestos → Pedir repuestos o insumos. Le llega el aviso al supervisor y vos ves cuándo se pidió y cuándo llegó.</li><li><b>🔔 Avisos:</b> en Más → Mi perfil y avisos, activá los avisos para que te llegue cada tarea nueva (en iPhone, primero instalá la app).</li><li><b>Registrar:</b> cargá cada trabajo con los repuestos usados. Los repuestos se descuentan solos del inventario.</li><li><b>Repuestos:</b> retiros sueltos, devoluciones e ingresos de stock (jefe).</li><li>Al terminar la jornada, <b>Cerrar mi turno</b> con un aviso para el que entra.</li></ul>
 <div class="info">Se necesita internet para guardar. Si aparece un error en rojo, el dato <b>no</b> se guardó.</div></div>`}
 
 /* ===================== INFORMES (EXCEL + DRIVE) ===================== */
 function vInformes(){const d=new Date();const first=new Date(d.getFullYear(),d.getMonth(),1).toLocaleDateString('en-CA');
   return `<button class="btn ghost sm" onclick="go('mas')">← Más</button><h2>Informes</h2><div class="card">
-<p class="muted small">Genera un Excel con: resumen, horas por operario, trabajos realizados, tareas, movimientos de repuestos, inventario actual y criticidad de máquinas.</p>
+<p class="muted small">Genera un Excel con: resumen, horas por operario, trabajos realizados (con fotos), tareas (con compañeros y emergencias), pedidos, movimientos de repuestos, inventario actual y criticidad de máquinas.</p>
 <div class="row"><div><label>Desde</label><input id="iFrom" type="date" value="${S.iFrom||first}"></div><div><label>Hasta</label><input id="iTo" type="date" value="${S.iTo||today()}"></div></div>
 <div class="seg" style="margin-top:10px"><button onclick="setRange('mes')">Este mes</button><button onclick="setRange('ant')">Mes anterior</button><button onclick="setRange('sem')">Últimos 7 días</button></div>
 <button class="btn block" onclick="reportToDrive(this)">☁️ Guardar en mi Google Drive</button>
 <button class="btn sec block" onclick="reportDownload(this)">⬇️ Descargar Excel en este equipo</button>
 <div id="iMsg" style="margin-top:12px"></div></div>
-<p class="muted small">Los archivos se guardan en la carpeta <b>${esc(DRIVE_FOLDER)}</b> de la cuenta de Google que autorices.</p>`}
+<p class="muted small">Los archivos se guardan en la carpeta <b>${esc(DRIVE_FOLDER)}</b> de la cuenta de Google que autorices.</p>
+<div class="card accent"><h3>📧 Informe diario automático</h3><p class="muted small" style="margin-top:0">Todos los días a las <b>9:00</b> se arma el Excel de 9:00 a 9:00 (tareas finalizadas con compañeros y fotos, emergencias, pedidos, repuestos), se sube a tu Google Drive y te llega el enlace por mail. No hace falta tener la app abierta.</p>
+<button class="btn sec block" onclick="dailyNow(this)">Enviar ahora el último informe (prueba)</button><div id="dMsg" style="margin-top:12px"></div></div>`}
+async function dailyNow(btn){const m=(h,c='info')=>{const e=$('dMsg');if(e)e.innerHTML=`<div class="${c}">${h}</div>`};
+  await busy(btn,async()=>{try{m('Armando el informe y subiéndolo a Drive… (puede tardar un minuto)');
+    if(session.expires_at*1000-Date.now()<90000)await refreshToken();
+    const r=await fetch(SB_URL+'/functions/v1/informe-diario',{method:'POST',headers:{apikey:SB_KEY,Authorization:'Bearer '+session.access_token,'Content-Type':'application/json'},body:'{"origen":"prueba"}'});
+    const j=await r.json().catch(()=>({}));
+    if(!r.ok||!j.ok)return m('No se pudo: '+esc(j.error||j.message||('Error '+r.status)+(r.status===404?' (falta crear la función informe-diario en Supabase)':'')),'err');
+    m(`✅ Enviado a <b>${esc(j.enviadoA)}</b>: ${esc(j.archivo)}${j.enlace?`<br><a href="${esc(j.enlace)}" target="_blank" rel="noopener">Abrir en Google Drive</a>`:`<br>⚠️ No se subió a Drive (${esc(j.errorDrive)}); el Excel va adjunto en el mail.`}`)
+  }catch(e){m('No se pudo: '+esc(e.message),'err')}})}
 function setRange(k){const d=new Date();let a,b;if(k==='mes'){a=new Date(d.getFullYear(),d.getMonth(),1);b=d}else if(k==='ant'){a=new Date(d.getFullYear(),d.getMonth()-1,1);b=new Date(d.getFullYear(),d.getMonth(),0)}else{a=new Date(d-6*864e5);b=d}
   S.iFrom=a.toLocaleDateString('en-CA');S.iTo=b.toLocaleDateString('en-CA');render()}
 async function fetchAll(path){let out=[],from=0;for(;;){const r=await api(path+'&limit=1000&offset='+from);out=out.concat(r);if(r.length<1000)return out;from+=1000}}
@@ -560,6 +711,9 @@ async function buildReport(){
   S.iFrom=from;S.iTo=to;
   const a=encodeURIComponent(from+'T00:00:00-03:00'),bDate=new Date(to+'T12:00:00');bDate.setDate(bDate.getDate()+1);const b=encodeURIComponent(bDate.toLocaleDateString('en-CA')+'T00:00:00-03:00');
   const rng=`created_at=gte.${a}&created_at=lt.${b}`;
+  let helpers=[],reqs=[];if(!S.v11Missing){try{[helpers,reqs]=await Promise.all([fetchAll('/rest/v1/work_task_helpers?select=*'),fetchAll('/rest/v1/part_requests?select=*&order=created_at.asc&'+rng)])}catch{}}
+  const hOf=id=>helpers.filter(h=>h.task_id===id).map(h=>nameOf(h.user_id)).join(', ');
+  const fotos=u=>[0,1,2].map(i=>u?.[i]?{link:u[i],text:'Ver foto '+(i+1)}:'');
   const [parts,tasks,moves,inv,profiles]=await Promise.all([fetchAll('/rest/v1/shift_parts?select=*&order=created_at.asc&'+rng),fetchAll('/rest/v1/work_tasks?select=*&order=created_at.asc&or=('+`and(created_at.gte.${a},created_at.lt.${b}),and(started_at.gte.${a},started_at.lt.${b}),and(finished_at.gte.${a},finished_at.lt.${b}),finished_at.is.null`+')'),fetchAll('/rest/v1/spare_parts_movements?select=*&order=created_at.asc&'+rng),fetchAll('/rest/v1/spare_parts_inventory?select=*&order=part_code.asc'),api('/rest/v1/profiles?select=id,first_name,last_name,specialty,role')]);
   S.profiles=profiles.length?profiles.map(p=>({...S.profiles.find(x=>x.id===p.id),...p})):S.profiles;
   const invBy=Object.fromEntries(inv.map(i=>[i.id,i]));const dt=x=>x?fmtDT(x):'';const H=s=>Math.round(s/36)/100;
@@ -575,17 +729,19 @@ async function buildReport(){
    {name:'Resumen',title:'MUNDO FACILITAS — Informe de mantenimiento',sub:period,head:['Indicador','Valor'],w:[46,18],rows:[
      ['Trabajos registrados (partes de turno)',parts.filter(p=>p.status!=='cierre').length],['Cierres de turno',parts.filter(p=>p.status==='cierre').length],
      ['Tareas en el período',tasks.length],['Tareas terminadas',tasks.filter(t=>t.status==='terminado').length],['Tareas pendientes',tasks.filter(t=>t.status==='pendiente').length],['Tareas en proceso',tasks.filter(t=>t.status==='en_proceso').length],
-     ['Tareas urgentes',tasks.filter(t=>t.priority==='urgente').length],['Horas efectivas registradas en tareas',{n:H(tasks.reduce((s,t)=>s+taskSeconds(t),0)),f:2}],
+     ['Tareas urgentes',tasks.filter(t=>t.priority==='urgente').length],['Emergencias cargadas por operarios',tasks.filter(t=>t.is_emergency).length],['Pedidos de repuestos/insumos',reqs.length],['Horas efectivas registradas en tareas',{n:H(tasks.reduce((s,t)=>s+taskSeconds(t),0)),f:2}],
      ['Repuestos retirados (unidades)',sumMv('retiro')],['Repuestos devueltos (unidades)',sumMv('devolucion')],['Repuestos ingresados (unidades)',sumMv('entrada')],
      ['Costo estimado de repuestos usados',{n:Math.round(cost*100)/100,f:3}],['Repuestos bajo stock mínimo (hoy)',low.length],['Máquinas con criticidad ALTA',MACHINES.filter(m=>critOf(m.id)?.level==='ALTA').length],['Máquinas sin evaluar',MACHINES.filter(m=>!critOf(m.id)).length]]},
    {name:'Por operario',title:'Actividad por operario',sub:period,head:['Operario','Trabajos registrados','Tareas','Terminadas','Abiertas','Horas efectivas','Repuestos retirados (u.)'],w:[30,20,10,12,10,16,22],
      rows:Object.values(per).sort((x,y)=>y.secs-x.secs).map(o=>[o.name,o.works,o.tasks,o.done,o.open,{n:H(o.secs),f:2},o.parts])},
-   {name:'Trabajos realizados',title:'Trabajos realizados (partes de turno)',sub:period,head:['Fecha','Operario','Equipo','Estado','Trabajo realizado','Repuestos','Aviso siguiente turno'],w:[16,22,34,14,60,34,40],
-     rows:parts.map(p=>[dt(p.created_at),nameOf(p.user_id),p.machine_label||'',STATUS[p.status]?.[0]||p.status,p.description||'',p.spare_parts||'',p.handover_notes||''])},
-   {name:'Tareas',title:'Tareas asignadas',sub:period+' · Incluye tareas creadas, iniciadas o terminadas en el período y todas las abiertas',head:['Creada','Asignada a','Asignó','Equipo','Tarea','Prioridad','Estado','Fecha límite','Inicio','Fin','Horas efectivas'],w:[16,22,20,32,50,11,13,13,16,16,14],
-     rows:tasks.map(t=>[dt(t.created_at),nameOf(t.assigned_to),nameOf(t.assigned_by),t.machine_label||'',t.description||'',PRIO[t.priority]?.[0]||t.priority,STATUS[t.status]?.[0]||t.status,t.due_date?fmtD(t.due_date):'',dt(t.started_at),dt(t.finished_at),{n:H(taskSeconds(t)),f:2}])},
+   {name:'Trabajos realizados',title:'Trabajos realizados (partes de turno)',sub:period,head:['Fecha','Operario','Equipo','Estado','Trabajo realizado','Repuestos','Aviso siguiente turno','Foto 1','Foto 2','Foto 3'],w:[16,22,34,14,60,34,40,12,12,12],
+     rows:parts.map(p=>[dt(p.created_at),nameOf(p.user_id),p.machine_label||'',STATUS[p.status]?.[0]||p.status,p.description||'',p.spare_parts||'',p.handover_notes||'',...fotos(p.photo_urls)])},
+   {name:'Tareas',title:'Tareas asignadas',sub:period+' · Incluye tareas creadas, iniciadas o terminadas en el período y todas las abiertas',head:['Creada','Asignada a','Compañeros','Asignó','Equipo','Tarea','Prioridad','Estado','Fecha límite','Inicio','Fin','Horas efectivas'],w:[16,22,24,20,32,50,11,13,13,16,16,14],
+     rows:tasks.map(t=>[dt(t.created_at),nameOf(t.assigned_to),hOf(t.id),t.is_emergency?'EMERGENCIA (la cargó el operario)':nameOf(t.assigned_by),t.machine_label||'',t.description||'',PRIO[t.priority]?.[0]||t.priority,STATUS[t.status]?.[0]||t.status,t.due_date?fmtD(t.due_date):'',dt(t.started_at),dt(t.finished_at),{n:H(taskSeconds(t)),f:2}])},
    {name:'Movimientos repuestos',title:'Movimientos de repuestos',sub:period,head:['Fecha','Tipo','Código','Repuesto','Cantidad','Equipo','Responsable','Costo unitario','Observaciones'],w:[16,12,14,34,10,28,22,14,40],
      rows:moves.map(m=>{const i=invBy[m.part_id]||{};return [dt(m.created_at),MOVE[m.movement_type]||m.movement_type,i.part_code||'',i.part_name||'',m.movement_type==='retiro'?-m.quantity:m.quantity,[m.machine_code,m.machine_name].filter(Boolean).join(' · '),nameOf(m.performed_by),m.unit_cost!=null?{n:Number(m.unit_cost),f:3}:'',m.notes||'']})},
+   {name:'Pedidos repuestos e insumos',title:'Pedidos de repuestos e insumos',sub:period,head:['Fecha','Tipo','Qué','Cantidad','Unidad','Equipo','Urgencia','Pidió','Estado','Observaciones / respuesta','Resolvió'],w:[16,10,40,10,10,28,10,22,12,34,20],
+     rows:reqs.map(r=>[dt(r.created_at),r.kind==='insumo'?'Insumo':'Repuesto',r.item,Number(r.quantity),r.unit||'',r.machine_label||'',r.urgency==='urgente'?'URGENTE':'Normal',nameOf(r.requested_by),REQST[r.status]?.[0]||r.status,[r.notes,r.answer].filter(Boolean).join(' — '),r.handled_by?nameOf(r.handled_by):''])},
    {name:'Inventario actual',title:'Inventario de repuestos al '+fmtDT(new Date()),sub:'Stock en tiempo real al generar el informe',head:['Código','Repuesto','Stock','Mínimo','Estado','Ubicación','Equipo','Costo unitario','Proveedor'],w:[14,38,10,10,12,20,26,14,24],
      rows:inv.map(i=>[i.part_code,i.part_name,Number(i.stock_quantity),Number(i.minimum_stock),Number(i.stock_quantity)<=Number(i.minimum_stock)?'REPONER':'OK',i.storage_location||'',[i.machine_code,i.machine_name].filter(Boolean).join(' · '),i.unit_cost!=null?{n:Number(i.unit_cost),f:3}:'',i.supplier||''])},
    {name:'Criticidad máquinas',title:'Criticidad de máquinas',sub:'Ponderación: producción 45% · alternativa 25% · frecuencia 15% · inocuidad 15%. ALTA si hay riesgo de seguridad, inocuidad 5 o puntaje ≥ 3,8; MEDIA ≥ 2,5',head:['Código','Máquina','Sector','Criticidad','Puntaje','Producción','Alternativa','Frecuencia','Inocuidad','Riesgo seguridad','Tareas abiertas','Trabajos en el período','Observaciones','Evaluó','Fecha evaluación'],w:[10,30,14,12,10,11,11,11,11,10,10,12,40,20,16],
@@ -632,7 +788,8 @@ function xlsx(sheets){
   const X=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g,'');
   const col=n=>{let s='';for(n++;n;n=Math.floor((n-1)/26))s=String.fromCharCode(65+(n-1)%26)+s;return s};
   // estilos: 0 normal,1 título,2 subtítulo,3 encabezado,4 celda,5 celda 0.00,6 celda $,7 celda alternada,8 alt 0.00,9 alt $
-  const cell=(r,c,v,alt)=>{const ref=col(c)+r;if(v&&typeof v==='object'){const s=v.f===3?(alt?9:6):(alt?8:5);return `<c r="${ref}" s="${s}"><v>${Number.isFinite(v.n)?v.n:0}</v></c>`}
+  const cell=(r,c,v,alt)=>{const ref=col(c)+r;if(v&&typeof v==='object'&&v.link){const u=String(v.link).replace(/"/g,'""'),t=String(v.text).replace(/"/g,'""');return `<c r="${ref}" s="${alt?11:10}" t="str"><f>${X(`HYPERLINK("${u}","${t}")`)}</f><v>${X(v.text)}</v></c>`}
+    if(v&&typeof v==='object'){const s=v.f===3?(alt?9:6):(alt?8:5);return `<c r="${ref}" s="${s}"><v>${Number.isFinite(v.n)?v.n:0}</v></c>`}
     if(typeof v==='number'&&Number.isFinite(v))return `<c r="${ref}" s="${alt?7:4}"><v>${v}</v></c>`;return `<c r="${ref}" s="${alt?7:4}" t="inlineStr"><is><t xml:space="preserve">${X(v)}</t></is></c>`};
   const sheetXml=sh=>{const n=sh.head.length,last=col(n-1),end=3+sh.rows.length;
     let rows=`<row r="1" ht="26" customHeight="1"><c r="A1" s="1" t="inlineStr"><is><t>${X(sh.title)}</t></is></c></row><row r="2"><c r="A2" s="2" t="inlineStr"><is><t>${X(sh.sub)}</t></is></c></row>`;
@@ -640,10 +797,10 @@ function xlsx(sheets){
     sh.rows.forEach((r,i)=>{rows+=`<row r="${i+4}">${r.map((v,j)=>cell(i+4,j,v,i%2===1)).join('')}</row>`});
     return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheetViews><sheetView workbookViewId="0" showGridLines="0"><pane ySplit="3" topLeftCell="A4" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><cols>${sh.w.map((w,i)=>`<col min="${i+1}" max="${i+1}" width="${w}" customWidth="1"/>`).join('')}</cols><sheetData>${rows}</sheetData>${sh.rows.length?`<autoFilter ref="A3:${last}${end}"/>`:''}<mergeCells count="2"><mergeCell ref="A1:${n>1?last:'B'}1"/><mergeCell ref="A2:${n>1?last:'B'}2"/></mergeCells><pageSetup orientation="landscape" fitToWidth="1" fitToHeight="0"/></worksheet>`};
   const b='<border><left style="thin"><color rgb="FFDDDDDD"/></left><right style="thin"><color rgb="FFDDDDDD"/></right><top style="thin"><color rgb="FFDDDDDD"/></top><bottom style="thin"><color rgb="FFDDDDDD"/></bottom></border>';
-  const styles=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><numFmts count="1"><numFmt numFmtId="164" formatCode="&quot;$&quot; #,##0.00"/></numFmts><fonts count="4"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="15"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font><font><i/><sz val="10"/><color rgb="FF555555"/><name val="Calibri"/></font><font><b/><sz val="11"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font></fonts><fills count="6"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FFB72C37"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF7E1928"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFBF3F4"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFFF7D1"/></patternFill></fill></fills><borders count="2"><border/>${b}</borders><cellStyleXfs count="1"><xf/></cellStyleXfs><cellXfs count="10"><xf/><xf fontId="1" fillId="2" applyFont="1" applyFill="1"><alignment vertical="center"/></xf><xf fontId="2" fillId="5" applyFont="1" applyFill="1"/><xf fontId="3" fillId="3" borderId="1" applyFont="1" applyFill="1" applyBorder="1"><alignment vertical="center" wrapText="1"/></xf><xf borderId="1" applyBorder="1"><alignment vertical="top" wrapText="1"/></xf><xf numFmtId="2" borderId="1" applyNumberFormat="1" applyBorder="1"><alignment vertical="top"/></xf><xf numFmtId="164" borderId="1" applyNumberFormat="1" applyBorder="1"><alignment vertical="top"/></xf><xf fillId="4" borderId="1" applyFill="1" applyBorder="1"><alignment vertical="top" wrapText="1"/></xf><xf numFmtId="2" fillId="4" borderId="1" applyNumberFormat="1" applyFill="1" applyBorder="1"><alignment vertical="top"/></xf><xf numFmtId="164" fillId="4" borderId="1" applyNumberFormat="1" applyFill="1" applyBorder="1"><alignment vertical="top"/></xf></cellXfs></styleSheet>`;
+  const styles=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><numFmts count="1"><numFmt numFmtId="164" formatCode="&quot;$&quot; #,##0.00"/></numFmts><fonts count="5"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="15"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font><font><i/><sz val="10"/><color rgb="FF555555"/><name val="Calibri"/></font><font><b/><sz val="11"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font><font><u/><sz val="11"/><color rgb="FF1D5FA8"/><name val="Calibri"/></font></fonts><fills count="6"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FFB72C37"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF7E1928"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFBF3F4"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFFF7D1"/></patternFill></fill></fills><borders count="2"><border/>${b}</borders><cellStyleXfs count="1"><xf/></cellStyleXfs><cellXfs count="12"><xf/><xf fontId="1" fillId="2" applyFont="1" applyFill="1"><alignment vertical="center"/></xf><xf fontId="2" fillId="5" applyFont="1" applyFill="1"/><xf fontId="3" fillId="3" borderId="1" applyFont="1" applyFill="1" applyBorder="1"><alignment vertical="center" wrapText="1"/></xf><xf borderId="1" applyBorder="1"><alignment vertical="top" wrapText="1"/></xf><xf numFmtId="2" borderId="1" applyNumberFormat="1" applyBorder="1"><alignment vertical="top"/></xf><xf numFmtId="164" borderId="1" applyNumberFormat="1" applyBorder="1"><alignment vertical="top"/></xf><xf fillId="4" borderId="1" applyFill="1" applyBorder="1"><alignment vertical="top" wrapText="1"/></xf><xf numFmtId="2" fillId="4" borderId="1" applyNumberFormat="1" applyFill="1" applyBorder="1"><alignment vertical="top"/></xf><xf numFmtId="164" fillId="4" borderId="1" applyNumberFormat="1" applyFill="1" applyBorder="1"><alignment vertical="top"/></xf><xf fontId="4" borderId="1" applyFont="1" applyBorder="1"><alignment vertical="top"/></xf><xf fontId="4" fillId="4" borderId="1" applyFont="1" applyFill="1" applyBorder="1"><alignment vertical="top"/></xf></cellXfs></styleSheet>`;
   const files=[['[Content_Types].xml',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>${sheets.map((_,i)=>`<Override PartName="/xl/worksheets/sheet${i+1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join('')}</Types>`],
     ['_rels/.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>'],
-    ['xl/workbook.xml',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>${sheets.map((s,i)=>`<sheet name="${X(s.name.slice(0,31))}" sheetId="${i+1}" r:id="rId${i+1}"/>`).join('')}</sheets><definedNames>${sheets.map((s,i)=>s.rows.length?`<definedName name="_xlnm._FilterDatabase" localSheetId="${i}" hidden="1">'${X(s.name)}'!$A$3:$${col(s.head.length-1)}$${3+s.rows.length}</definedName>`:'').join('')}</definedNames></workbook>`],
+    ['xl/workbook.xml',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>${sheets.map((s,i)=>`<sheet name="${X(s.name.slice(0,31))}" sheetId="${i+1}" r:id="rId${i+1}"/>`).join('')}</sheets><definedNames>${sheets.map((s,i)=>s.rows.length?`<definedName name="_xlnm._FilterDatabase" localSheetId="${i}" hidden="1">'${X(s.name.slice(0,31))}'!$A$3:$${col(s.head.length-1)}$${3+s.rows.length}</definedName>`:'').join('')}</definedNames></workbook>`],
     ['xl/_rels/workbook.xml.rels',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${sheets.map((_,i)=>`<Relationship Id="rId${i+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i+1}.xml"/>`).join('')}<Relationship Id="rId${sheets.length+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`],
     ['xl/styles.xml',styles],...sheets.map((s,i)=>[`xl/worksheets/sheet${i+1}.xml`,sheetXml(s)])];
   return zip(files,'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
@@ -685,9 +842,12 @@ async function start(){
     if(S.me.first_name)store.del('mat10_pending_meta');
     if(S.me.approved!==true)return go('pending');
     S.view=['login','signup','pending','recovery'].includes(S.view)?'inicio':S.view;render();await refresh();
+    syncPush().then(()=>{if(['inicio','perfil'].includes(S.view))render()});
   }catch(e){if(!session)return go('login');$('app').innerHTML=`<div class="card"><h3>Sin conexión</h3><p class="muted">${esc(e.message)}</p><button class="btn block" onclick="start()">Reintentar</button></div>`}
 }
 (function init(){
+  const qv=new URLSearchParams(location.search).get('v');if(qv&&['tareas','pedidos','inicio'].includes(qv)){S.view=qv;history.replaceState(null,'',location.pathname)}
+  if('serviceWorker' in navigator)navigator.serviceWorker.addEventListener('message',e=>{if(e.data?.type==='abrir'&&session&&S.me?.approved){refresh();if(e.data.view)go(e.data.view)}});
   const h=new URLSearchParams(location.hash.slice(1));
   if(h.get('access_token')){saveSession({access_token:h.get('access_token'),refresh_token:h.get('refresh_token'),expires_in:Number(h.get('expires_in')||3600),user:null});
     history.replaceState(null,'',location.pathname);
