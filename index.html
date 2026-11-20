@@ -117,7 +117,7 @@ table.mini th{font-size:12px;color:var(--mut);text-transform:uppercase}
 <script>
 'use strict';
 /* ===================== CONFIGURACIÓN ===================== */
-const VERSION='V11';
+const VERSION='V11.1';
 const SB_URL='https://kuvzvpzqsjwpiekrxnxe.supabase.co';
 const SB_KEY='sb_publishable_tEVUpS6_hvpKjZonjw20_g_XDEMw12_'; // clave pública (no es de administrador)
 const GOOGLE_CLIENT_ID='586047120992-v6evqrq8q6n54vgfj3pcg1l3ac73c4o6.apps.googleusercontent.com';
@@ -663,10 +663,32 @@ async function assignTask(btn){const who=$('aWho').value,mv=$('aMach').value,des
   await busy(btn,async()=>{try{await api('/rest/v1/work_tasks',{method:'POST',prefer:'return=minimal',body:{assigned_by:myId(),assigned_to:who,machine_label:label,description:desc,priority:$('aPrio').value,due_date:$('aDue').value||null,status:'pendiente'}});
     toast('Tarea asignada a '+nameOf(who),'good');S.preMach='';await refresh();go('tareas',{taskFilter:'todas',taskStatus:'activas'})}catch(e){toast(e.message,'bad')}})}
 afterRender.usuarios=async()=>{if(S.pushDev||S.v11Missing)return;try{const r=await rpc('push_status');S.pushDev=Object.fromEntries(r.map(x=>[x.user_id,x.devices]));if(S.view==='usuarios')render()}catch{S.pushDev={}}};
+function inviteText(link){return `Hola! Te paso la app de *Matenimiento Facilitas* 🔧
+${link}
+
+*1) Abrila en el navegador*
+• iPhone: abrí el enlace en *Safari*. Si se abre dentro de WhatsApp, tocá los 3 puntos (o el ícono de compartir) → *Abrir en Safari*.
+• Android: abrí el enlace en *Chrome*. Si se abre dentro de WhatsApp, tocá los 3 puntos ⋮ → *Abrir en Chrome*.
+
+*2) Instalala en el celular*
+• iPhone: tocá *Compartir* (el cuadrado con la flecha) → *Agregar a pantalla de inicio* → *Agregar*.
+• Android: tocá el botón amarillo *Instalar la app*, o los 3 puntos ⋮ → *Instalar aplicación*.
+Desde ahora abrila siempre desde el ícono de Facilitas.
+
+*3) Creá tu cuenta*
+Tocá *Crear cuenta* y completá nombre, apellido, correo, contraseña (mínimo 8 caracteres), especialidad y horario. Si ya tenías cuenta, tocá *Ingresar*.
+
+*4) Esperá la aprobación*
+Avisame cuando te registres así te apruebo. Después tocá *Ya me aprobaron*.
+
+*5) Activá los avisos* 🔔
+En Inicio tocá *Activar avisos en este celular* → *Permitir*. Así te llegan las tareas que te asignan aunque tengas la app cerrada.
+
+Cualquier duda, en la app está *Más → Ayuda e instalación*.`}
 function vUsuarios(){const pend=S.profiles.filter(p=>!p.approved),act=S.profiles.filter(p=>p.approved);
-  const link=location.origin+location.pathname,wa='https://wa.me/?text='+encodeURIComponent('Hola! Instalá la app de mantenimiento de Facilitas desde este enlace, tocá "Crear cuenta" y registrate con tu correo: '+link);
+  const link=location.origin+location.pathname,wa='https://wa.me/?text='+encodeURIComponent(inviteText(link));
   return `<button class="btn ghost sm" onclick="go('mas')">← Más</button><h2>Usuarios</h2>
-<div class="card"><h3>Invitar empleado</h3><p class="muted small">Mandale el enlace por WhatsApp. Se registra solo y después lo aprobás acá.</p><a class="btn ok block" style="text-decoration:none" href="${wa}" target="_blank" rel="noopener">Compartir por WhatsApp</a></div>
+<div class="card"><h3>Invitar empleado</h3><p class="muted small">Le llega por WhatsApp el enlace con el paso a paso para instalar la app, crear la cuenta y activar los avisos. Después lo aprobás acá.</p><a class="btn ok block" style="text-decoration:none" href="${wa}" target="_blank" rel="noopener">Compartir por WhatsApp</a></div>
 <h3>Pendientes de aprobación (${pend.length})</h3>${pend.map(p=>`<div class="card alta"><div class="title">${esc([p.first_name,p.last_name].filter(Boolean).join(' ')||'Sin nombre todavía')}</div><div class="muted small">${esc(p.specialty||'')}</div>
 ${p.first_name&&p.last_name?`<div class="actions"><button class="btn ok sm" onclick="approve(this,'${p.id}')">✓ Aprobar</button></div>`:'<p class="muted small">Todavía no completó nombre y apellido. Cuando entre a la app se le pedirán.</p>'}</div>`).join('')||'<div class="card muted">No hay solicitudes pendientes.</div>'}
 <h3>Activos (${act.length})</h3><p class="muted small">🔔 = tiene los avisos activados en al menos un celular.</p>${act.map(p=>p.id===myId()?'':`<details class="card"><summary>${esc((p.first_name||'')+' '+(p.last_name||''))} · ${esc({supervisor:'Supervisor',jefe:'Jefe',operario:'Operario'}[p.role]||p.role)} ${S.pushDev?(S.pushDev[p.id]?'🔔':'<span class="muted small">🔕 sin avisos</span>'):''}</summary>
