@@ -1,6 +1,6 @@
-// Matenimiento Facilitas V11 — red primero, caché solo si no hay conexión + avisos push
-const CACHE='matenimiento-v11';
-const ASSETS=['./','./index.html','./manifest.webmanifest','./icon-192.png','./icon-512.png','./icon-maskable-192.png','./icon-maskable-512.png','./logo-facilitas.jpg'];
+// Matenimiento Facilitas V12 — red primero, caché solo si no hay conexión + avisos push
+const CACHE='matenimiento-v12-1';
+const ASSETS=['./','./index.html','./manifest.webmanifest','./icon-192.png','./icon-512.png','./icon-maskable-192.png','./icon-maskable-512.png','./logo-facilitas.jpg','./logo-app.png','./apple-touch-icon.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)));self.skipWaiting()});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==CACHE).map(x=>caches.delete(x)))).then(()=>self.clients.claim()))});
 self.addEventListener('fetch',e=>{const u=new URL(e.request.url);

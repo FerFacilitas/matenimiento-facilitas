@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-title" content="Matenimiento">
 <title>Matenimiento Facilitas</title>
 <link rel="manifest" href="./manifest.webmanifest">
-<link rel="apple-touch-icon" href="./icon-192.png">
+<link rel="apple-touch-icon" href="./apple-touch-icon.png">
 <link rel="icon" href="./icon-192.png">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
@@ -19,7 +19,7 @@
 html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
 button,input,select,textarea{font:inherit;color:inherit}
 header.top{position:sticky;top:0;z-index:20;background:var(--red);color:#fff;padding:calc(env(safe-area-inset-top) + 10px) 16px 10px;display:flex;align-items:center;gap:12px;box-shadow:0 2px 8px rgba(0,0,0,.15)}
-header.top img{height:34px;border-radius:6px;background:#fff;padding:2px 4px}
+header.top img{height:44px;border-radius:8px;background:#fff;padding:2px 5px}
 header.top .t{flex:1;min-width:0}
 header.top .t b{display:block;font-size:17px;letter-spacing:.2px}
 header.top .t small{opacity:.85;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
@@ -98,11 +98,15 @@ table.mini th{font-size:12px;color:var(--mut);text-transform:uppercase}
 .btn.em{background:#d92d20}
 .spin{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.5);border-top-color:#fff;border-radius:50%;animation:s .7s linear infinite}
 @keyframes s{to{transform:rotate(360deg)}}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}.cal-h{text-align:center;font-size:12px;color:var(--mut);font-weight:700}
+.cal-d{border:1px solid var(--line);border-radius:9px;min-height:48px;padding:4px;font-size:13px;display:flex;flex-direction:column;justify-content:space-between;cursor:pointer}
+.cal-d span{font-size:11px}.cal-d.prod{background:#fff}.cal-d.noprod{background:#e6e6eb;color:#666}.cal-d.ov{box-shadow:inset 0 0 0 2px #f0c419}.cal-d.hoy{border:2px solid var(--red)}
+.cal-k{display:inline-block;width:12px;height:12px;border-radius:3px;border:1px solid var(--line);vertical-align:middle}.cal-k.prod{background:#fff}.cal-k.noprod{background:#e6e6eb}.cal-k.ov{box-shadow:inset 0 0 0 2px #f0c419}
 </style>
 </head>
 <body>
 <header class="top">
-  <img src="./logo-facilitas.jpg" alt="Facilitas">
+  <img src="./logo-app.png" alt="Facilitas">
   <div class="t"><b>Matenimiento</b><small id="who">Mundo Facilitas</small></div>
   <button class="sync hidden" id="syncBtn" onclick="refresh(true)">↻ Actualizar</button>
 </header>
@@ -117,7 +121,7 @@ table.mini th{font-size:12px;color:var(--mut);text-transform:uppercase}
 <script>
 'use strict';
 /* ===================== CONFIGURACIÓN ===================== */
-const VERSION='V11.1';
+const VERSION='V12';
 const SB_URL='https://kuvzvpzqsjwpiekrxnxe.supabase.co';
 const SB_KEY='sb_publishable_tEVUpS6_hvpKjZonjw20_g_XDEMw12_'; // clave pública (no es de administrador)
 const GOOGLE_CLIENT_ID='586047120992-v6evqrq8q6n54vgfj3pcg1l3ac73c4o6.apps.googleusercontent.com';
@@ -126,7 +130,7 @@ const TZ='America/Argentina/Buenos_Aires';
 const VAPID_PUBLIC='BK6yXdh8j7b12KrjgLvOh43qe1SlPIkzYY0uvkkZaTKOlVExDV7vK_WtVNYWrTmVL2YCEoS-z_7JlJuOek1WLRI'; // clave pública de avisos (la privada está solo en Supabase)
 const PHOTO_BUCKET='fotos-trabajos';
 const MAX_PHOTOS=3;
-const MACHINES=[["AMC-01","Amasadora chica N1","Producción","Inicio de bollería"],["AMC-02","Amasadora chica N2","Producción","Inicio de bollería"],["DIV-01","Divisora","Producción","2do proceso bollería"],["REB-01","Rebolladora","Producción","3er proceso bollería"],["DES-01","Descansadora","Producción","4to proceso bollería"],["AR-01","Armadora","Producción","5to proceso bollería"],["SOB-01","Sobadora","Producción","Sin ubicación"],["TRI-01","Trinchadora","Producción","Sin ubicación"],["MPI-01","Máquina de pizzas","Producción","Bollería"],["AMG-01","Amasadora grande N1","Producción","Inicio pan de molde"],["AMG-02","Amasadora grande N2","Producción","Inicio pan de molde"],["ELE-01","Elevadora","Producción","2do proceso pan de molde"],["DIV-02","Divisora","Producción","3er proceso pan de molde"],["REB-02","Rebolladora","Producción","4to proceso pan de molde"],["DES-02","Descansadora","Producción","5to proceso pan de molde"],["AR-02","Armadora","Producción","6to proceso pan de molde"],["FER-01","Fermentadora 1","Producción","Cámara de fermentación"],["FER-02","Fermentadora 2","Producción","Cámara de fermentación"],["FER-03","Fermentadora 3","Producción","Cámara de fermentación"],["FER-04","Fermentadora 4","Producción","Cámara de fermentación"],["FER-05","Fermentadora 5","Producción","Cámara de fermentación"],["HOR-01","Horno rotativo 1","Producción","Hornos"],["HOR-02","Horno rotativo 2","Producción","Hornos"],["HOR-03","Horno rotativo 3","Producción","Hornos"],["HOR-04","Horno rotativo 4","Producción","Hornos"],["HOR-05","Horno rotativo 5","Producción","Hornos"],["HOR-06","Horno rotativo 6","Producción","Hornos"],["HOR-07","Horno rotativo 7","Producción","Hornos"],["HOR-08","Horno rotativo 8","Producción","Hornos"],["HOR-09","Horno rotativo 9","Producción","Hornos"],["HOR-10","Horno rotativo 10","Producción","Hornos"],["HOR-11","Horno rotativo 11","Producción","Hornos"],["HEL-04","Heladera","Producción","Producción"],["ESC-01","Escamadora","Producción","Producción"],["ROC-01","Rociadora 1","Envasado","Sobre envasadora ADK bollería"],["ROC-02","Rociadora 2","Envasado","Inicio línea ADK 400"],["SUN-01","Sunchadora 1","Envasado","Fin de línea"],["SUN-02","Sunchadora 2","Envasado","Fin de línea"],["SUN-03","Sunchadora 3","Envasado","Back Up"],["ADK-01","Flow pack ADK bollería","Envasado","Línea de bollería"],["FEC-01","Fechadora 1","Envasado","Panes"],["FEC-02","Fechadora 2","Envasado","Panes"],["SOP-01","Sopladora 1","Envasado","Fin de línea manual"],["CTR-01","Cinta transportadora 1","Envasado","Fin de línea"],["CTR-02","Cinta transportadora 2","Envasado","Fin de línea"],["SOP-02","Sopladora 2","Envasado","Fin de línea manual"],["SEL-01","Selladora","Envasado","Bollería"],["ADK-02","ADK 400 pan de molde","Envasado","Línea pan de molde"],["ARM-01","Armadora de empanadas","CHE",""],["FRE-01","Freidora","CHE",""],["HOR-12","Horno rotativo","CHE",""],["ABA-11","Abatidor","CHE",""],["MPR-01","Multiprocesadora","CHE",""],["FIA-01","Fiambrera automática 1","CHE",""],["FIA-02","Fiambrera automática 2","CHE",""],["FIA-03","Fiambrera 3","CHE",""],["ADK-03","Flowpack ADK","CHE",""],["TER-01","Termoselladora","CHE",""],["MAP-01","Envasadora al vacío","CHE",""],["COM-01","Compresor grande","Planta","Depósito de residuos"],["COM-02","Compresor chico","Planta",""],["COM-03","Compresor logística","Logística","Depósito de PT"],["CAM-01","Cámara de frío","CHE","Depósito de PT"],["HEL-01","Heladera 1","CHE",""],["HEL-02","Heladera 2","CHE",""],["HEL-03","Heladera 3","CHE",""],["FRE-02","Freezer","CHE",""],["CAM-02","Cámara de frío PT","Logística","Depósito de PT"],["COR-01","Cortadora","Tapas",""],["AMT-01","Amasadora 1","Tapas","Inicio línea Tapas"],["AMT-02","Amasadora 2","Tapas","Inicio línea Tapas"],["AMT-03","Amasadora 3","Tapas","Inicio línea Tapas"],["LAM-01","Laminadora","Tapas",""],["EMP-01","Empastadora","Tapas",""],["ADK-04","Envasadora ADK Tapas Emp","Tapas",""],["STC-01","Envasadora STC Pascu y Tarta","Tapas",""],["TQG-01","Tanque principal 1.000 lts","Planta","Techo"],["CST-01","Cisterna de producción 3.000 lts","Planta","Depósito"],["TQC-01","Tanque 1 CHE 1.000 lts","Planta","CHE"],["TQC-02","Tanque 2 CHE 1.000 lts","Planta","Techo"],["EFR-01","Enfriador de agua 1.000 lts","Planta","Techo"],["TQ-01","Tanque cilíndrico 1 500 lts","Planta","Techo"],["TQ-02","Tanque cilíndrico 2 500 lts","Planta","Mantenimiento"],["CIS-01","Cisterna 1.000 lts","Planta","Mantenimiento"],["TQG-02","Tanque 1.000 lts","Planta","Mantenimiento"]].map(([id,name,sector,location])=>({id,name,sector,location}));
+let MACHINES=[["AMC-01","Amasadora chica N1","Producción","Inicio de bollería"],["AMC-02","Amasadora chica N2","Producción","Inicio de bollería"],["DIV-01","Divisora","Producción","2do proceso bollería"],["REB-01","Rebolladora","Producción","3er proceso bollería"],["DES-01","Descansadora","Producción","4to proceso bollería"],["AR-01","Armadora","Producción","5to proceso bollería"],["SOB-01","Sobadora","Producción","Sin ubicación"],["TRI-01","Trinchadora","Producción","Sin ubicación"],["MPI-01","Máquina de pizzas","Producción","Bollería"],["AMG-01","Amasadora grande N1","Producción","Inicio pan de molde"],["AMG-02","Amasadora grande N2","Producción","Inicio pan de molde"],["ELE-01","Elevadora","Producción","2do proceso pan de molde"],["DIV-02","Divisora","Producción","3er proceso pan de molde"],["REB-02","Rebolladora","Producción","4to proceso pan de molde"],["DES-02","Descansadora","Producción","5to proceso pan de molde"],["AR-02","Armadora","Producción","6to proceso pan de molde"],["FER-01","Fermentadora 1","Producción","Cámara de fermentación"],["FER-02","Fermentadora 2","Producción","Cámara de fermentación"],["FER-03","Fermentadora 3","Producción","Cámara de fermentación"],["FER-04","Fermentadora 4","Producción","Cámara de fermentación"],["FER-05","Fermentadora 5","Producción","Cámara de fermentación"],["HOR-01","Horno rotativo 1","Producción","Hornos"],["HOR-02","Horno rotativo 2","Producción","Hornos"],["HOR-03","Horno rotativo 3","Producción","Hornos"],["HOR-04","Horno rotativo 4","Producción","Hornos"],["HOR-05","Horno rotativo 5","Producción","Hornos"],["HOR-06","Horno rotativo 6","Producción","Hornos"],["HOR-07","Horno rotativo 7","Producción","Hornos"],["HOR-08","Horno rotativo 8","Producción","Hornos"],["HOR-09","Horno rotativo 9","Producción","Hornos"],["HOR-10","Horno rotativo 10","Producción","Hornos"],["HOR-11","Horno rotativo 11","Producción","Hornos"],["HEL-04","Heladera","Producción","Producción"],["ESC-01","Escamadora","Producción","Producción"],["ROC-01","Rociadora 1","Envasado","Sobre envasadora ADK bollería"],["ROC-02","Rociadora 2","Envasado","Inicio línea ADK 400"],["SUN-01","Sunchadora 1","Envasado","Fin de línea"],["SUN-02","Sunchadora 2","Envasado","Fin de línea"],["SUN-03","Sunchadora 3","Envasado","Back Up"],["ADK-01","Flow pack ADK bollería","Envasado","Línea de bollería"],["FEC-01","Fechadora 1","Envasado","Panes"],["FEC-02","Fechadora 2","Envasado","Panes"],["SOP-01","Sopladora 1","Envasado","Fin de línea manual"],["CTR-01","Cinta transportadora 1","Envasado","Fin de línea"],["CTR-02","Cinta transportadora 2","Envasado","Fin de línea"],["SOP-02","Sopladora 2","Envasado","Fin de línea manual"],["SEL-01","Selladora","Envasado","Bollería"],["ADK-02","ADK 400 pan de molde","Envasado","Línea pan de molde"],["ARM-01","Armadora de empanadas","CHE",""],["FRE-01","Freidora","CHE",""],["HOR-12","Horno rotativo","CHE",""],["ABA-11","Abatidor","CHE",""],["MPR-01","Multiprocesadora","CHE",""],["FIA-01","Fiambrera automática 1","CHE",""],["FIA-02","Fiambrera automática 2","CHE",""],["FIA-03","Fiambrera 3","CHE",""],["ADK-03","Flowpack ADK","CHE",""],["TER-01","Termoselladora","CHE",""],["MAP-01","Envasadora al vacío","CHE",""],["COM-01","Compresor grande","Planta","Depósito de residuos"],["COM-02","Compresor chico","Planta",""],["COM-03","Compresor logística","Logística","Depósito de PT"],["CAM-01","Cámara de frío","CHE","Depósito de PT"],["HEL-01","Heladera 1","CHE",""],["HEL-02","Heladera 2","CHE",""],["HEL-03","Heladera 3","CHE",""],["FRE-02","Freezer","CHE",""],["CAM-02","Cámara de frío PT","Logística","Depósito de PT"],["COR-01","Cortadora","Tapas",""],["AMT-01","Amasadora 1","Tapas","Inicio línea Tapas"],["AMT-02","Amasadora 2","Tapas","Inicio línea Tapas"],["AMT-03","Amasadora 3","Tapas","Inicio línea Tapas"],["LAM-01","Laminadora","Tapas",""],["EMP-01","Empastadora","Tapas",""],["ADK-04","Envasadora ADK Tapas Emp","Tapas",""],["STC-01","Envasadora STC Pascu y Tarta","Tapas",""],["TQG-01","Tanque principal 1.000 lts","Planta","Techo"],["CST-01","Cisterna de producción 3.000 lts","Planta","Depósito"],["TQC-01","Tanque 1 CHE 1.000 lts","Planta","CHE"],["TQC-02","Tanque 2 CHE 1.000 lts","Planta","Techo"],["EFR-01","Enfriador de agua 1.000 lts","Planta","Techo"],["TQ-01","Tanque cilíndrico 1 500 lts","Planta","Techo"],["TQ-02","Tanque cilíndrico 2 500 lts","Planta","Mantenimiento"],["CIS-01","Cisterna 1.000 lts","Planta","Mantenimiento"],["TQG-02","Tanque 1.000 lts","Planta","Mantenimiento"]].map(([id,name,sector,location])=>({id,name,sector,location}));
 const SPECIALTIES=['Mantenimiento','Herrería','Mantenimiento edilicio','Supervisión'];
 /* Criticidad: mismo criterio que la V9.6 y que la función save_machine_criticality de Supabase */
 const CRIT=[
@@ -136,9 +140,11 @@ const CRIT=[
  {k:'quality_impact',old:'quality',name:'Calidad e inocuidad',w:15,opts:['Sin impacto','Impacto menor','Posible rechazo de producto','Impacto importante','Riesgo grave de inocuidad']}];
 function critCalc(d){if(!d||!CRIT.every(c=>Number(d[c.k])>=1&&Number(d[c.k])<=5))return null;const score=Math.round(CRIT.reduce((s,c)=>s+Number(d[c.k])*c.w/100,0)*100)/100;
   return {score,level:d.safety_risk||Number(d.quality_impact)===5||score>=3.8?'ALTA':score>=2.5?'MEDIA':'BAJA'}}
-const LEVEL={ALTA:['Crítica ALTA','b-urg'],MEDIA:['Criticidad MEDIA','b-alta'],BAJA:['Criticidad BAJA','b-ok'],NONE:['Sin evaluar','']};
+const LEVEL={ALTA:['Crítica ALTA (A)','b-urg'],MEDIA:['Criticidad MEDIA (B)','b-alta'],BAJA:['Criticidad BAJA (C)','b-ok'],NONE:['Sin evaluar','']};
+/* Clase A/B/C del Excel del plan: A detiene producción o afecta seguridad/inocuidad, B impacto parcial, C impacto bajo */
+const ABC={ALTA:'A',MEDIA:'B',BAJA:'C'};
 const critOf=code=>S.crit[code]||null;
-const critBadge=(code,short)=>{const c=critOf(code);if(!c)return short?'':`<span class="badge">Sin evaluar</span>`;const l=LEVEL[c.level];return `<span class="badge ${l[1]}">${short?c.level:l[0]}</span>`};
+const critBadge=(code,short)=>{const c=critOf(code);if(!c)return short?'':`<span class="badge">Sin evaluar</span>`;const l=LEVEL[c.level];return `<span class="badge ${l[1]}">${short?c.level+' · '+ABC[c.level]:l[0]}</span>`};
 
 /* ===================== UTILIDADES ===================== */
 const $=id=>document.getElementById(id);
@@ -185,7 +191,7 @@ async function api(path,opt={}){
 const rpc=(fn,body)=>api('/rest/v1/rpc/'+fn,{method:'POST',body});
 
 /* ===================== ESTADO ===================== */
-const S={helpers:[],reqs:[],v11Missing:false,pushOn:null,reqF:'abiertos',crit:{},critMissing:false,critF:'todas',me:null,profiles:[],tasks:[],parts:[],inv:[],moves:[],view:'inicio',taskFilter:'mias',taskStatus:'activas',invQ:'',invLow:false,machQ:'',newsFilter:'todo',loaded:false};
+const S={machinesAll:[],plan:[],cal:{},notices:[],ordersNear:[],pmOrders:{},v12Missing:false,pmF:'sinasignar',pmYm:'',calYm:'',planQ:'',planMach:'',planId:'',machEdit:'',helpers:[],reqs:[],v11Missing:false,pushOn:null,reqF:'abiertos',crit:{},critMissing:false,critF:'todas',me:null,profiles:[],tasks:[],parts:[],inv:[],moves:[],view:'inicio',taskFilter:'mias',taskStatus:'activas',invQ:'',invLow:false,machQ:'',newsFilter:'todo',loaded:false};
 const role=()=>S.me?.role||'operario';
 const isBoss=()=>['jefe','supervisor'].includes(role());
 const isSup=()=>role()==='supervisor';
@@ -212,9 +218,10 @@ async function refresh(manual){
     catch(e){S.critMissing=true}
     try{const [h,r]=await Promise.all([api('/rest/v1/work_task_helpers?select=*&order=created_at.asc&limit=3000'),api('/rest/v1/part_requests?select=*&order=created_at.desc&limit=300')]);S.helpers=h;S.reqs=r;S.v11Missing=false}
     catch(e){S.v11Missing=true}
+    await loadV12();if(manual)S.pmOrders={};
     S.me=profiles.find(p=>p.id===myId())||S.me;
     if(manual)toast('Datos actualizados','good');
-    if(['inicio','tareas','maquinas','usuarios','pedidos'].includes(S.view)||manual)render();
+    if(['inicio','tareas','maquinas','maquina','usuarios','pedidos','plan','avisos','calendario','preventivo'].includes(S.view)||manual)render();
   }catch(e){toast('No se pudo actualizar: '+e.message,'bad')}
   finally{b.textContent='↻ Actualizar'}
 }
@@ -225,8 +232,8 @@ function render(){
   const logged=!!(session&&S.me&&S.me.approved===true);
   $('nav').classList.toggle('hidden',!logged);$('syncBtn').classList.toggle('hidden',!logged);
   $('who').textContent=logged?(nameOf(myId())+' · '+({supervisor:'Supervisor',jefe:'Jefe de mantenimiento',operario:'Operario'}[role()]||role())):'Mundo Facilitas';
-  document.querySelectorAll('nav.bottom button').forEach(b=>b.classList.toggle('on',b.dataset.v===S.view||(b.dataset.v==='mas'&&['perfil','asignar','usuarios','informes','ayuda','maquinas','maquina'].includes(S.view))||(b.dataset.v==='tareas'&&S.view==='emergencia')||(b.dataset.v==='repuestos'&&S.view==='pedidos')));
-  const V={login:vLogin,signup:vSignup,pending:vPending,recovery:vRecovery,inicio:vInicio,tareas:vTareas,registrar:vRegistrar,repuestos:vRepuestos,mas:vMas,perfil:vPerfil,asignar:vAsignar,usuarios:vUsuarios,informes:vInformes,ayuda:vAyuda,maquinas:vMaquinas,maquina:vMaquina,emergencia:vEmergencia,pedidos:vPedidos};
+  document.querySelectorAll('nav.bottom button').forEach(b=>b.classList.toggle('on',b.dataset.v===S.view||(b.dataset.v==='mas'&&['perfil','asignar','usuarios','informes','ayuda','maquinas','maquina','preventivo','calendario','plan','planedit','maqedit','avisos'].includes(S.view))||(b.dataset.v==='tareas'&&S.view==='emergencia')||(b.dataset.v==='repuestos'&&S.view==='pedidos')));
+  const V={login:vLogin,signup:vSignup,pending:vPending,recovery:vRecovery,inicio:vInicio,tareas:vTareas,registrar:vRegistrar,repuestos:vRepuestos,mas:vMas,perfil:vPerfil,asignar:vAsignar,usuarios:vUsuarios,informes:vInformes,ayuda:vAyuda,maquinas:vMaquinas,maquina:vMaquina,emergencia:vEmergencia,pedidos:vPedidos,preventivo:vPreventivo,calendario:vCalendario,plan:vPlan,planedit:vPlanEdit,maqedit:vMaqEdit,avisos:vAvisos};
   if(!logged&&!['login','signup','pending','recovery','ayuda'].includes(S.view))S.view='login';
   $('app').innerHTML=(V[S.view]||vInicio)();
   afterRender[S.view]?.();
@@ -300,11 +307,13 @@ function vInicio(){
   return `<h2>Hola, ${esc(S.me.first_name||'')} 👋</h2>
 ${S.v11Missing&&isSup()?`<div class="err" style="margin-bottom:12px">Falta instalar el SQL de la V11 en Supabase (compañeros, emergencias, pedidos y avisos).</div>`:''}
 ${pushBanner()}
+${(()=>{const u=unreadNotices();return u.length?u.slice(0,3).map(noticeCard).join('')+(u.length>3?`<p class="small"><a href="#" onclick="go('avisos');return false">Ver los ${u.length} avisos nuevos</a></p>`:''):''})()}
 <div class="stats">
  <div class="stat red" onclick="go('tareas',{taskFilter:'mias',taskStatus:'activas'})"><b>${pend}</b><span>Mis tareas pendientes</span></div>
  <div class="stat" onclick="go('tareas',{taskFilter:'mias',taskStatus:'activas'})"><b>${proc}</b><span>Mis tareas en proceso</span></div>
  <div class="stat ${urg?'yel':''}" onclick="go('tareas',{taskFilter:'todas',taskStatus:'activas'})"><b>${urg}</b><span>Urgentes abiertas (equipo)</span></div>
  <div class="stat ${low?'yel':''}" onclick="go('repuestos',{invLow:true})"><b>${low}</b><span>Repuestos bajo mínimo</span></div>
+${isBoss()&&!S.v12Missing?(()=>{const lim=addDays(today(),7),n=S.ordersNear.filter(o=>orderState(o)==='sinasignar'&&o.planned_date<=lim).length;return `<div class="stat ${n?'yel':''}" onclick="go('preventivo',{pmF:'sinasignar',pmYm:ymOf(today())})"><b>${n}</b><span>Preventivos sin asignar (próximos 7 días)</span></div>`})():''}
 ${isBoss()?`<div class="stat ${reqOpen?'yel':''}" onclick="go('pedidos',{reqF:'abiertos'})"><b>${reqOpen}</b><span>Pedidos de repuestos/insumos sin pedir</span></div>`:''}
 <div class="stat" style="background:#fde4e1;border-color:#f5b5ad" onclick="go('emergencia')"><b style="color:#b42318">🚨</b><span><b style="font-size:13px;display:inline;color:#b42318">Cargar emergencia</b></span></div>
 </div>
@@ -596,6 +605,7 @@ function vMaquinas(){const q=S.machQ.toLowerCase();
   const open={};S.tasks.filter(t=>t.status!=='terminado').forEach(t=>{const id=(t.machine_label||'').split(' · ')[0];open[id]=(open[id]||0)+1});
   const local=localCritToImport();
   return `<button class="btn ghost sm" onclick="go('mas')">← Más</button><h2>Máquinas y criticidad</h2>
+${machineAdminBox()}
 ${S.critMissing?'<div class="err" style="margin-bottom:12px">La criticidad todavía no está activada en la base de datos. Hay que correr el SQL de la V10 en Supabase.</div>':''}
 <div class="stats"><div class="stat red" onclick="S.critF='ALTA';render()"><b>${cnt('ALTA')}</b><span>Criticidad ALTA</span></div><div class="stat" onclick="S.critF='MEDIA';render()"><b>${cnt('MEDIA')}</b><span>Criticidad MEDIA</span></div><div class="stat" onclick="S.critF='BAJA';render()"><b>${cnt('BAJA')}</b><span>Criticidad BAJA</span></div><div class="stat ${cnt('NONE')?'yel':''}" onclick="S.critF='NONE';render()"><b>${cnt('NONE')}</b><span>Sin evaluar</span></div></div>
 ${local.length&&isBoss()&&!S.critMissing?`<div class="card alta"><div class="title">📲 Hay ${local.length} evaluaciones guardadas solo en este celular (versión anterior)</div><p class="muted small">Subilas a la base compartida para que las vea todo el equipo. Solo se suben las máquinas que todavía no tienen evaluación compartida.</p><button class="btn sm" onclick="importLocalCrit(this)">Subir a la base compartida</button></div>`:''}
@@ -603,10 +613,11 @@ ${local.length&&isBoss()&&!S.critMissing?`<div class="card alta"><div class="tit
 <input id="mSearch" placeholder="🔎 Buscar máquina, código o sector" value="${esc(S.machQ)}" oninput="S.machQ=this.value;clearTimeout(window._mq);window._mq=setTimeout(()=>{render();const e=$('mSearch');e.focus();e.setSelectionRange(e.value.length,e.value.length)},300)" style="margin-bottom:10px">
 <div class="card">${list.map(m=>{const c=critOf(m.id);return `<div class="list-item" onclick="go('maquina',{mach:'${m.id}'})" style="cursor:pointer"><div class="line"><div><div class="title">${esc(m.id)} · ${esc(m.name)}</div><div class="muted small">${esc(m.sector)} · ${esc(m.location)}${open[m.id]?` · <b style="color:var(--warn)">${open[m.id]} tarea${open[m.id]>1?'s':''} abierta${open[m.id]>1?'s':''}</b>`:''}</div></div><div style="text-align:right">${critBadge(m.id,true)||'<span class="badge">—</span>'}${c?`<div class="muted small">${c.score.toFixed?c.score.toFixed(2):c.score}</div>`:''}</div></div></div>`}).join('')||'<p class="muted">No hay máquinas en esta lista.</p>'}</div>`}
 function vMaquina(){const m=MACHINES.find(x=>x.id===S.mach);if(!m)return vMaquinas();const lbl=machineLabel(m);
-  const tasks=S.tasks.filter(t=>t.machine_label===lbl),works=S.parts.filter(p=>p.machine_label===lbl),mv=S.moves.filter(x=>x.machine_code===m.id),names=Object.fromEntries(S.inv.map(i=>[i.id,i.part_name]));
-  return `<button class="btn ghost sm" onclick="go('maquinas')">← Máquinas</button><h2>${esc(lbl)}</h2><p class="muted">${esc(m.sector)} · ${esc(m.location)}</p>
+  const tasks=S.tasks.filter(t=>machIdOf(t.machine_label)===m.id),works=S.parts.filter(p=>machIdOf(p.machine_label)===m.id),mv=S.moves.filter(x=>x.machine_code===m.id),names=Object.fromEntries(S.inv.map(i=>[i.id,i.part_name]));
+  return `<button class="btn ghost sm" onclick="go('maquinas')">← Máquinas</button><h2>${esc(lbl)}</h2><p class="muted">${esc(m.sector)}${m.location?' · '+esc(m.location):''}${m.type?' · '+esc(m.type):''}${m.brand?' · '+esc(m.brand):''}</p>${m.notes?`<p class="muted small">${esc(m.notes)}</p>`:''}
 <div class="actions" style="margin-bottom:12px"><button class="btn sm" onclick="D={...emptyDraft(),machine:'${esc(lbl)}'};saveDraft();go('registrar')">📝 Registrar trabajo aquí</button>${isBoss()?`<button class="btn sec sm" onclick="go('asignar',{preMach:'${esc(lbl)}'})">＋ Asignar tarea</button>`:''}</div>
 ${critCard(m)}
+${machinePlanBox(m)}
 <h3>Tareas (${tasks.length})</h3>${tasks.slice(0,20).map(taskCard).join('')||'<div class="card muted">Sin tareas.</div>'}
 <h3>Trabajos registrados (${works.length})</h3>${works.slice(0,20).map(partCard).join('')||'<div class="card muted">Sin trabajos registrados recientes.</div>'}
 <h3>Repuestos usados</h3><div class="card">${mv.slice(0,30).map(x=>`<div class="list-item small">${fmtDT(x.created_at)} · ${esc(MOVE[x.movement_type])} ${x.quantity} × ${esc(names[x.part_id]||'repuesto')} · ${esc(nameOf(x.performed_by))}</div>`).join('')||'<p class="muted">Sin movimientos.</p>'}</div>`}
@@ -642,7 +653,7 @@ async function importLocalCrit(btn){const list=localCritToImport();if(!confirm(`
 
 /* ===================== MÁS ===================== */
 function vMas(){const it=(v,ic,t)=>`<a href="#" onclick="go('${v}');return false"><span class="ic">${ic}</span>${t}<span class="ar">›</span></a>`;
-  return `<h2>Más</h2><div class="card menu">${it('maquinas','🏭','Máquinas y criticidad')}${it('pedidos','📦','Pedidos de repuestos e insumos')}${it('perfil','👤','Mi perfil y avisos')}${isBoss()?it('asignar','🗂️','Asignar tarea'):''}${isSup()?it('usuarios','👥','Usuarios y aprobaciones'):''}${isSup()?it('informes','📊','Informes a Google Drive (Excel)'):''}${it('ayuda','❓','Ayuda e instalación')}</div>
+  return `<h2>Más</h2><div class="card menu">${it('preventivo','🛠','Preventivo del mes')}${it('plan','📋','Plan preventivo')}${it('calendario','📅','Calendario de producción')}${it('avisos','📣',isBoss()?'Avisos (mandar aviso)':'Avisos')}${it('maquinas','🏭','Máquinas y criticidad')}${it('pedidos','📦','Pedidos de repuestos e insumos')}${it('perfil','👤','Mi perfil y avisos')}${isBoss()?it('asignar','🗂️','Asignar tarea'):''}${isSup()?it('usuarios','👥','Usuarios y aprobaciones'):''}${isSup()?it('informes','📊','Informes a Google Drive (Excel)'):''}${it('ayuda','❓','Ayuda e instalación')}</div>
 ${installBox()}<button class="btn ghost block" onclick="if(confirm('¿Cerrar sesión en este celular?'))logout()">Cerrar sesión</button><p class="muted small" style="text-align:center">Matenimiento Facilitas ${VERSION}</p>`}
 function vPerfil(){const p=S.me;return `<button class="btn ghost sm" onclick="go('mas')">← Más</button><h2>Mi perfil</h2><div class="card">
 <div class="row"><div><label>Nombre</label><input id="fFirst" value="${esc(p.first_name||'')}"></div><div><label>Apellido</label><input id="fLast" value="${esc(p.last_name||'')}"></div></div>
@@ -702,13 +713,256 @@ async function saveUser(btn,id){const g=k=>$(k+id);await busy(btn,async()=>{try{
 function vAyuda(){return `<button class="btn ghost sm" onclick="go(session&&S.me?.approved?'mas':'login')">← Volver</button><h2>Ayuda</h2>
 <div class="card"><h3>📱 Instalar en iPhone</h3><ol class="small"><li>Abrí el enlace en <b>Safari</b> (si se abre en WhatsApp, tocá los tres puntos → Abrir en Safari).</li><li>Tocá el botón <b>Compartir</b> (cuadrado con flecha).</li><li>Elegí <b>Agregar a pantalla de inicio</b> → <b>Agregar</b>.</li></ol>
 <h3>🤖 Instalar en Android</h3><ol class="small"><li>Abrí el enlace en <b>Chrome</b> (si se abre dentro de WhatsApp, tocá los tres puntos → <b>Abrir en Chrome</b>).</li><li>Si aparece el botón amarillo <b>Instalar la app</b>, tocalo.</li><li>Si no, menú de tres puntos ⋮ → <b>Instalar aplicación</b> o <b>Agregar a pantalla principal</b> → <b>Instalar</b>.</li><li>Buscá el ícono de Facilitas en el menú de aplicaciones o en la pantalla principal.</li></ol>${installBox()}</div>
-<div class="card"><h3>Uso diario</h3><ul class="small"><li><b>Inicio:</b> al empezar el turno, leé las novedades y los avisos del turno anterior.</li><li><b>Tareas:</b> tocá Iniciar cuando empezás, Pausar si te interrumpen y Finalizar al terminar. Si te ayudó un compañero, tocá <b>👥 Sumar compañero</b> en la tarea.</li><li><b>🚨 Emergencias:</b> si tuviste que atender una falla sin tarea asignada, cargala con <b>Cargar emergencia</b> (en Inicio o Tareas) y marcá quién te ayudó. Le llega el aviso al supervisor.</li><li><b>Fotos:</b> al registrar el trabajo, sacá hasta 3 fotos. Van al informe diario.</li><li><b>📦 Pedidos:</b> en Repuestos → Pedir repuestos o insumos. Le llega el aviso al supervisor y vos ves cuándo se pidió y cuándo llegó.</li><li><b>🔔 Avisos:</b> en Más → Mi perfil y avisos, activá los avisos para que te llegue cada tarea nueva (en iPhone, primero instalá la app).</li><li><b>Registrar:</b> cargá cada trabajo con los repuestos usados. Los repuestos se descuentan solos del inventario.</li><li><b>Repuestos:</b> retiros sueltos, devoluciones e ingresos de stock (jefe).</li><li>Al terminar la jornada, <b>Cerrar mi turno</b> con un aviso para el que entra.</li></ul>
+<div class="card"><h3>Uso diario</h3><ul class="small"><li><b>Inicio:</b> al empezar el turno, leé las novedades y los avisos del turno anterior.</li><li><b>Tareas:</b> tocá Iniciar cuando empezás, Pausar si te interrumpen y Finalizar al terminar. Si te ayudó un compañero, tocá <b>👥 Sumar compañero</b> en la tarea.</li><li><b>🚨 Emergencias:</b> si tuviste que atender una falla sin tarea asignada, cargala con <b>Cargar emergencia</b> (en Inicio o Tareas) y marcá quién te ayudó. Le llega el aviso al supervisor.</li><li><b>Fotos:</b> al registrar el trabajo, sacá hasta 3 fotos. Van al informe diario.</li><li><b>📦 Pedidos:</b> en Repuestos → Pedir repuestos o insumos. Le llega el aviso al supervisor y vos ves cuándo se pidió y cuándo llegó.</li><li><b>🔔 Avisos:</b> en Más → Mi perfil y avisos, activá los avisos para que te llegue cada tarea nueva (en iPhone, primero instalá la app).</li><li><b>Registrar:</b> cargá cada trabajo con los repuestos usados. Los repuestos se descuentan solos del inventario.</li><li><b>Repuestos:</b> retiros sueltos, devoluciones e ingresos de stock (jefe).</li><li>Al terminar la jornada, <b>Cerrar mi turno</b> con un aviso para el que entra.</li><li><b>🛠 Preventivo:</b> en Más → Preventivo del mes están las tareas del plan para cada día. Cuando te asignan una, te llega como cualquier tarea (dice «Preventivo»). Iniciala y finalizala igual que siempre: así queda como hecha.</li><li><b>📣 Avisos:</b> los avisos del jefe o del supervisor aparecen arriba de todo en Inicio y en Más → Avisos.</li></ul>
+<h3>Para el jefe y el supervisor</h3><ul class="small"><li><b>Plan preventivo</b> (Más): las tareas de cada máquina, con frecuencia, horas, técnicos y horas de parada. Tocá una tarea para cambiarla o desactivarla; «＋ Agregar tarea» para sumar una. «Descargar plan en Excel» lo baja con el formato del plan.</li><li><b>Preventivo del mes</b>: la app genera sola los preventivos del mes y del siguiente (todos los días a las 8:05). Las tareas que paran la máquina más de 1 hora caen en días que no se produce; el resto, en días hábiles. Asigná cada una al operario, cambiale la fecha o cancelala.</li><li><b>Calendario de producción</b> (solo el supervisor lo cambia): lunes a viernes se produce, feriados incluidos. Marcá el sábado que se trabaja y los feriados que no. Después, en Preventivo, tocá «Reprogramar según calendario».</li><li><b>Máquinas</b>: «＋ Agregar máquina» (podés copiarle el plan de otra parecida), «Editar máquina» y «Dar de baja» desde la ficha. Las dadas de baja no se borran y se pueden reactivar.</li><li><b>Mandar aviso</b>: en Más → Avisos, a una persona o a todo el equipo. Les llega al celular.</li><li><b>Informes</b>: el Excel trae el preventivo plan vs. real y el cumplimiento por máquina.</li></ul>
+
 <div class="info">Se necesita internet para guardar. Si aparece un error en rojo, el dato <b>no</b> se guardó.</div></div>`}
+
+
+/* ===================== V12: MÁQUINAS, PLAN, CALENDARIO, PREVENTIVO Y AVISOS ===================== */
+const FREQS=['Semanal','Quincenal','Mensual','Bimestral','Trimestral','Cuatrimestral','Semestral','Anual'];
+const FREQ_N={Semanal:52,Quincenal:24,Mensual:12,Bimestral:6,Trimestral:4,Cuatrimestral:3,Semestral:2,Anual:1};
+const MTYPES=['Preventivo','Predictivo','Correctivo planificado','Overhaul / Reparación mayor','Legal / Normativo'];
+const TRADES=['Técnico de mantenimiento','Herrero','Edilicio','Jefe de mantenimiento','Supervisor de mantenimiento'];
+const MESES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const DOW=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+const OST={sinasignar:['Sin asignar','b-pend'],asignado:['Asignado','b-proc'],hecho:['Hecho','b-ok'],cancelado:['Cancelado','']};
+const dObj=d=>new Date(d+'T12:00:00');
+const isoD=x=>x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0');
+const addDays=(d,n)=>{const x=dObj(d);x.setDate(x.getDate()+n);return isoD(x)};
+const ymOf=d=>String(d).slice(0,7);
+const ymAdd=(ym,n)=>{const [y,m]=ym.split('-').map(Number);return isoD(new Date(y,m-1+n,1,12)).slice(0,7)};
+const monthStart=ym=>ym+'-01';
+const monthEnd=ym=>{const [y,m]=ym.split('-').map(Number);return isoD(new Date(y,m,0,12))};
+const ymName=ym=>{const [y,m]=ym.split('-').map(Number);return MESES[m-1]+' '+y};
+const defProd=d=>{const w=dObj(d).getDay();return w>=1&&w<=5};
+const isProd=d=>S.cal[d]?S.cal[d].productive:defProd(d);
+const dayLbl=d=>DOW[dObj(d).getDay()]+' '+fmtD(d).slice(0,5);
+const orderState=o=>o.status==='cancelado'?'cancelado':o.done_at?'hecho':o.work_task_id?'asignado':'sinasignar';
+const machRow=code=>S.machinesAll.find(x=>x.code===code);
+const mLabelById=code=>{const m=machRow(code)||MACHINES.find(x=>x.id===code);return m?code+' · '+m.name:code};
+const machIdOf=label=>String(label||'').split(' · ')[0];
+const team=()=>S.profiles.filter(p=>p.approved&&p.first_name);
+const v12Warn=()=>S.v12Missing?`<div class="err" style="margin-bottom:12px">${isSup()?'Falta correr el SQL de la V12 en Supabase (máquinas, plan, calendario, preventivo y avisos).':'Esta parte todavía no está activada. Avisale al supervisor.'}</div>`:'';
+const backMas=`<button class="btn ghost sm" onclick="go('mas')">← Más</button>`;
+
+async function loadV12(){
+  try{
+    const from=addDays(today(),-400),to=addDays(today(),430);
+    const [ma,pl,cal,no,ord]=await Promise.all([
+      api('/rest/v1/machines?select=*&order=code.asc&limit=2000'),
+      api('/rest/v1/pm_plan?select=*&order=machine_code.asc,created_at.asc&limit=5000'),
+      api(`/rest/v1/prod_calendar?select=*&day=gte.${from}&day=lte.${to}&limit=2000`),
+      api('/rest/v1/team_notices?select=*&order=created_at.desc&limit=60'),
+      api(`/rest/v1/pm_orders?select=*&planned_date=gte.${addDays(today(),-14)}&planned_date=lte.${addDays(today(),45)}&order=planned_date.asc&limit=3000`)]);
+    S.machinesAll=ma;if(ma.length)MACHINES=ma.filter(m=>m.active).map(m=>({id:m.code,name:m.name,sector:m.sector||'',location:m.location||'',type:m.equipment_type||'',brand:m.brand_model||'',notes:m.notes||''}));
+    S.plan=pl;S.cal=Object.fromEntries(cal.map(c=>[c.day,c]));S.notices=no;S.ordersNear=ord;S.v12Missing=false;
+  }catch(e){S.v12Missing=true}
+}
+async function loadOrders(ym,force){
+  if(S.v12Missing)return;if(!force&&(S.pmOrders[ym]||S.pmLoading===ym))return;S.pmLoading=ym;
+  try{S.pmOrders[ym]=await api(`/rest/v1/pm_orders?select=*&planned_date=gte.${monthStart(ym)}&planned_date=lte.${monthEnd(ym)}&order=planned_date.asc,machine_code.asc&limit=5000`)}
+  catch(e){S.pmOrders[ym]=[];toast('No se pudieron cargar los preventivos: '+e.message,'bad')}
+  finally{S.pmLoading=null}
+  if(['preventivo','calendario'].includes(S.view))render();
+}
+const findOrder=id=>Object.values(S.pmOrders).flat().concat(S.ordersNear).find(o=>o.id===id);
+const taskOf=o=>o.work_task_id?S.tasks.find(t=>t.id===o.work_task_id):null;
+
+/* ---------- PREVENTIVO DEL MES ---------- */
+function vPreventivo(){
+  const ym=S.pmYm||(S.pmYm=ymOf(today()));const all=S.pmOrders[ym];
+  if(!S.v12Missing&&!all)loadOrders(ym);
+  const nav=`<div class="line" style="margin-bottom:10px"><button class="btn ghost sm" onclick="S.pmYm=ymAdd(S.pmYm,-1);render()">‹</button><h3 style="margin:0">${ymName(ym)}</h3><button class="btn ghost sm" onclick="S.pmYm=ymAdd(S.pmYm,1);render()">›</button></div>`;
+  let h=`${backMas}<h2>🛠 Preventivo</h2>${v12Warn()}${nav}`;
+  if(S.v12Missing)return h;if(!all)return h+'<p class="muted">Cargando…</p>';
+  const cnt=k=>all.filter(o=>orderState(o)===k).length,act=all.filter(o=>o.status!=='cancelado');
+  const pct=act.length?Math.round(cnt('hecho')*100/act.length):0;
+  const venc=all.filter(o=>['sinasignar','asignado'].includes(orderState(o))&&o.planned_date<today()).length;
+  h+=`<div class="stats"><div class="stat ${cnt('sinasignar')?'yel':''}" onclick="S.pmF='sinasignar';render()"><b>${cnt('sinasignar')}</b><span>Sin asignar</span></div><div class="stat" onclick="S.pmF='asignado';render()"><b>${cnt('asignado')}</b><span>Asignados</span></div><div class="stat" onclick="S.pmF='hecho';render()"><b>${cnt('hecho')}</b><span>Hechos · ${pct}% cumplido</span></div><div class="stat ${venc?'red':''}" onclick="S.pmF='vencidos';render()"><b>${venc}</b><span>Vencidos sin hacer</span></div></div>`;
+  if(isBoss())h+=`<div class="actions" style="margin-bottom:12px"><button class="btn sec sm" onclick="genOrders(this,'gen')">⚙️ Generar los que falten</button><button class="btn ghost sm" onclick="genOrders(this,'re')">📅 Reprogramar según calendario</button><button class="btn ghost sm" onclick="go('calendario')">Ver calendario</button></div>`;
+  const F=S.pmF||'sinasignar',q=(S.pmQ||'').toLowerCase();
+  h+=`<div class="seg">${[['sinasignar','Sin asignar'],['asignado','Asignados'],['hecho','Hechos'],['vencidos','Vencidos'],['todos','Todos']].map(([k,t])=>`<button class="${F===k?'on':''}" onclick="S.pmF='${k}';render()">${t}</button>`).join('')}</div>
+<input placeholder="Buscar máquina o tarea…" value="${esc(S.pmQ||'')}" oninput="S.pmQ=this.value;clearTimeout(window._pq);window._pq=setTimeout(()=>{render();const i=document.querySelector('#app input');if(i){i.focus();i.setSelectionRange(i.value.length,i.value.length)}},350)" style="margin-bottom:10px">`;
+  let list=all.filter(o=>F==='todos'?true:F==='vencidos'?(['sinasignar','asignado'].includes(orderState(o))&&o.planned_date<today()):orderState(o)===F);
+  if(q)list=list.filter(o=>(mLabelById(o.machine_code)+' '+o.task).toLowerCase().includes(q));
+  if(!all.length)return h+`<div class="card muted">No hay preventivos programados en ${ymName(ym)}.${isBoss()?' Tocá <b>Generar los que falten</b>.':''}</div>`;
+  if(!list.length)return h+'<div class="card muted">No hay preventivos en este filtro.</div>';
+  const byDay={};[...list].sort((a,b)=>a.planned_date<b.planned_date?-1:a.planned_date>b.planned_date?1:a.machine_code<b.machine_code?-1:1).forEach(o=>(byDay[o.planned_date]??=[]).push(o));
+  return h+Object.entries(byDay).map(([d,os])=>`<h3>${dayLbl(d)} ${isProd(d)?'':'<span class="badge b-alta">No productivo</span>'} <span class="muted small">· ${os.length} · ${Math.round(os.reduce((s,o)=>s+(o.hours||0)*(o.techs||1),0)*10)/10} HH</span></h3>${os.map(orderCard).join('')}`).join('');
+}
+function orderCard(o){
+  const st=orderState(o),t=taskOf(o),stop=Number(o.stop_hours)||0;
+  let x=`<div class="card ${st==='hecho'?'':st==='sinasignar'&&o.planned_date<today()?'urgent':'accent'}"><div class="line"><div><div class="title">${esc(o.task)}</div><div class="muted small">${esc(mLabelById(o.machine_code))} ${critBadge(o.machine_code,true)}</div></div><div style="text-align:right">${badge(OST,st)}</div></div>
+<div class="muted small" style="margin-top:6px">🔁 ${esc(o.frequency||'')} · ⏱ ${o.techs||1} × ${o.hours||0} h${stop?` · ⛔ parada ${stop} h${stop<=1?' (cambio de turno)':''}`:''}${t?` · 👤 ${esc(nameOf(t.assigned_to))}`:''}${o.done_at?` · ✓ ${fmtDT(o.done_at)}`:''}${o.cancel_reason?` · ${esc(o.cancel_reason)}`:''}</div>`;
+  if(isBoss()&&st==='sinasignar')x+=`<div class="row" style="margin-top:8px"><select id="po_${o.id}"><option value="">Asignar a…</option>${team().map(p=>`<option value="${p.id}">${esc(p.first_name+' '+(p.last_name||''))}</option>`).join('')}</select><button class="btn sm" style="flex:0 0 auto" onclick="assignOrder(this,'${o.id}')">Asignar</button></div>
+<details style="margin-top:8px"><summary class="small">Cambiar fecha o cancelar</summary><div class="row" style="margin-top:8px"><input type="date" id="pd_${o.id}" value="${o.planned_date}"><button class="btn sec sm" style="flex:0 0 auto" onclick="moveOrder(this,'${o.id}')">Cambiar fecha</button></div><button class="btn ghost sm" style="margin-top:8px" onclick="cancelOrder(this,'${o.id}')">✕ Cancelar este preventivo</button></details>`;
+  if(isBoss()&&st==='cancelado')x+=`<button class="btn ghost sm" style="margin-top:8px" onclick="patchOrder(this,'${o.id}',{status:'programado',cancel_reason:null},'Preventivo reactivado')">↺ Reactivar</button>`;
+  return x+'</div>';
+}
+async function reloadOrdersFor(o){await Promise.all([loadOrders(ymOf(o.planned_date),true),S.pmYm&&S.pmYm!==ymOf(o.planned_date)?loadOrders(S.pmYm,true):null])}
+async function assignOrder(btn,id){const who=$('po_'+id)?.value,o=findOrder(id);if(!who)return toast('Elegí el operario','bad');
+  await busy(btn,async()=>{try{await rpc('assign_pm_order',{p_order:id,p_user:who,p_machine_label:mLabelById(o.machine_code)});toast('Preventivo asignado a '+nameOf(who),'good');await refresh();await reloadOrdersFor(o)}catch(e){toast(e.message,'bad')}})}
+async function patchOrder(btn,id,body,msg){const o=findOrder(id);
+  await busy(btn,async()=>{try{await api('/rest/v1/pm_orders?id=eq.'+id,{method:'PATCH',prefer:'return=minimal',body});toast(msg,'good');await reloadOrdersFor(o);await loadV12();render()}catch(e){toast(e.message,'bad')}})}
+function moveOrder(btn,id){const d=$('pd_'+id).value;if(!d)return toast('Elegí la fecha','bad');
+  if(!isProd(d)||confirm(`El ${dayLbl(d)} es día productivo. Si la tarea necesita parar la máquina, coordinalo con producción. ¿Cambiar igual?`))patchOrder(btn,id,{planned_date:d},'Fecha cambiada a '+dayLbl(d))}
+function cancelOrder(btn,id){const r=prompt('¿Por qué se cancela? (por ejemplo: máquina parada, se hizo en un correctivo)');if(r===null)return;patchOrder(btn,id,{status:'cancelado',cancel_reason:r.trim()||'Cancelado'},'Preventivo cancelado')}
+async function genOrders(btn,mode){const ym=S.pmYm;
+  if(mode==='re'&&!confirm(`Se vuelven a elegir los días de los preventivos SIN asignar de ${ymName(ym)}, según el calendario de producción. Los asignados no se tocan. ¿Seguimos?`))return;
+  await busy(btn,async()=>{try{const n=await rpc(mode==='re'?'reschedule_pm_orders':'generate_pm_orders',{p_from:monthStart(ym),p_to:monthEnd(ym)});
+    toast(mode==='re'?`Listo: ${n} preventivos reprogramados`:n?`Se generaron ${n} preventivos nuevos`:'No faltaba generar ninguno','good');await loadOrders(ym,true);await loadV12()}catch(e){toast(e.message,'bad')}})}
+
+/* ---------- CALENDARIO DE PRODUCCIÓN ---------- */
+function vCalendario(){
+  const ym=S.calYm||(S.calYm=ymOf(today()));const ords=S.pmOrders[ym];if(!S.v12Missing&&!ords)loadOrders(ym);
+  const first=monthStart(ym),last=monthEnd(ym);const pad=(dObj(first).getDay()+6)%7;
+  const per={};(ords||[]).filter(o=>o.status!=='cancelado').forEach(o=>per[o.planned_date]=(per[o.planned_date]||0)+1);
+  let cells='';for(let i=0;i<pad;i++)cells+='<div></div>';
+  for(let d=first;d<=last;d=addDays(d,1)){const p=isProd(d),ov=!!S.cal[d];
+    cells+=`<div class="cal-d ${p?'prod':'noprod'} ${ov?'ov':''} ${d===today()?'hoy':''}" ${isSup()&&!S.v12Missing?`onclick="toggleDay('${d}')"`:''}><b>${Number(d.slice(8))}</b>${per[d]?`<span>🛠${per[d]}</span>`:''}</div>`}
+  const ovs=Object.values(S.cal).filter(c=>ymOf(c.day)===ym).sort((a,b)=>a.day<b.day?-1:1);
+  return `${backMas}<h2>📅 Calendario de producción</h2>${v12Warn()}
+<div class="line" style="margin-bottom:10px"><button class="btn ghost sm" onclick="S.calYm=ymAdd(S.calYm,-1);render()">‹</button><h3 style="margin:0">${ymName(ym)}</h3><button class="btn ghost sm" onclick="S.calYm=ymAdd(S.calYm,1);render()">›</button></div>
+<div class="card"><div class="cal">${DOW.slice(1).concat('Dom').map(x=>`<div class="cal-h">${x}</div>`).join('')}${cells}</div>
+<div class="small muted" style="margin-top:10px"><span class="cal-k prod"></span> Se produce (3 turnos) &nbsp; <span class="cal-k noprod"></span> No se produce &nbsp; <span class="cal-k ov"></span> Cambiado a mano · 🛠 preventivos del día</div></div>
+${isSup()?'<div class="info small">Tocá un día para cambiarlo: un <b>sábado</b> que se trabaja pasa a productivo; un <b>feriado</b> o día que no se trabaja pasa a no productivo. Las tareas que necesitan parar la máquina más de 1 hora se programan en días no productivos. Después de cambiar días, en <b>Preventivo</b> tocá <b>Reprogramar según calendario</b>.</div>':'<div class="info small">El calendario lo marca el supervisor. Lunes a viernes se produce (también los feriados, salvo que se marque lo contrario).</div>'}
+${ovs.length?`<h3>Cambios de este mes</h3><div class="card">${ovs.map(c=>`<div class="list-item small">${dayLbl(c.day)}: <b>${c.productive?'se produce':'no se produce'}</b>${c.note?' · '+esc(c.note):''}</div>`).join('')}</div>`:''}`;
+}
+async function toggleDay(d){const np=!isProd(d);const w=DOW[dObj(d).getDay()];
+  let note=null;if(np!==defProd(d)){note=prompt(np?`¿Marcar el ${dayLbl(d)} como día que SE PRODUCE? Podés escribir una nota (opcional):`:`¿Marcar el ${dayLbl(d)} como día que NO se produce (feriado, parada de planta…)? Podés escribir una nota (opcional):`,np?'Sábado productivo':(w==='Sáb'||w==='Dom'?'':'Feriado sin producción'));if(note===null)return}
+  else if(!confirm(`¿Volver el ${dayLbl(d)} a lo normal (${np?'se produce':'no se produce'})?`))return;
+  try{await rpc('set_production_day',{p_day:d,p_productive:np,p_note:note});if(np===defProd(d))delete S.cal[d];else S.cal[d]={day:d,productive:np,note};
+    toast(`${dayLbl(d)}: ${np?'se produce':'no se produce'}. Acordate de reprogramar los preventivos.`,'good');render()}catch(e){toast(e.message,'bad')}}
+
+/* ---------- PLAN PREVENTIVO ---------- */
+function planSheet(){const plan=[...S.plan].sort((a,b)=>a.machine_code<b.machine_code?-1:a.machine_code>b.machine_code?1:0);
+  return {name:'Plan preventivo',title:'Plan de mantenimiento preventivo',sub:`${plan.filter(p=>p.active).length} tareas activas · generado ${fmtDT(new Date())} por ${nameOf(myId())}. Criticidad: A = ALTA, B = MEDIA, C = BAJA.`,
+   head:['ID activo','Activo','Sector','Crit. (A/B/C)','Tarea / intervención','Tipo de mantenimiento','Frecuencia','Mes de inicio (1-12)','Eventos por año','Oficio','Cant. técnicos','Horas por evento','HH por evento','HH anuales','Horas de parada por evento','Activa','Observaciones'],
+   w:[10,28,13,10,60,20,13,10,10,24,10,10,10,10,12,8,40],
+   rows:plan.map(p=>{const m=machRow(p.machine_code),c=critOf(p.machine_code),n=FREQ_N[p.frequency]||0,hh=(Number(p.hours)||0)*(Number(p.techs)||1);
+     return [p.machine_code,m?.name||'',m?.sector||'',c?ABC[c.level]:'',p.task,p.maint_type||'',p.frequency,Number(p.start_month),n,p.trade||'',Number(p.techs),{n:Number(p.hours),f:2},{n:hh,f:2},{n:hh*n,f:2},{n:Number(p.stop_hours)||0,f:2},p.active?'Sí':'No',p.notes||'']})}}
+function vPlan(){
+  let h=`${backMas}<h2>📋 Plan preventivo</h2>${v12Warn()}`;if(S.v12Missing)return h;
+  const q=(S.planQ||'').toLowerCase(),only=S.planMach;
+  const act=S.plan.filter(p=>p.active),hh=act.reduce((s,p)=>s+(Number(p.hours)||0)*(Number(p.techs)||1)*(FREQ_N[p.frequency]||0),0);
+  h+=`<div class="card"><div class="muted small">${act.length} tareas activas en ${new Set(act.map(p=>p.machine_code)).size} máquinas · ${Math.round(hh)} horas-hombre por año</div><div class="actions" style="margin-top:8px"><button class="btn sec sm" onclick="planDownload(this)">⬇️ Descargar plan en Excel</button>${only?`<button class="btn ghost sm" onclick="S.planMach='';render()">Ver todas las máquinas</button>`:''}</div></div>`;
+  if(!only)h+=`<input placeholder="Buscar máquina o tarea…" value="${esc(S.planQ||'')}" oninput="S.planQ=this.value;clearTimeout(window._lq);window._lq=setTimeout(()=>{render();const i=document.querySelector('#app input');if(i){i.focus();i.setSelectionRange(i.value.length,i.value.length)}},350)" style="margin-bottom:10px">
+<label class="small" style="font-weight:400"><input type="checkbox" style="width:auto" ${S.planOff?'checked':''} onchange="S.planOff=this.checked;render()"> Mostrar también las tareas desactivadas</label>`;
+  const ms=MACHINES.filter(m=>only?m.id===only:true);
+  const blocks=ms.map(m=>{let ps=S.plan.filter(p=>p.machine_code===m.id&&(S.planOff||p.active));
+    if(q&&!(m.id+' '+m.name).toLowerCase().includes(q))ps=ps.filter(p=>p.task.toLowerCase().includes(q));
+    if(q&&!ps.length&&!(m.id+' '+m.name).toLowerCase().includes(q))return '';
+    return `<div class="card"><div class="line"><div class="title">${esc(machineLabel(m))}</div><div>${critBadge(m.id,true)}</div></div>
+${ps.map(p=>`<div class="list-item" ${isBoss()?`onclick="go('planedit',{planId:'${p.id}'})" style="cursor:pointer;${p.active?'':'opacity:.5'}"`:''}><div class="small"><b>${esc(p.task)}</b>${p.active?'':' <span class="badge">Desactivada</span>'}<br><span class="muted">🔁 ${esc(p.frequency)} desde ${MESES[p.start_month-1]} · ${esc(p.trade||'')} · ${p.techs} × ${p.hours} h${Number(p.stop_hours)?` · ⛔ parada ${p.stop_hours} h`:''}${p.maint_type&&p.maint_type!=='Preventivo'?' · '+esc(p.maint_type):''}</span></div></div>`).join('')||'<p class="muted small">Sin tareas de preventivo.</p>'}
+${isBoss()?`<button class="btn ghost sm" style="margin-top:8px" onclick="go('planedit',{planId:'',planMachNew:'${m.id}'})">＋ Agregar tarea</button>`:''}</div>`}).join('');
+  return h+(blocks||'<div class="card muted">No se encontró nada.</div>');
+}
+async function planDownload(btn){await busy(btn,async()=>{try{const b=xlsx([planSheet()]);const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`Plan preventivo Facilitas ${today()}.xlsx`;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);toast('Excel del plan descargado','good')}catch(e){toast(e.message,'bad')}})}
+function vPlanEdit(){if(!isBoss())return vPlan();
+  const p=S.plan.find(x=>x.id===S.planId)||{machine_code:S.planMachNew||'',task:'',maint_type:'Preventivo',frequency:'Mensual',start_month:1,trade:'Técnico de mantenimiento',techs:1,hours:1,stop_hours:0,notes:'',active:true};
+  const opt=(arr,v)=>arr.map(x=>`<option ${x==v?'selected':''}>${esc(x)}</option>`).join('');
+  return `<button class="btn ghost sm" onclick="go('plan')">← Plan</button><h2>${p.id?'Editar tarea del plan':'Nueva tarea del plan'}</h2><div class="card">
+<label>Máquina</label><select id="peM">${MACHINES.map(m=>`<option value="${m.id}" ${m.id===p.machine_code?'selected':''}>${esc(machineLabel(m))}</option>`).join('')}</select>
+<label>Tarea / intervención</label><textarea id="peT">${esc(p.task)}</textarea>
+<div class="row"><div><label>Frecuencia</label><select id="peF">${opt(FREQS,p.frequency)}</select></div><div><label>Mes de inicio</label><select id="peS">${MESES.map((x,i)=>`<option value="${i+1}" ${i+1==p.start_month?'selected':''}>${x}</option>`).join('')}</select></div></div>
+<p class="muted small" style="margin:4px 0 0">El mes de inicio sirve para las tareas bimestrales o más espaciadas: por ejemplo, una trimestral que empieza en febrero se hace en febrero, mayo, agosto y noviembre.</p>
+<div class="row"><div><label>Tipo</label><select id="peY">${opt(MTYPES,p.maint_type)}</select></div><div><label>Oficio</label><select id="peO">${opt(TRADES,p.trade)}</select></div></div>
+<div class="row"><div><label>Técnicos</label><input id="peN" type="number" min="1" step="1" inputmode="numeric" value="${p.techs}"></div><div><label>Horas por vez</label><input id="peH" type="number" min="0" step="0.5" inputmode="decimal" value="${p.hours}"></div><div><label>Parada de máquina (h)</label><input id="peP" type="number" min="0" step="0.5" inputmode="decimal" value="${p.stop_hours}"></div></div>
+<p class="muted small" style="margin:4px 0 0">Si la parada es de más de 1 hora, el preventivo se programa en un día que no se produce. Si es de 1 hora o menos, en un día hábil (para coordinarlo en un cambio de turno).</p>
+<label>Observaciones</label><textarea id="peX">${esc(p.notes||'')}</textarea>
+${p.id?`<label class="small" style="font-weight:400"><input type="checkbox" id="peA" style="width:auto" ${p.active?'checked':''}> Tarea activa (si la desactivás, deja de generar preventivos)</label>`:''}
+<button class="btn block" onclick="savePlan(this)">Guardar</button></div>
+<p class="muted small">Los cambios valen para los preventivos que se generen desde ahora. Los que ya están programados no cambian; si querés que tomen el cambio, en Preventivo tocá <b>Reprogramar según calendario</b>.</p>`}
+async function savePlan(btn){const id=S.planId;const num=(v,d)=>{const n=Number(String(v).replace(',','.'));return Number.isFinite(n)?n:d};
+  const body={machine_code:$('peM').value,task:$('peT').value.trim(),frequency:$('peF').value,start_month:Number($('peS').value),maint_type:$('peY').value,trade:$('peO').value,techs:Math.max(1,Math.round(num($('peN').value,1))),hours:Math.max(0,num($('peH').value,1)),stop_hours:Math.max(0,num($('peP').value,0)),notes:$('peX').value.trim()||null,updated_by:myId(),updated_at:new Date().toISOString()};
+  if(id)body.active=$('peA').checked;
+  if(!body.machine_code)return toast('Elegí la máquina','bad');if(!body.task)return toast('Escribí la tarea','bad');
+  await busy(btn,async()=>{try{if(id)await api('/rest/v1/pm_plan?id=eq.'+id,{method:'PATCH',prefer:'return=minimal',body});else await api('/rest/v1/pm_plan',{method:'POST',prefer:'return=minimal',body});
+    await loadV12();toast('Plan guardado','good');go('plan',{planMach:body.machine_code})}catch(e){toast(e.message,'bad')}})}
+
+/* ---------- AGREGAR / EDITAR / DAR DE BAJA MÁQUINAS ---------- */
+function vMaqEdit(){if(!isBoss())return vMaquinas();const m=S.machEdit?machRow(S.machEdit):null;const nuevo=!m;
+  const types=[...new Set(S.machinesAll.map(x=>x.equipment_type).filter(Boolean))].sort(),secs=[...new Set(['Producción','Envasado','CHE','Tapas','Planta','Logística',...S.machinesAll.map(x=>x.sector)].filter(Boolean))];
+  return `<button class="btn ghost sm" onclick="go(S.machEdit?'maquina':'maquinas')">← Volver</button><h2>${nuevo?'＋ Agregar máquina':'Editar máquina'}</h2>${v12Warn()}<div class="card">
+<label>Código</label><input id="meC" value="${esc(m?.code||'')}" ${nuevo?'':'disabled'} placeholder="Ej.: AMC-03" style="text-transform:uppercase">
+${nuevo?'<p class="muted small" style="margin:4px 0 0">Letras, guion y número, como las demás (AMC-01, HOR-12…). Después no se puede cambiar.</p>':''}
+<label>Nombre</label><input id="meN" value="${esc(m?.name||'')}" placeholder="Ej.: Amasadora chica N3">
+<div class="row"><div><label>Sector</label><input id="meS" list="meSL" value="${esc(m?.sector||'Producción')}"><datalist id="meSL">${secs.map(x=>`<option value="${esc(x)}">`).join('')}</datalist></div><div><label>Ubicación / línea</label><input id="meU" value="${esc(m?.location||'')}"></div></div>
+<div class="row"><div><label>Tipo de equipo</label><input id="meT" list="meTL" value="${esc(m?.equipment_type||'')}"><datalist id="meTL">${types.map(x=>`<option value="${esc(x)}">`).join('')}</datalist></div><div><label>Marca / modelo</label><input id="meB" value="${esc(m?.brand_model||'')}"></div></div>
+<label>Observaciones</label><textarea id="meX">${esc(m?.notes||'')}</textarea>
+${nuevo?`<label>Copiar el plan preventivo de otra máquina (opcional)</label><select id="meP"><option value="">No copiar</option>${MACHINES.filter(x=>S.plan.some(p=>p.machine_code===x.id&&p.active)).map(x=>`<option value="${x.id}">${esc(machineLabel(x))} (${S.plan.filter(p=>p.machine_code===x.id&&p.active).length} tareas)</option>`).join('')}</select>`:''}
+<button class="btn block" onclick="saveMachine(this)">Guardar</button></div>
+${!nuevo&&m.active?`<div class="card"><h3>Dar de baja</h3><p class="muted small">La máquina deja de aparecer en las listas y deja de generar preventivos. No se borra su historial y se puede reactivar.</p><button class="btn ghost block" onclick="setMachineActive(this,'${m.code}',false)">Dar de baja esta máquina</button></div>`:''}`}
+async function saveMachine(btn){const m=S.machEdit?machRow(S.machEdit):null;const code=(m?m.code:$('meC').value).trim().toUpperCase().replace(/\s+/g,'');
+  const body={name:$('meN').value.trim(),sector:$('meS').value.trim()||'Producción',location:$('meU').value.trim()||null,equipment_type:$('meT').value.trim()||null,brand_model:$('meB').value.trim()||null,notes:$('meX').value.trim()||null,updated_by:myId(),updated_at:new Date().toISOString()};
+  if(!/^[A-Z0-9]+-[0-9A-Z]+$/.test(code))return toast('El código tiene que ser tipo ABC-01','bad');if(!body.name)return toast('Escribí el nombre','bad');
+  if(!m&&S.machinesAll.some(x=>x.code===code))return toast('Ya existe una máquina con el código '+code+(machRow(code).active?'':' (está dada de baja: reactivala desde Máquinas)'),'bad');
+  await busy(btn,async()=>{try{
+    if(m)await api('/rest/v1/machines?code=eq.'+encodeURIComponent(code),{method:'PATCH',prefer:'return=minimal',body});
+    else{await api('/rest/v1/machines',{method:'POST',prefer:'return=minimal',body:{code,...body}});
+      const src=$('meP')?.value;if(src){const rows=S.plan.filter(p=>p.machine_code===src&&p.active).map(p=>({machine_code:code,task:p.task,maint_type:p.maint_type,frequency:p.frequency,start_month:p.start_month,trade:p.trade,techs:p.techs,hours:p.hours,stop_hours:p.stop_hours,notes:p.notes,updated_by:myId()}));
+        if(rows.length)await api('/rest/v1/pm_plan',{method:'POST',prefer:'return=minimal',body:rows})}}
+    await loadV12();toast(m?'Máquina guardada':'Máquina '+code+' agregada','good');go('maquina',{mach:code})}catch(e){toast(e.message,'bad')}})}
+async function setMachineActive(btn,code,on){
+  if(!on&&!confirm(`¿Dar de baja ${mLabelById(code)}? Se cancelan sus preventivos sin asignar. El historial se conserva.`))return;
+  await busy(btn,async()=>{try{await api('/rest/v1/machines?code=eq.'+encodeURIComponent(code),{method:'PATCH',prefer:'return=minimal',body:{active:on,updated_by:myId(),updated_at:new Date().toISOString()}});
+    if(!on)await api(`/rest/v1/pm_orders?machine_code=eq.${encodeURIComponent(code)}&status=eq.programado&work_task_id=is.null&planned_date=gte.${today()}`,{method:'PATCH',prefer:'return=minimal',body:{status:'cancelado',cancel_reason:'Máquina dada de baja'}});
+    S.pmOrders={};await loadV12();toast(on?'Máquina reactivada':'Máquina dada de baja','good');on?go('maquina',{mach:code}):go('maquinas')}catch(e){toast(e.message,'bad')}})}
+function machineAdminBox(){if(!isBoss()||S.v12Missing)return '';const off=S.machinesAll.filter(m=>!m.active);
+  return `<div class="actions" style="margin-bottom:12px"><button class="btn sm" onclick="go('maqedit',{machEdit:''})">＋ Agregar máquina</button>${off.length?`<button class="btn ghost sm" onclick="S.showOff=!S.showOff;render()">${S.showOff?'Ocultar':'Ver'} dadas de baja (${off.length})</button>`:''}</div>
+${S.showOff?`<div class="card"><h3>Dadas de baja</h3>${off.map(m=>`<div class="line list-item"><div class="small">${esc(m.code+' · '+m.name)}<br><span class="muted">${esc(m.sector||'')}</span></div><button class="btn ghost sm" onclick="setMachineActive(this,'${esc(m.code)}',true)">Reactivar</button></div>`).join('')}</div>`:''}`}
+function machinePlanBox(m){if(S.v12Missing)return '';const ps=S.plan.filter(p=>p.machine_code===m.id&&p.active);
+  const next=pid=>S.ordersNear.filter(o=>o.plan_id===pid&&o.status!=='cancelado'&&!o.done_at&&o.planned_date>=today()).sort((a,b)=>a.planned_date<b.planned_date?-1:1)[0];
+  return `<h3>Plan preventivo (${ps.length})</h3><div class="card">${ps.map(p=>{const n=next(p.id);return `<div class="list-item small"><b>${esc(p.task)}</b><br><span class="muted">🔁 ${esc(p.frequency)} · ${p.techs} × ${p.hours} h${Number(p.stop_hours)?` · ⛔ parada ${p.stop_hours} h`:''}${n?` · próximo: ${dayLbl(n.planned_date)}`:''}</span></div>`}).join('')||'<p class="muted small">Sin tareas de preventivo cargadas.</p>'}
+<div class="actions" style="margin-top:8px"><button class="btn ghost sm" onclick="go('plan',{planMach:'${m.id}'})">${isBoss()?'Ver y editar el plan':'Ver el plan'}</button>${isBoss()?`<button class="btn ghost sm" onclick="go('maqedit',{machEdit:'${m.id}'})">✏️ Editar máquina</button>`:''}</div></div>`}
+
+/* ---------- AVISOS AL EQUIPO ---------- */
+const noticeTo=n=>n.to_users?.length?n.to_users.map(nameOf).join(', '):'Todo el equipo';
+function unreadNotices(){const seen=store.get('mat12_seen_notice','');return (S.notices||[]).filter(n=>n.sent_by!==myId()&&n.created_at>seen)}
+function noticeCard(n){return `<div class="card accent"><div class="line"><div class="title">📣 ${esc(nameOf(n.sent_by))}</div><span class="muted small">${fmtDT(n.created_at)}</span></div><p style="margin:6px 0;white-space:pre-wrap">${esc(n.message)}</p><div class="muted small">Para: ${esc(noticeTo(n))}</div></div>`}
+function vAvisos(){
+  const h=`${backMas}<h2>📣 Avisos</h2>${v12Warn()}`;if(S.v12Missing)return h;
+  const form=isBoss()?`<div class="card"><h3>Mandar aviso</h3><label>Para</label><select id="nvTo"><option value="">👥 Todo el equipo</option>${team().filter(p=>p.id!==myId()).map(p=>`<option value="${p.id}">${esc(p.first_name+' '+(p.last_name||''))}</option>`).join('')}</select>
+<label>Mensaje</label><textarea id="nvMsg" maxlength="1000" placeholder="Ej.: El sábado se para la línea de pan de molde de 6 a 14 para el preventivo de la divisora."></textarea>
+<button class="btn block" onclick="sendNotice(this)">📣 Mandar aviso</button><p class="muted small">Les llega como notificación al celular a los que tengan los avisos activados, y queda guardado acá.</p></div>`:'';
+  return h+form+`<h3>Últimos avisos</h3>${(S.notices||[]).map(noticeCard).join('')||'<div class="card muted">Todavía no hay avisos.</div>'}`;
+}
+afterRender.avisos=()=>{const n=(S.notices||[])[0];if(n)store.set('mat12_seen_notice',n.created_at)};
+async function sendNotice(btn){const to=$('nvTo').value,msg=$('nvMsg').value.trim();if(!msg)return toast('Escribí el aviso','bad');
+  if(!confirm(`¿Mandar el aviso a ${to?nameOf(to):'todo el equipo'}?`))return;
+  await busy(btn,async()=>{try{const n=await rpc('send_team_notice',{p_to:to?[to]:[],p_message:msg});toast(`Aviso enviado a ${n} ${n===1?'persona':'personas'}`,'good');await loadV12();render()}catch(e){toast(e.message,'bad')}})}
+
+/* ---------- INFORME: PLAN VS REAL ---------- */
+async function addPmSheets(sheets,from,to){
+  if(S.v12Missing)return;
+  let orders=[];try{orders=await fetchAll(`/rest/v1/pm_orders?select=*&planned_date=gte.${from}&planned_date=lte.${to}&order=planned_date.asc,machine_code.asc`)}catch{return}
+  const ids=[...new Set(orders.map(o=>o.work_task_id).filter(Boolean))];let tk=[];
+  for(let i=0;i<ids.length;i+=80)tk=tk.concat(await api('/rest/v1/work_tasks?select=*&id=in.('+ids.slice(i,i+80).join(',')+')'));
+  const T=Object.fromEntries(tk.map(t=>[t.id,t])),H=s=>Math.round(s/36)/100,td=today();
+  const done=o=>!!o.done_at,act=orders.filter(o=>o.status!=='cancelado');
+  const late=o=>o.status!=='cancelado'&&!o.done_at&&o.planned_date<td;
+  const onTime=o=>done(o)?(new Date(o.done_at).toLocaleDateString('en-CA',{timeZone:TZ})<=o.planned_date?'Sí':'Con atraso'):late(o)?'Vencido':'';
+  const ST={sinasignar:'Sin asignar',asignado:'Asignado',hecho:'Hecho',cancelado:'Cancelado'};
+  const real=o=>{const t=T[o.work_task_id];return t?H(taskSeconds(t)):0};
+  sheets.push({name:'Preventivo plan vs real',title:'Preventivo: plan vs. real',sub:`${act.length} programados · ${act.filter(done).length} hechos · ${act.length?Math.round(act.filter(done).length*100/act.length):0}% de cumplimiento · ${fmtD(from)} al ${fmtD(to)}`,
+    head:['Fecha programada','Día','Código','Máquina','Sector','Crit.','Tarea','Frecuencia','HH plan','Parada (h)','Estado','Asignado a','Finalizada','Horas reales (reloj)','A tiempo','Motivo cancelación'],
+    w:[12,6,10,28,13,6,55,12,9,9,11,20,16,12,11,28],
+    rows:orders.map(o=>{const m=machRow(o.machine_code),c=critOf(o.machine_code),t=T[o.work_task_id];
+      return [fmtD(o.planned_date),DOW[dObj(o.planned_date).getDay()],o.machine_code,m?.name||'',m?.sector||'',c?ABC[c.level]:'',o.task,o.frequency||'',{n:(o.hours||0)*(o.techs||1),f:2},{n:Number(o.stop_hours)||0,f:2},ST[orderState(o)],t?nameOf(t.assigned_to):'',o.done_at?fmtDT(o.done_at):'',t?{n:real(o),f:2}:'',onTime(o),o.cancel_reason||'']})});
+  const per={};act.forEach(o=>{const p=per[o.machine_code]??={n:0,d:0,hh:0,r:0,v:0};p.n++;if(done(o))p.d++;p.hh+=(o.hours||0)*(o.techs||1);p.r+=real(o);if(late(o))p.v++});
+  const rowsC=Object.entries(per).sort((a,b)=>(a[1].d/a[1].n)-(b[1].d/b[1].n)).map(([code,p])=>{const m=machRow(code),c=critOf(code);return [code,m?.name||'',m?.sector||'',c?ABC[c.level]:'',p.n,p.d,{n:p.n?p.d/p.n*100:0,f:2},{n:p.hh,f:2},{n:p.r,f:2},p.v]});
+  const tot=Object.values(per).reduce((s,p)=>({n:s.n+p.n,d:s.d+p.d,hh:s.hh+p.hh,r:s.r+p.r,v:s.v+p.v}),{n:0,d:0,hh:0,r:0,v:0});
+  rowsC.unshift(['TOTAL','Todas las máquinas','','',tot.n,tot.d,{n:tot.n?tot.d/tot.n*100:0,f:2},{n:tot.hh,f:2},{n:tot.r,f:2},tot.v]);
+  sheets.push({name:'Cumplimiento preventivo',title:'Cumplimiento del preventivo por máquina',sub:'Ordenado de menor a mayor cumplimiento. No cuenta los cancelados. Horas reales = reloj de la tarea (Iniciar → Finalizar, sin pausas).',head:['Código','Máquina','Sector','Crit.','Programados','Hechos','% cumplimiento','HH plan','Horas reales','Vencidos sin hacer'],w:[10,30,14,6,12,10,14,10,12,14],rows:rowsC});
+  sheets.push(planSheet());
+  sheets[0].rows.push(['Preventivos programados en el período',tot.n],['Preventivos hechos',tot.d],['% de cumplimiento del preventivo',{n:tot.n?Math.round(tot.d/tot.n*1000)/10:0,f:2}],['Preventivos vencidos sin hacer',tot.v]);
+}
 
 /* ===================== INFORMES (EXCEL + DRIVE) ===================== */
 function vInformes(){const d=new Date();const first=new Date(d.getFullYear(),d.getMonth(),1).toLocaleDateString('en-CA');
   return `<button class="btn ghost sm" onclick="go('mas')">← Más</button><h2>Informes</h2><div class="card">
-<p class="muted small">Genera un Excel con: resumen, horas por operario, trabajos realizados (con fotos), tareas (con compañeros y emergencias), pedidos, movimientos de repuestos, inventario actual y criticidad de máquinas.</p>
+<p class="muted small">Genera un Excel con: resumen, horas por operario, trabajos realizados (con fotos), tareas (con compañeros y emergencias), pedidos, movimientos de repuestos, inventario actual, criticidad de máquinas (A/B/C), <b>preventivo plan vs. real</b>, cumplimiento por máquina y el plan preventivo completo.</p>
 <div class="row"><div><label>Desde</label><input id="iFrom" type="date" value="${S.iFrom||first}"></div><div><label>Hasta</label><input id="iTo" type="date" value="${S.iTo||today()}"></div></div>
 <div class="seg" style="margin-top:10px"><button onclick="setRange('mes')">Este mes</button><button onclick="setRange('ant')">Mes anterior</button><button onclick="setRange('sem')">Últimos 7 días</button></div>
 <button class="btn block" onclick="reportToDrive(this)">☁️ Guardar en mi Google Drive</button>
@@ -766,8 +1020,9 @@ async function buildReport(){
      rows:reqs.map(r=>[dt(r.created_at),r.kind==='insumo'?'Insumo':'Repuesto',r.item,Number(r.quantity),r.unit||'',r.machine_label||'',r.urgency==='urgente'?'URGENTE':'Normal',nameOf(r.requested_by),REQST[r.status]?.[0]||r.status,[r.notes,r.answer].filter(Boolean).join(' — '),r.handled_by?nameOf(r.handled_by):''])},
    {name:'Inventario actual',title:'Inventario de repuestos al '+fmtDT(new Date()),sub:'Stock en tiempo real al generar el informe',head:['Código','Repuesto','Stock','Mínimo','Estado','Ubicación','Equipo','Costo unitario','Proveedor'],w:[14,38,10,10,12,20,26,14,24],
      rows:inv.map(i=>[i.part_code,i.part_name,Number(i.stock_quantity),Number(i.minimum_stock),Number(i.stock_quantity)<=Number(i.minimum_stock)?'REPONER':'OK',i.storage_location||'',[i.machine_code,i.machine_name].filter(Boolean).join(' · '),i.unit_cost!=null?{n:Number(i.unit_cost),f:3}:'',i.supplier||''])},
-   {name:'Criticidad máquinas',title:'Criticidad de máquinas',sub:'Ponderación: producción 45% · alternativa 25% · frecuencia 15% · inocuidad 15%. ALTA si hay riesgo de seguridad, inocuidad 5 o puntaje ≥ 3,8; MEDIA ≥ 2,5',head:['Código','Máquina','Sector','Criticidad','Puntaje','Producción','Alternativa','Frecuencia','Inocuidad','Riesgo seguridad','Tareas abiertas','Trabajos en el período','Observaciones','Evaluó','Fecha evaluación'],w:[10,30,14,12,10,11,11,11,11,10,10,12,40,20,16],
-     rows:[...MACHINES].sort((a,b)=>(critOf(b.id)?.score||0)-(critOf(a.id)?.score||0)).map(m=>{const c=critOf(m.id),lbl=machineLabel(m);return [m.id,m.name,m.sector,c?.level||'SIN EVALUAR',c?{n:Number(c.score),f:2}:'',c?.production_impact||'',c?.no_alternative||'',c?.failure_frequency||'',c?.quality_impact||'',c?(c.safety_risk?'Sí':'No'):'',S.tasks.filter(t=>t.machine_label===lbl&&t.status!=='terminado').length,parts.filter(p=>p.machine_label===lbl).length,c?.notes||'',c?nameOf(c.updated_by):'',c?dt(c.updated_at):'']})}];
+   {name:'Criticidad máquinas',title:'Criticidad de máquinas',sub:'Ponderación: producción 45% · alternativa 25% · frecuencia 15% · inocuidad 15%. ALTA (A) si hay riesgo de seguridad, inocuidad 5 o puntaje ≥ 3,8; MEDIA (B) ≥ 2,5; BAJA (C) el resto. La clase A/B/C es la que usa el Excel del plan.',head:['Código','Máquina','Sector','Criticidad','Clase (A/B/C)','Puntaje','Producción','Alternativa','Frecuencia','Inocuidad','Riesgo seguridad','Tareas abiertas','Trabajos en el período','Observaciones','Evaluó','Fecha evaluación'],w:[10,30,14,12,12,10,11,11,11,11,10,10,12,40,20,16],
+     rows:[...MACHINES].sort((a,b)=>(critOf(b.id)?.score||0)-(critOf(a.id)?.score||0)).map(m=>{const c=critOf(m.id),lbl=machineLabel(m);return [m.id,m.name,m.sector,c?.level||'SIN EVALUAR',c?ABC[c.level]:'',c?{n:Number(c.score),f:2}:'',c?.production_impact||'',c?.no_alternative||'',c?.failure_frequency||'',c?.quality_impact||'',c?(c.safety_risk?'Sí':'No'):'',S.tasks.filter(t=>t.machine_label===lbl&&t.status!=='terminado').length,parts.filter(p=>p.machine_label===lbl).length,c?.notes||'',c?nameOf(c.updated_by):'',c?dt(c.updated_at):'']})}];
+  await addPmSheets(sheets,from,to);
   return {blob:xlsx(sheets),name:`Mantenimiento Facilitas ${from} a ${to}.xlsx`,summary:`${parts.length} partes · ${tasks.length} tareas · ${moves.length} movimientos de repuestos`};
 }
 function iMsg(html,cls='info'){const e=$('iMsg');if(e)e.innerHTML=`<div class="${cls}">${html}</div>`}
@@ -868,7 +1123,7 @@ async function start(){
   }catch(e){if(!session)return go('login');$('app').innerHTML=`<div class="card"><h3>Sin conexión</h3><p class="muted">${esc(e.message)}</p><button class="btn block" onclick="start()">Reintentar</button></div>`}
 }
 (function init(){
-  const qv=new URLSearchParams(location.search).get('v');if(qv&&['tareas','pedidos','inicio'].includes(qv)){S.view=qv;history.replaceState(null,'',location.pathname)}
+  const qv=new URLSearchParams(location.search).get('v');if(qv&&['tareas','pedidos','inicio','avisos','preventivo'].includes(qv)){S.view=qv;history.replaceState(null,'',location.pathname)}
   if('serviceWorker' in navigator)navigator.serviceWorker.addEventListener('message',e=>{if(e.data?.type==='abrir'&&session&&S.me?.approved){refresh();if(e.data.view)go(e.data.view)}});
   const h=new URLSearchParams(location.hash.slice(1));
   if(h.get('access_token')){saveSession({access_token:h.get('access_token'),refresh_token:h.get('refresh_token'),expires_in:Number(h.get('expires_in')||3600),user:null});
