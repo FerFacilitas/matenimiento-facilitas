@@ -102,6 +102,9 @@ table.mini th{font-size:12px;color:var(--mut);text-transform:uppercase}
 .cal-d{border:1px solid var(--line);border-radius:9px;min-height:48px;padding:4px;font-size:13px;display:flex;flex-direction:column;justify-content:space-between;cursor:pointer}
 .cal-d span{font-size:11px}.cal-d.prod{background:#fff}.cal-d.noprod{background:#e6e6eb;color:#666}.cal-d.ov{box-shadow:inset 0 0 0 2px #f0c419}.cal-d.hoy{border:2px solid var(--red)}
 .cal-k{display:inline-block;width:12px;height:12px;border-radius:3px;border:1px solid var(--line);vertical-align:middle}.cal-k.prod{background:#fff}.cal-k.noprod{background:#e6e6eb}.cal-k.ov{box-shadow:inset 0 0 0 2px #f0c419}
+.scanbox{position:relative;border-radius:12px;overflow:hidden;background:#000;aspect-ratio:3/4;max-height:60vh;margin:0 auto}
+.scanbox video{width:100%;height:100%;object-fit:cover;display:block}
+.scanframe{position:absolute;inset:18% 14%;border:3px solid #f0c419;border-radius:16px;box-shadow:0 0 0 2000px rgba(0,0,0,.35)}
 </style>
 </head>
 <body>
@@ -121,7 +124,7 @@ table.mini th{font-size:12px;color:var(--mut);text-transform:uppercase}
 <script>
 'use strict';
 /* ===================== CONFIGURACIÓN ===================== */
-const VERSION='V12';
+const VERSION='V12.1';
 const SB_URL='https://kuvzvpzqsjwpiekrxnxe.supabase.co';
 const SB_KEY='sb_publishable_tEVUpS6_hvpKjZonjw20_g_XDEMw12_'; // clave pública (no es de administrador)
 const GOOGLE_CLIENT_ID='586047120992-v6evqrq8q6n54vgfj3pcg1l3ac73c4o6.apps.googleusercontent.com';
@@ -233,8 +236,9 @@ function render(){
   $('nav').classList.toggle('hidden',!logged);$('syncBtn').classList.toggle('hidden',!logged);
   $('who').textContent=logged?(nameOf(myId())+' · '+({supervisor:'Supervisor',jefe:'Jefe de mantenimiento',operario:'Operario'}[role()]||role())):'Mundo Facilitas';
   document.querySelectorAll('nav.bottom button').forEach(b=>b.classList.toggle('on',b.dataset.v===S.view||(b.dataset.v==='mas'&&['perfil','asignar','usuarios','informes','ayuda','maquinas','maquina','preventivo','calendario','plan','planedit','maqedit','avisos'].includes(S.view))||(b.dataset.v==='tareas'&&S.view==='emergencia')||(b.dataset.v==='repuestos'&&S.view==='pedidos')));
-  const V={login:vLogin,signup:vSignup,pending:vPending,recovery:vRecovery,inicio:vInicio,tareas:vTareas,registrar:vRegistrar,repuestos:vRepuestos,mas:vMas,perfil:vPerfil,asignar:vAsignar,usuarios:vUsuarios,informes:vInformes,ayuda:vAyuda,maquinas:vMaquinas,maquina:vMaquina,emergencia:vEmergencia,pedidos:vPedidos,preventivo:vPreventivo,calendario:vCalendario,plan:vPlan,planedit:vPlanEdit,maqedit:vMaqEdit,avisos:vAvisos};
+  const V={login:vLogin,signup:vSignup,pending:vPending,recovery:vRecovery,inicio:vInicio,tareas:vTareas,registrar:vRegistrar,repuestos:vRepuestos,mas:vMas,perfil:vPerfil,asignar:vAsignar,usuarios:vUsuarios,informes:vInformes,ayuda:vAyuda,maquinas:vMaquinas,maquina:vMaquina,emergencia:vEmergencia,pedidos:vPedidos,preventivo:vPreventivo,calendario:vCalendario,plan:vPlan,planedit:vPlanEdit,maqedit:vMaqEdit,avisos:vAvisos,escanear:vEscanear};
   if(!logged&&!['login','signup','pending','recovery','ayuda'].includes(S.view))S.view='login';
+  if(S.view!=='escanear'&&typeof stopScan==='function')stopScan();
   $('app').innerHTML=(V[S.view]||vInicio)();
   afterRender[S.view]?.();
 }
@@ -315,6 +319,7 @@ ${(()=>{const u=unreadNotices();return u.length?u.slice(0,3).map(noticeCard).joi
  <div class="stat ${low?'yel':''}" onclick="go('repuestos',{invLow:true})"><b>${low}</b><span>Repuestos bajo mínimo</span></div>
 ${isBoss()&&!S.v12Missing?(()=>{const lim=addDays(today(),7),n=S.ordersNear.filter(o=>orderState(o)==='sinasignar'&&o.planned_date<=lim).length;return `<div class="stat ${n?'yel':''}" onclick="go('preventivo',{pmF:'sinasignar',pmYm:ymOf(today())})"><b>${n}</b><span>Preventivos sin asignar (próximos 7 días)</span></div>`})():''}
 ${isBoss()?`<div class="stat ${reqOpen?'yel':''}" onclick="go('pedidos',{reqF:'abiertos'})"><b>${reqOpen}</b><span>Pedidos de repuestos/insumos sin pedir</span></div>`:''}
+<div class="stat" style="background:#fff8db;border-color:#f0dc8a" onclick="go('escanear')"><b>📷</b><span><b style="font-size:13px;display:inline;color:#7a5d00">Escanear máquina (QR)</b></span></div>
 <div class="stat" style="background:#fde4e1;border-color:#f5b5ad" onclick="go('emergencia')"><b style="color:#b42318">🚨</b><span><b style="font-size:13px;display:inline;color:#b42318">Cargar emergencia</b></span></div>
 </div>
 ${(()=>{const hi=MACHINES.filter(m=>critOf(m.id)?.level==='ALTA');const ev=MACHINES.filter(m=>critOf(m.id)).length;
@@ -605,6 +610,7 @@ function vMaquinas(){const q=S.machQ.toLowerCase();
   const open={};S.tasks.filter(t=>t.status!=='terminado').forEach(t=>{const id=(t.machine_label||'').split(' · ')[0];open[id]=(open[id]||0)+1});
   const local=localCritToImport();
   return `<button class="btn ghost sm" onclick="go('mas')">← Más</button><h2>Máquinas y criticidad</h2>
+<button class="btn block" style="margin-bottom:12px" onclick="go('escanear')">📷 Escanear el QR de una máquina</button>
 ${machineAdminBox()}
 ${S.critMissing?'<div class="err" style="margin-bottom:12px">La criticidad todavía no está activada en la base de datos. Hay que correr el SQL de la V10 en Supabase.</div>':''}
 <div class="stats"><div class="stat red" onclick="S.critF='ALTA';render()"><b>${cnt('ALTA')}</b><span>Criticidad ALTA</span></div><div class="stat" onclick="S.critF='MEDIA';render()"><b>${cnt('MEDIA')}</b><span>Criticidad MEDIA</span></div><div class="stat" onclick="S.critF='BAJA';render()"><b>${cnt('BAJA')}</b><span>Criticidad BAJA</span></div><div class="stat ${cnt('NONE')?'yel':''}" onclick="S.critF='NONE';render()"><b>${cnt('NONE')}</b><span>Sin evaluar</span></div></div>
@@ -615,7 +621,7 @@ ${local.length&&isBoss()&&!S.critMissing?`<div class="card alta"><div class="tit
 function vMaquina(){const m=MACHINES.find(x=>x.id===S.mach);if(!m)return vMaquinas();const lbl=machineLabel(m);
   const tasks=S.tasks.filter(t=>machIdOf(t.machine_label)===m.id),works=S.parts.filter(p=>machIdOf(p.machine_label)===m.id),mv=S.moves.filter(x=>x.machine_code===m.id),names=Object.fromEntries(S.inv.map(i=>[i.id,i.part_name]));
   return `<button class="btn ghost sm" onclick="go('maquinas')">← Máquinas</button><h2>${esc(lbl)}</h2><p class="muted">${esc(m.sector)}${m.location?' · '+esc(m.location):''}${m.type?' · '+esc(m.type):''}${m.brand?' · '+esc(m.brand):''}</p>${m.notes?`<p class="muted small">${esc(m.notes)}</p>`:''}
-<div class="actions" style="margin-bottom:12px"><button class="btn sm" onclick="D={...emptyDraft(),machine:'${esc(lbl)}'};saveDraft();go('registrar')">📝 Registrar trabajo aquí</button>${isBoss()?`<button class="btn sec sm" onclick="go('asignar',{preMach:'${esc(lbl)}'})">＋ Asignar tarea</button>`:''}</div>
+<div class="actions" style="margin-bottom:12px"><button class="btn sm" onclick="D={...emptyDraft(),machine:'${esc(lbl)}'};saveDraft();go('registrar')">📝 Registrar trabajo aquí</button>${isBoss()?`<button class="btn sec sm" onclick="go('asignar',{preMach:'${esc(lbl)}'})">＋ Asignar tarea</button><button class="btn ghost sm" onclick="machineLabelPng(this,'${m.id}')">🏷️ Etiqueta QR</button>`:''}</div>
 ${critCard(m)}
 ${machinePlanBox(m)}
 <h3>Tareas (${tasks.length})</h3>${tasks.slice(0,20).map(taskCard).join('')||'<div class="card muted">Sin tareas.</div>'}
@@ -713,8 +719,8 @@ async function saveUser(btn,id){const g=k=>$(k+id);await busy(btn,async()=>{try{
 function vAyuda(){return `<button class="btn ghost sm" onclick="go(session&&S.me?.approved?'mas':'login')">← Volver</button><h2>Ayuda</h2>
 <div class="card"><h3>📱 Instalar en iPhone</h3><ol class="small"><li>Abrí el enlace en <b>Safari</b> (si se abre en WhatsApp, tocá los tres puntos → Abrir en Safari).</li><li>Tocá el botón <b>Compartir</b> (cuadrado con flecha).</li><li>Elegí <b>Agregar a pantalla de inicio</b> → <b>Agregar</b>.</li></ol>
 <h3>🤖 Instalar en Android</h3><ol class="small"><li>Abrí el enlace en <b>Chrome</b> (si se abre dentro de WhatsApp, tocá los tres puntos → <b>Abrir en Chrome</b>).</li><li>Si aparece el botón amarillo <b>Instalar la app</b>, tocalo.</li><li>Si no, menú de tres puntos ⋮ → <b>Instalar aplicación</b> o <b>Agregar a pantalla principal</b> → <b>Instalar</b>.</li><li>Buscá el ícono de Facilitas en el menú de aplicaciones o en la pantalla principal.</li></ol>${installBox()}</div>
-<div class="card"><h3>Uso diario</h3><ul class="small"><li><b>Inicio:</b> al empezar el turno, leé las novedades y los avisos del turno anterior.</li><li><b>Tareas:</b> tocá Iniciar cuando empezás, Pausar si te interrumpen y Finalizar al terminar. Si te ayudó un compañero, tocá <b>👥 Sumar compañero</b> en la tarea.</li><li><b>🚨 Emergencias:</b> si tuviste que atender una falla sin tarea asignada, cargala con <b>Cargar emergencia</b> (en Inicio o Tareas) y marcá quién te ayudó. Le llega el aviso al supervisor.</li><li><b>Fotos:</b> al registrar el trabajo, sacá hasta 3 fotos. Van al informe diario.</li><li><b>📦 Pedidos:</b> en Repuestos → Pedir repuestos o insumos. Le llega el aviso al supervisor y vos ves cuándo se pidió y cuándo llegó.</li><li><b>🔔 Avisos:</b> en Más → Mi perfil y avisos, activá los avisos para que te llegue cada tarea nueva (en iPhone, primero instalá la app).</li><li><b>Registrar:</b> cargá cada trabajo con los repuestos usados. Los repuestos se descuentan solos del inventario.</li><li><b>Repuestos:</b> retiros sueltos, devoluciones e ingresos de stock (jefe).</li><li>Al terminar la jornada, <b>Cerrar mi turno</b> con un aviso para el que entra.</li><li><b>🛠 Preventivo:</b> en Más → Preventivo del mes están las tareas del plan para cada día. Cuando te asignan una, te llega como cualquier tarea (dice «Preventivo»). Iniciala y finalizala igual que siempre: así queda como hecha.</li><li><b>📣 Avisos:</b> los avisos del jefe o del supervisor aparecen arriba de todo en Inicio y en Más → Avisos.</li></ul>
-<h3>Para el jefe y el supervisor</h3><ul class="small"><li><b>Plan preventivo</b> (Más): las tareas de cada máquina, con frecuencia, horas, técnicos y horas de parada. Tocá una tarea para cambiarla o desactivarla; «＋ Agregar tarea» para sumar una. «Descargar plan en Excel» lo baja con el formato del plan.</li><li><b>Preventivo del mes</b>: la app genera sola los preventivos del mes y del siguiente (todos los días a las 8:05). Las tareas que paran la máquina más de 1 hora caen en días que no se produce; el resto, en días hábiles. Asigná cada una al operario, cambiale la fecha o cancelala.</li><li><b>Calendario de producción</b> (solo el supervisor lo cambia): lunes a viernes se produce, feriados incluidos. Marcá el sábado que se trabaja y los feriados que no. Después, en Preventivo, tocá «Reprogramar según calendario».</li><li><b>Máquinas</b>: «＋ Agregar máquina» (podés copiarle el plan de otra parecida), «Editar máquina» y «Dar de baja» desde la ficha. Las dadas de baja no se borran y se pueden reactivar.</li><li><b>Mandar aviso</b>: en Más → Avisos, a una persona o a todo el equipo. Les llega al celular.</li><li><b>Informes</b>: el Excel trae el preventivo plan vs. real y el cumplimiento por máquina.</li></ul>
+<div class="card"><h3>Uso diario</h3><ul class="small"><li><b>Inicio:</b> al empezar el turno, leé las novedades y los avisos del turno anterior.</li><li><b>Tareas:</b> tocá Iniciar cuando empezás, Pausar si te interrumpen y Finalizar al terminar. Si te ayudó un compañero, tocá <b>👥 Sumar compañero</b> en la tarea.</li><li><b>🚨 Emergencias:</b> si tuviste que atender una falla sin tarea asignada, cargala con <b>Cargar emergencia</b> (en Inicio o Tareas) y marcá quién te ayudó. Le llega el aviso al supervisor.</li><li><b>Fotos:</b> al registrar el trabajo, sacá hasta 3 fotos. Van al informe diario.</li><li><b>📦 Pedidos:</b> en Repuestos → Pedir repuestos o insumos. Le llega el aviso al supervisor y vos ves cuándo se pidió y cuándo llegó.</li><li><b>🔔 Avisos:</b> en Más → Mi perfil y avisos, activá los avisos para que te llegue cada tarea nueva (en iPhone, primero instalá la app).</li><li><b>Registrar:</b> cargá cada trabajo con los repuestos usados. Los repuestos se descuentan solos del inventario.</li><li><b>Repuestos:</b> retiros sueltos, devoluciones e ingresos de stock (jefe).</li><li>Al terminar la jornada, <b>Cerrar mi turno</b> con un aviso para el que entra.</li><li><b>🛠 Preventivo:</b> en Más → Preventivo del mes están las tareas del plan para cada día. Cuando te asignan una, te llega como cualquier tarea (dice «Preventivo»). Iniciala y finalizala igual que siempre: así queda como hecha.</li><li><b>📷 QR de las máquinas:</b> cada máquina tiene una etiqueta. Tocá <b>Escanear máquina</b> en Inicio (o en Máquinas), apuntá a la etiqueta y se abre la ficha de esa máquina: registrar trabajo, emergencia, tareas y plan. La primera vez, el celular pide permiso para la cámara: tocá Permitir.</li><li><b>📣 Avisos:</b> los avisos del jefe o del supervisor aparecen arriba de todo en Inicio y en Más → Avisos.</li></ul>
+<h3>Para el jefe y el supervisor</h3><ul class="small"><li><b>Plan preventivo</b> (Más): las tareas de cada máquina, con frecuencia, horas, técnicos y horas de parada. Tocá una tarea para cambiarla o desactivarla; «＋ Agregar tarea» para sumar una. «Descargar plan en Excel» lo baja con el formato del plan.</li><li><b>Preventivo del mes</b>: la app genera sola los preventivos del mes y del siguiente (todos los días a las 8:05). Las tareas que paran la máquina más de 1 hora caen en días que no se produce; el resto, en días hábiles. Asigná cada una al operario, cambiale la fecha o cancelala.</li><li><b>Calendario de producción</b> (solo el supervisor lo cambia): lunes a viernes se produce, feriados incluidos. Marcá el sábado que se trabaja y los feriados que no. Después, en Preventivo, tocá «Reprogramar según calendario».</li><li><b>Máquinas</b>: «＋ Agregar máquina» (podés copiarle el plan de otra parecida), «Editar máquina» y «Dar de baja» desde la ficha. Las dadas de baja no se borran y se pueden reactivar.</li><li><b>Etiquetas QR</b>: si agregás una máquina o se rompe una etiqueta, en la ficha de la máquina tocá «🏷️ Etiqueta QR»: baja una imagen para imprimir a 5 × 5 cm.</li><li><b>Mandar aviso</b>: en Más → Avisos, a una persona o a todo el equipo. Les llega al celular.</li><li><b>Informes</b>: el Excel trae el preventivo plan vs. real y el cumplimiento por máquina.</li></ul>
 
 <div class="info">Se necesita internet para guardar. Si aparece un error en rojo, el dato <b>no</b> se guardó.</div></div>`}
 
@@ -959,6 +965,60 @@ async function addPmSheets(sheets,from,to){
   sheets[0].rows.push(['Preventivos programados en el período',tot.n],['Preventivos hechos',tot.d],['% de cumplimiento del preventivo',{n:tot.n?Math.round(tot.d/tot.n*1000)/10:0,f:2}],['Preventivos vencidos sin hacer',tot.v]);
 }
 
+
+/* ===================== V12.1: QR DE MÁQUINAS ===================== */
+const APP_URL='https://ferfacilitas.github.io/matenimiento-facilitas/';
+const qrUrl=code=>APP_URL+'?m='+encodeURIComponent(code);
+const loadScript=src=>new Promise((res,rej)=>{if(document.querySelector(`script[data-src="${src}"]`))return res();const s=document.createElement('script');s.src=src;s.dataset.src=src;s.onload=res;s.onerror=()=>rej(Error('No se pudo cargar '+src+'. Revisá la conexión.'));document.head.append(s)});
+let SCAN={stream:null,raf:0,busy:false};
+function stopScan(){cancelAnimationFrame(SCAN.raf);SCAN.raf=0;if(SCAN.stream){SCAN.stream.getTracks().forEach(t=>t.stop());SCAN.stream=null}}
+function codeFromQr(txt){const t=String(txt||'').trim();let c='';
+  try{const u=new URL(t);c=u.searchParams.get('m')||''}catch{c=t}
+  return c.toUpperCase().replace(/\s+/g,'')}
+function vEscanear(){return `<button class="btn ghost sm" onclick="go('inicio')">← Volver</button><h2>📷 Escanear máquina</h2>
+<div class="card" style="padding:8px"><div class="scanbox"><video id="scVid" playsinline muted autoplay></video><div class="scanframe"></div></div><p class="muted small" id="scMsg" style="text-align:center;margin:8px 0 0">Abriendo la cámara…</p></div>
+<div class="info small">Apuntá a la etiqueta QR de la máquina, a unos 15–25 cm. Se abre sola la ficha de la máquina: desde ahí registrás el trabajo, cargás una emergencia o ves sus tareas y su plan.</div>
+<details class="card" style="margin-top:12px"><summary class="small">¿No anda la cámara? Escribí el código</summary><div class="row" style="margin-top:8px"><input id="scCode" placeholder="Ej.: HOR-04" style="text-transform:uppercase"><button class="btn sm" style="flex:0 0 auto" onclick="openMachineCode($('scCode').value)">Abrir</button></div></details>`}
+afterRender.escanear=async()=>{
+  const msg=t=>{const e=$('scMsg');if(e)e.textContent=t};
+  try{
+    if(!navigator.mediaDevices?.getUserMedia)throw Error('Este navegador no permite usar la cámara. En iPhone, usá la app instalada o Safari.');
+    await loadScript('./jsqr.js');
+    stopScan();SCAN.stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}},audio:false});
+    if(S.view!=='escanear')return stopScan();
+    const v=$('scVid');v.srcObject=SCAN.stream;await v.play().catch(()=>{});msg('Buscando el código QR…');
+    const cv=document.createElement('canvas'),cx=cv.getContext('2d',{willReadFrequently:true});
+    const tick=()=>{if(!SCAN.stream||S.view!=='escanear')return stopScan();
+      if(v.readyState>=2&&v.videoWidth){const sc=Math.min(1,720/Math.max(v.videoWidth,v.videoHeight));cv.width=Math.round(v.videoWidth*sc);cv.height=Math.round(v.videoHeight*sc);
+        cx.drawImage(v,0,0,cv.width,cv.height);const img=cx.getImageData(0,0,cv.width,cv.height);
+        const r=window.jsQR(img.data,img.width,img.height,{inversionAttempts:'dontInvert'});
+        if(r&&r.data){const code=codeFromQr(r.data);if(code){if(navigator.vibrate)navigator.vibrate(80);stopScan();return openMachineCode(code)}}}
+      SCAN.raf=requestAnimationFrame(tick)};
+    SCAN.raf=requestAnimationFrame(tick);
+  }catch(e){stopScan();msg((e.name==='NotAllowedError'?'No se dio permiso para usar la cámara. En iPhone: Configuración → Safari → Cámara → Permitir (o borrá y volvé a agregar la app). ':'')+(e.message||'No se pudo abrir la cámara.'))}
+};
+function openMachineCode(raw){const code=codeFromQr(raw);if(!code)return toast('Escribí el código','bad');
+  const m=MACHINES.find(x=>x.id===code);if(m){toast('🏭 '+machineLabel(m),'good');return go('maquina',{mach:code})}
+  const off=S.machinesAll.find(x=>x.code===code);toast(off?`${code} está dada de baja.`:`No existe la máquina ${code}.`,'bad');if(S.view!=='escanear')go('escanear')}
+
+/* Etiqueta individual (para máquinas nuevas o reponer una dañada): PNG de 5 × 5 cm a 300 dpi */
+async function machineLabelPng(btn,code){const m=MACHINES.find(x=>x.id===code)||{id:code,name:code,location:''};
+  await busy(btn,async()=>{try{await loadScript('./qrcode.js');
+    const qr=qrcode(0,'H');qr.addData(qrUrl(code));qr.make();const n=qr.getModuleCount();
+    const S5=591,cv=document.createElement('canvas');cv.width=cv.height=S5;const c=cv.getContext('2d');const RED='#b72c37';
+    const rr=(x,y,w,h,r)=>{c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath()};
+    c.fillStyle='#fff';c.fillRect(0,0,S5,S5);rr(9,9,S5-18,S5-18,36);c.fillStyle='#fff';c.fill();c.lineWidth=6;c.strokeStyle=RED;c.stroke();
+    c.save();rr(9,9,S5-18,S5-18,36);c.clip();c.fillStyle=RED;c.fillRect(9,9,S5-18,106);c.restore();
+    const logo=await new Promise(r=>{const i=new Image();i.onload=()=>r(i);i.onerror=()=>r(null);i.src='./logo-app.png'});
+    if(logo){c.fillStyle='#fff';rr(30,23,154,78,14);c.fill();const h=70,w=Math.min(146,logo.width*h/logo.height);c.drawImage(logo,30+(154-w)/2,27,w,h)}
+    c.fillStyle='#fff';c.textAlign='right';c.textBaseline='middle';let fs=64;c.font=`bold ${fs}px Helvetica, Arial, sans-serif`;while(c.measureText(code).width>S5-230&&fs>36){fs-=2;c.font=`bold ${fs}px Helvetica, Arial, sans-serif`}c.fillText(code,S5-34,63);
+    const q=319,cell=q/n,qx=(S5-q)/2,qy=134;c.fillStyle='#000';
+    for(let r=0;r<n;r++)for(let k=0;k<n;k++)if(qr.isDark(r,k))c.fillRect(Math.floor(qx+k*cell),Math.floor(qy+r*cell),Math.ceil(cell),Math.ceil(cell));
+    c.textAlign='center';c.textBaseline='alphabetic';c.fillStyle='#000';let ns=40;c.font=`bold ${ns}px Helvetica, Arial, sans-serif`;while(c.measureText(m.name).width>S5-60&&ns>26){ns-=1;c.font=`bold ${ns}px Helvetica, Arial, sans-serif`}c.fillText(m.name,S5/2,500);
+    if(m.location&&m.location.toLowerCase()!=='sin ubicación'){c.fillStyle='#555';c.font='28px Helvetica, Arial, sans-serif';c.fillText(m.location,S5/2,540)}
+    const blob=await new Promise(r=>cv.toBlob(r,'image/png'));const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`Etiqueta QR ${code}.png`;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),5000);
+    toast('Etiqueta descargada: imprimila a 5 × 5 cm','good')}catch(e){toast(e.message,'bad')}})}
+
 /* ===================== INFORMES (EXCEL + DRIVE) ===================== */
 function vInformes(){const d=new Date();const first=new Date(d.getFullYear(),d.getMonth(),1).toLocaleDateString('en-CA');
   return `<button class="btn ghost sm" onclick="go('mas')">← Más</button><h2>Informes</h2><div class="card">
@@ -1119,10 +1179,12 @@ async function start(){
     if(S.me.first_name)store.del('mat10_pending_meta');
     if(S.me.approved!==true)return go('pending');
     S.view=['login','signup','pending','recovery'].includes(S.view)?'inicio':S.view;render();await refresh();
+    {const pm=store.get('mat12_go_mach',null);if(pm){store.del('mat12_go_mach');openMachineCode(pm)}}
     syncPush().then(()=>{if(['inicio','perfil'].includes(S.view))render()});
   }catch(e){if(!session)return go('login');$('app').innerHTML=`<div class="card"><h3>Sin conexión</h3><p class="muted">${esc(e.message)}</p><button class="btn block" onclick="start()">Reintentar</button></div>`}
 }
 (function init(){
+  const qm=new URLSearchParams(location.search).get('m');if(qm){const c=qm.toUpperCase().replace(/[^A-Z0-9-]/g,'');store.set('mat12_go_mach',c);S.view='maquina';S.mach=c;history.replaceState(null,'',location.pathname)}
   const qv=new URLSearchParams(location.search).get('v');if(qv&&['tareas','pedidos','inicio','avisos','preventivo'].includes(qv)){S.view=qv;history.replaceState(null,'',location.pathname)}
   if('serviceWorker' in navigator)navigator.serviceWorker.addEventListener('message',e=>{if(e.data?.type==='abrir'&&session&&S.me?.approved){refresh();if(e.data.view)go(e.data.view)}});
   const h=new URLSearchParams(location.hash.slice(1));
