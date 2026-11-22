@@ -95,6 +95,11 @@ table.mini th{font-size:12px;color:var(--mut);text-transform:uppercase}
 .helpers{font-size:13px;margin-top:6px;color:#123d6b}
 .helpers .x{border:0;background:#e6effa;color:#123d6b;border-radius:999px;padding:1px 7px;margin-left:2px;font-size:12px}
 .b-em{background:#d92d20;color:#fff}
+.b-crit-a{background:#d92d20;color:#fff}.b-crit-b{background:#ea7a12;color:#fff}.b-crit-c{background:#1d7a4c;color:#fff}.b-inc{background:#fff;color:#555;border:1px dashed #888}.b-oos{background:#1d1d1f;color:#fff}
+.card.crit-a{background:#fdecea;border:2px solid #d92d20}.card.crit-b{background:#fff1e3;border:2px solid #ea7a12}.card.crit-c{background:#e8f6ee;border:2px solid #1d7a4c}.card.crit-i{border:2px dashed #999}.card.crit-x{background:#f1f1f3;border:2px solid #1d1d1f}
+.stat.crit-a{background:#d92d20;border-color:#d92d20;color:#fff}.stat.crit-a b,.stat.crit-a span{color:#fff}.stat.crit-b{background:#ea7a12;border-color:#ea7a12}.stat.crit-b b,.stat.crit-b span{color:#fff}.stat.crit-c{background:#1d7a4c;border-color:#1d7a4c}.stat.crit-c b,.stat.crit-c span{color:#fff}
+.rp-row{display:grid;grid-template-columns:1fr 64px 96px 34px;gap:6px;margin-top:6px;align-items:center}.rp-row input{margin:0}
+.btn.del{background:#fff;color:#b42318;border:1px solid #f5b5ad}
 .btn.em{background:#d92d20}
 .spin{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.5);border-top-color:#fff;border-radius:50%;animation:s .7s linear infinite}
 @keyframes s{to{transform:rotate(360deg)}}
@@ -124,7 +129,7 @@ table.mini th{font-size:12px;color:var(--mut);text-transform:uppercase}
 <script>
 'use strict';
 /* ===================== CONFIGURACIÓN ===================== */
-const VERSION='V12.1';
+const VERSION='V12.2';
 const SB_URL='https://kuvzvpzqsjwpiekrxnxe.supabase.co';
 const SB_KEY='sb_publishable_tEVUpS6_hvpKjZonjw20_g_XDEMw12_'; // clave pública (no es de administrador)
 const GOOGLE_CLIENT_ID='586047120992-v6evqrq8q6n54vgfj3pcg1l3ac73c4o6.apps.googleusercontent.com';
@@ -135,19 +140,34 @@ const PHOTO_BUCKET='fotos-trabajos';
 const MAX_PHOTOS=3;
 let MACHINES=[["AMC-01","Amasadora chica N1","Producción","Inicio de bollería"],["AMC-02","Amasadora chica N2","Producción","Inicio de bollería"],["DIV-01","Divisora","Producción","2do proceso bollería"],["REB-01","Rebolladora","Producción","3er proceso bollería"],["DES-01","Descansadora","Producción","4to proceso bollería"],["AR-01","Armadora","Producción","5to proceso bollería"],["SOB-01","Sobadora","Producción","Sin ubicación"],["TRI-01","Trinchadora","Producción","Sin ubicación"],["MPI-01","Máquina de pizzas","Producción","Bollería"],["AMG-01","Amasadora grande N1","Producción","Inicio pan de molde"],["AMG-02","Amasadora grande N2","Producción","Inicio pan de molde"],["ELE-01","Elevadora","Producción","2do proceso pan de molde"],["DIV-02","Divisora","Producción","3er proceso pan de molde"],["REB-02","Rebolladora","Producción","4to proceso pan de molde"],["DES-02","Descansadora","Producción","5to proceso pan de molde"],["AR-02","Armadora","Producción","6to proceso pan de molde"],["FER-01","Fermentadora 1","Producción","Cámara de fermentación"],["FER-02","Fermentadora 2","Producción","Cámara de fermentación"],["FER-03","Fermentadora 3","Producción","Cámara de fermentación"],["FER-04","Fermentadora 4","Producción","Cámara de fermentación"],["FER-05","Fermentadora 5","Producción","Cámara de fermentación"],["HOR-01","Horno rotativo 1","Producción","Hornos"],["HOR-02","Horno rotativo 2","Producción","Hornos"],["HOR-03","Horno rotativo 3","Producción","Hornos"],["HOR-04","Horno rotativo 4","Producción","Hornos"],["HOR-05","Horno rotativo 5","Producción","Hornos"],["HOR-06","Horno rotativo 6","Producción","Hornos"],["HOR-07","Horno rotativo 7","Producción","Hornos"],["HOR-08","Horno rotativo 8","Producción","Hornos"],["HOR-09","Horno rotativo 9","Producción","Hornos"],["HOR-10","Horno rotativo 10","Producción","Hornos"],["HOR-11","Horno rotativo 11","Producción","Hornos"],["HEL-04","Heladera","Producción","Producción"],["ESC-01","Escamadora","Producción","Producción"],["ROC-01","Rociadora 1","Envasado","Sobre envasadora ADK bollería"],["ROC-02","Rociadora 2","Envasado","Inicio línea ADK 400"],["SUN-01","Sunchadora 1","Envasado","Fin de línea"],["SUN-02","Sunchadora 2","Envasado","Fin de línea"],["SUN-03","Sunchadora 3","Envasado","Back Up"],["ADK-01","Flow pack ADK bollería","Envasado","Línea de bollería"],["FEC-01","Fechadora 1","Envasado","Panes"],["FEC-02","Fechadora 2","Envasado","Panes"],["SOP-01","Sopladora 1","Envasado","Fin de línea manual"],["CTR-01","Cinta transportadora 1","Envasado","Fin de línea"],["CTR-02","Cinta transportadora 2","Envasado","Fin de línea"],["SOP-02","Sopladora 2","Envasado","Fin de línea manual"],["SEL-01","Selladora","Envasado","Bollería"],["ADK-02","ADK 400 pan de molde","Envasado","Línea pan de molde"],["ARM-01","Armadora de empanadas","CHE",""],["FRE-01","Freidora","CHE",""],["HOR-12","Horno rotativo","CHE",""],["ABA-11","Abatidor","CHE",""],["MPR-01","Multiprocesadora","CHE",""],["FIA-01","Fiambrera automática 1","CHE",""],["FIA-02","Fiambrera automática 2","CHE",""],["FIA-03","Fiambrera 3","CHE",""],["ADK-03","Flowpack ADK","CHE",""],["TER-01","Termoselladora","CHE",""],["MAP-01","Envasadora al vacío","CHE",""],["COM-01","Compresor grande","Planta","Depósito de residuos"],["COM-02","Compresor chico","Planta",""],["COM-03","Compresor logística","Logística","Depósito de PT"],["CAM-01","Cámara de frío","CHE","Depósito de PT"],["HEL-01","Heladera 1","CHE",""],["HEL-02","Heladera 2","CHE",""],["HEL-03","Heladera 3","CHE",""],["FRE-02","Freezer","CHE",""],["CAM-02","Cámara de frío PT","Logística","Depósito de PT"],["COR-01","Cortadora","Tapas",""],["AMT-01","Amasadora 1","Tapas","Inicio línea Tapas"],["AMT-02","Amasadora 2","Tapas","Inicio línea Tapas"],["AMT-03","Amasadora 3","Tapas","Inicio línea Tapas"],["LAM-01","Laminadora","Tapas",""],["EMP-01","Empastadora","Tapas",""],["ADK-04","Envasadora ADK Tapas Emp","Tapas",""],["STC-01","Envasadora STC Pascu y Tarta","Tapas",""],["TQG-01","Tanque principal 1.000 lts","Planta","Techo"],["CST-01","Cisterna de producción 3.000 lts","Planta","Depósito"],["TQC-01","Tanque 1 CHE 1.000 lts","Planta","CHE"],["TQC-02","Tanque 2 CHE 1.000 lts","Planta","Techo"],["EFR-01","Enfriador de agua 1.000 lts","Planta","Techo"],["TQ-01","Tanque cilíndrico 1 500 lts","Planta","Techo"],["TQ-02","Tanque cilíndrico 2 500 lts","Planta","Mantenimiento"],["CIS-01","Cisterna 1.000 lts","Planta","Mantenimiento"],["TQG-02","Tanque 1.000 lts","Planta","Mantenimiento"]].map(([id,name,sector,location])=>({id,name,sector,location}));
 const SPECIALTIES=['Mantenimiento','Herrería','Mantenimiento edilicio','Supervisión'];
-/* Criticidad: mismo criterio que la V9.6 y que la función save_machine_criticality de Supabase */
+/* Criticidad V12.2: mismo criterio que la función save_machine_criticality_v2 de Supabase */
 const CRIT=[
- {k:'production_impact',old:'prod',name:'Impacto en producción',w:45,opts:['Sin impacto','Inconvenientes menores','Reduce parcialmente la producción','Detiene una línea','Detiene varias líneas o proceso esencial']},
- {k:'no_alternative',old:'alternative',name:'Falta de alternativa',w:25,opts:['Reemplazo inmediato','Alternativa con impacto mínimo','Alternativa parcial','Alternativa muy limitada','Sin alternativa']},
- {k:'failure_frequency',old:'frequency',name:'Frecuencia de fallas',w:15,opts:['Muy rara','Poco frecuente','Ocasional','Frecuente','Muy frecuente']},
- {k:'quality_impact',old:'quality',name:'Calidad e inocuidad',w:15,opts:['Sin impacto','Impacto menor','Posible rechazo de producto','Impacto importante','Riesgo grave de inocuidad']}];
-function critCalc(d){if(!d||!CRIT.every(c=>Number(d[c.k])>=1&&Number(d[c.k])<=5))return null;const score=Math.round(CRIT.reduce((s,c)=>s+Number(d[c.k])*c.w/100,0)*100)/100;
-  return {score,level:d.safety_risk||Number(d.quality_impact)===5||score>=3.8?'ALTA':score>=2.5?'MEDIA':'BAJA'}}
-const LEVEL={ALTA:['Crítica ALTA (A)','b-urg'],MEDIA:['Criticidad MEDIA (B)','b-alta'],BAJA:['Criticidad BAJA (C)','b-ok'],NONE:['Sin evaluar','']};
+ {k:'production_impact',old:'prod',name:'Impacto en producción',w:40,opts:[[1,'Sin impacto de producción'],[2,'Inconvenientes menores'],[3,'Reduce el proceso de producción'],[3.5,'No detiene la línea de producción, pero no se puede almacenar PT'],[4,'Detiene una línea'],[5,'Detiene varias líneas o proceso esencial']]},
+ {k:'no_alternative',old:'alternative',name:'Falta de alternativa',w:25,opts:[[1,'Reemplazo inmediato'],[2,'Alternativa con impacto mínimo'],[3,'Alternativa parcial'],[4,'Alternativa muy limitada'],[5,'Sin alternativa']]},
+ {k:'failure_frequency',old:'frequency',name:'Frecuencia de fallas',w:13,opts:[[1,'Muy rara'],[2,'Poco frecuente'],[3,'Ocasional'],[4,'Frecuente'],[5,'Muy frecuente']]},
+ {k:'quality_impact',old:'quality',name:'Calidad e inocuidad',w:12,opts:[[1,'Sin impacto'],[2,'Impacto menor'],[3,'Posible rechazo de producto'],[4,'Impacto importante'],[5,'Riesgo grave de inocuidad']]},
+ {k:'economic_impact',old:'economic',name:'Impacto económico por compra de insumos de reemplazo',hint:'Ej: si falla, hay que comprar bolsas de hielo en escamas',w:10,opts:[[1,'No hace falta comprar nada'],[2,'Gasto bajo'],[3,'Gasto moderado'],[4,'Gasto alto'],[5,'Gasto muy alto (compra diaria o insumo caro)']]}];
+const fmtV=v=>String(v).replace('.',',');
+const optLabel=(k,v)=>(k.opts.find(o=>o[0]===Number(v))||[])[1]||'';
+const critHas=(d,k)=>k.opts.some(o=>o[0]===Number(d?.[k.k]));
+function critCalc(d){if(d?.out_of_service)return {score:null,level:'NO_FUNCIONA',incomplete:false,missing:[]};
+  const missing=CRIT.filter(k=>!critHas(d,k)).map(k=>k.name);
+  const red=!!d?.safety_risk||Number(d?.quality_impact)===5;
+  if(missing.length)return {score:null,level:red?'ALTA':'INCOMPLETO',incomplete:true,missing};
+  const score=Math.round(CRIT.reduce((s,c)=>s+Number(d[c.k])*c.w/100,0)*100)/100;
+  return {score,level:red||score>=3.8?'ALTA':score>=2.5?'MEDIA':'BAJA',incomplete:false,missing}}
+const LEVEL={ALTA:['🚨 Criticidad ALTA (A)','b-crit-a'],MEDIA:['Criticidad MEDIA (B)','b-crit-b'],BAJA:['Criticidad BAJA (C)','b-crit-c'],INCOMPLETO:['Evaluación incompleta','b-inc'],NO_FUNCIONA:['⛔ No funciona','b-oos'],NONE:['Sin evaluar','']};
+const critCls=l=>({ALTA:'crit-a',MEDIA:'crit-b',BAJA:'crit-c',INCOMPLETO:'crit-i',NO_FUNCIONA:'crit-x'})[l]||'';
 /* Clase A/B/C del Excel del plan: A detiene producción o afecta seguridad/inocuidad, B impacto parcial, C impacto bajo */
-const ABC={ALTA:'A',MEDIA:'B',BAJA:'C'};
+const ABC={ALTA:'A',MEDIA:'B',BAJA:'C',INCOMPLETO:'',NO_FUNCIONA:''};
 const critOf=code=>S.crit[code]||null;
-const critBadge=(code,short)=>{const c=critOf(code);if(!c)return short?'':`<span class="badge">Sin evaluar</span>`;const l=LEVEL[c.level];return `<span class="badge ${l[1]}">${short?c.level+' · '+ABC[c.level]:l[0]}</span>`};
+const scoreTxt=c=>c&&c.score!==null&&c.score!==undefined&&c.score!==''?Number(c.score).toFixed(2):'—';
+const money=n=>'$ '+Number(n||0).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const repairTotal=c=>(Array.isArray(c?.repair_parts)?c.repair_parts:[]).reduce((s,x)=>s+(Number(x.qty)||0)*(Number(x.price)||0),0)+(c?.repair_labor_external?Number(c.repair_labor_cost)||0:0);
+const critBadge=(code,short)=>{const c=critOf(code);if(!c)return short?'':`<span class="badge">Sin evaluar</span>`;const l=LEVEL[c.level]||LEVEL.NONE;
+  const inc=c.incomplete&&c.level!=='INCOMPLETO'?' <span class="badge b-inc">incompleta</span>':'';const oos='';
+  return `<span class="badge ${l[1]}">${short?(c.level==='ALTA'?'🚨 ':'')+(c.level==='INCOMPLETO'?'INCOMPLETO':c.level==='NO_FUNCIONA'?'⛔ NO FUNCIONA':c.level+' · '+ABC[c.level]):l[0]}</span>${short?'':inc}${oos}`};
+
 
 /* ===================== UTILIDADES ===================== */
 const $=id=>document.getElementById(id);
@@ -323,7 +343,7 @@ ${isBoss()?`<div class="stat ${reqOpen?'yel':''}" onclick="go('pedidos',{reqF:'a
 <div class="stat" style="background:#fde4e1;border-color:#f5b5ad" onclick="go('emergencia')"><b style="color:#b42318">🚨</b><span><b style="font-size:13px;display:inline;color:#b42318">Cargar emergencia</b></span></div>
 </div>
 ${(()=>{const hi=MACHINES.filter(m=>critOf(m.id)?.level==='ALTA');const ev=MACHINES.filter(m=>critOf(m.id)).length;
-  return `<div class="card accent" style="cursor:pointer" onclick="go('maquinas',{critF:'ALTA'})"><div class="line"><div><div class="title">🏭 Máquinas de criticidad ALTA: ${hi.length}</div><div class="muted small">${ev} de ${MACHINES.length} evaluadas · tocá para ver</div></div><span class="muted">›</span></div></div>`})()}
+  return `<div class="card crit-a" style="cursor:pointer" onclick="go('maquinas',{critF:'ALTA'})"><div class="line"><div><div class="title">🚨 Máquinas de criticidad ALTA: ${hi.length}</div><div class="muted small">${ev} de ${MACHINES.length} evaluadas · tocá para ver</div></div><span class="muted">›</span></div></div>`})()}
 <h2>Novedades de turno</h2>
 <div class="seg"><button class="${S.newsFilter==='todo'?'on':''}" onclick="S.newsFilter='todo';render()">Todo</button><button class="${S.newsFilter==='pend'?'on':''}" onclick="S.newsFilter='pend';render()">Pendientes y avisos</button></div>
 ${news.slice(0,60).map(partCard).join('')||'<div class="card muted">Todavía no hay novedades registradas.</div>'}`;
@@ -355,6 +375,7 @@ function taskCard(t){
     else if(t.status==='en_proceso')btns=paused?`<button class="btn sm" onclick="taskAct(this,'${t.id}','reanudar')">▶ Reanudar</button>`:`<button class="btn ghost sm" onclick="taskAct(this,'${t.id}','pausar')">⏸ Pausar</button><button class="btn ok sm" onclick="taskAct(this,'${t.id}','finalizar')">✓ Finalizar</button>`;
     if(t.status!=='pendiente')btns+=`<button class="btn sec sm" onclick="startDraftFromTask('${t.id}')">📝 Registrar trabajo</button>`}
   else if(helper&&t.status!=='pendiente')btns=`<button class="btn sec sm" onclick="startDraftFromTask('${t.id}')">📝 Registrar trabajo</button>`;
+  if(isSup()&&t.status!=='terminado')btns+=`<button class="btn del sm" onclick="delTask(this,'${t.id}')">🗑 Borrar</button>`;
   const free=S.profiles.filter(p=>p.approved&&p.first_name&&p.id!==t.assigned_to&&!hs.includes(p.id));
   const helpBox=canHelp&&!S.v11Missing&&free.length?`<details style="margin-top:8px"><summary>👥 Sumar compañero que ayudó</summary><div class="row" style="margin-top:8px"><select id="hp_${t.id}"><option value="">Elegí compañero…</option>${free.map(p=>`<option value="${p.id}">${esc(p.first_name+' '+(p.last_name||''))}</option>`).join('')}</select><button class="btn sm" style="flex:0 0 auto" onclick="addHelper(this,'${t.id}')">Sumar</button></div></details>`:'';
   return `<div class="card ${t.priority==='urgente'?'urgent':t.priority==='alta'?'alta':'accent'}">
@@ -367,6 +388,10 @@ async function addHelper(btn,id){const u=$('hp_'+id)?.value;if(!u)return toast('
   await busy(btn,async()=>{try{await rpc('add_task_helper',{p_task_id:id,p_user_id:u});S.helpers.push({task_id:id,user_id:u,added_by:myId()});toast(nameOf(u)+' sumado a la tarea','good');render()}catch(e){toast(e.message,'bad')}})}
 async function removeHelper(btn,id,u){if(!confirm('¿Quitar a '+nameOf(u)+' de esta tarea?'))return;
   await busy(btn,async()=>{try{await rpc('remove_task_helper',{p_task_id:id,p_user_id:u});S.helpers=S.helpers.filter(h=>!(h.task_id===id&&h.user_id===u));render()}catch(e){toast(e.message,'bad')}})}
+
+async function delTask(btn,id){const t=S.tasks.find(x=>x.id===id);if(!t)return;
+  if(!confirm('¿Borrar esta tarea?\n"'+String(t.description||'').slice(0,80)+'"\n\nSe elimina como si no hubiera existido. No se puede deshacer.'))return;
+  await busy(btn,async()=>{try{await rpc('delete_maintenance_task',{p_task_id:id});S.tasks=S.tasks.filter(x=>x.id!==id);S.helpers=S.helpers.filter(h=>h.task_id!==id);toast('Tarea borrada','good');render()}catch(e){toast(v122Msg(e),'bad')}})}
 
 /* ===================== EMERGENCIAS ===================== */
 let E={machine:'',other:'',desc:'',helpers:[],finished:false};
@@ -602,22 +627,22 @@ ${st==='off'?'<button class="btn yel block" onclick="enablePush(this)">Activar a
 
 /* ===================== MÁQUINAS ===================== */
 function vMaquinas(){const q=S.machQ.toLowerCase();
-  const lev=m=>critOf(m.id)?.level||'NONE';
+  const lev=m=>critOf(m.id)?.level||'NONE';const oos=m=>lev(m)==='NO_FUNCIONA';
   let list=MACHINES.filter(m=>!q||[m.id,m.name,m.sector,m.location].some(v=>v.toLowerCase().includes(q)));
   if(S.critF!=='todas')list=list.filter(m=>lev(m)===S.critF);
   list=[...list].sort((a,b)=>(critOf(b.id)?.score||0)-(critOf(a.id)?.score||0));
-  const cnt=k=>MACHINES.filter(m=>lev(m)===k).length;
+  const cnt=k=>MACHINES.filter(m=>lev(m)===k).length,nOos=MACHINES.filter(oos).length,oosTot=MACHINES.filter(oos).reduce((s,m)=>s+repairTotal(critOf(m.id)),0);
   const open={};S.tasks.filter(t=>t.status!=='terminado').forEach(t=>{const id=(t.machine_label||'').split(' · ')[0];open[id]=(open[id]||0)+1});
   const local=localCritToImport();
   return `<button class="btn ghost sm" onclick="go('mas')">← Más</button><h2>Máquinas y criticidad</h2>
 <button class="btn block" style="margin-bottom:12px" onclick="go('escanear')">📷 Escanear el QR de una máquina</button>
 ${machineAdminBox()}
 ${S.critMissing?'<div class="err" style="margin-bottom:12px">La criticidad todavía no está activada en la base de datos. Hay que correr el SQL de la V10 en Supabase.</div>':''}
-<div class="stats"><div class="stat red" onclick="S.critF='ALTA';render()"><b>${cnt('ALTA')}</b><span>Criticidad ALTA</span></div><div class="stat" onclick="S.critF='MEDIA';render()"><b>${cnt('MEDIA')}</b><span>Criticidad MEDIA</span></div><div class="stat" onclick="S.critF='BAJA';render()"><b>${cnt('BAJA')}</b><span>Criticidad BAJA</span></div><div class="stat ${cnt('NONE')?'yel':''}" onclick="S.critF='NONE';render()"><b>${cnt('NONE')}</b><span>Sin evaluar</span></div></div>
+<div class="stats"><div class="stat crit-a" onclick="S.critF='ALTA';render()"><b>🚨 ${cnt('ALTA')}</b><span>Criticidad ALTA</span></div><div class="stat crit-b" onclick="S.critF='MEDIA';render()"><b>${cnt('MEDIA')}</b><span>Criticidad MEDIA</span></div><div class="stat crit-c" onclick="S.critF='BAJA';render()"><b>${cnt('BAJA')}</b><span>Criticidad BAJA</span></div><div class="stat ${cnt('INCOMPLETO')?'yel':''}" onclick="S.critF='INCOMPLETO';render()"><b>${cnt('INCOMPLETO')}</b><span>Incompletas</span></div><div class="stat ${cnt('NONE')?'yel':''}" onclick="S.critF='NONE';render()"><b>${cnt('NONE')}</b><span>Sin evaluar</span></div><div class="stat" onclick="S.critF='NO_FUNCIONA';render()"><b>⛔ ${nOos}</b><span>No funcionan${nOos?' · '+money(oosTot):''}</span></div></div>
 ${local.length&&isBoss()&&!S.critMissing?`<div class="card alta"><div class="title">📲 Hay ${local.length} evaluaciones guardadas solo en este celular (versión anterior)</div><p class="muted small">Subilas a la base compartida para que las vea todo el equipo. Solo se suben las máquinas que todavía no tienen evaluación compartida.</p><button class="btn sm" onclick="importLocalCrit(this)">Subir a la base compartida</button></div>`:''}
-<div class="seg">${[['todas','Todas'],['ALTA','Alta'],['MEDIA','Media'],['BAJA','Baja'],['NONE','Sin evaluar']].map(([k,l])=>`<button class="${S.critF===k?'on':''}" onclick="S.critF='${k}';render()">${l}</button>`).join('')}</div>
+<div class="seg">${[['todas','Todas'],['ALTA','Alta'],['MEDIA','Media'],['BAJA','Baja'],['INCOMPLETO','Incompletas'],['NONE','Sin evaluar'],['NO_FUNCIONA','No funcionan']].map(([k,l])=>`<button class="${S.critF===k?'on':''}" onclick="S.critF='${k}';render()">${l}</button>`).join('')}</div>
 <input id="mSearch" placeholder="🔎 Buscar máquina, código o sector" value="${esc(S.machQ)}" oninput="S.machQ=this.value;clearTimeout(window._mq);window._mq=setTimeout(()=>{render();const e=$('mSearch');e.focus();e.setSelectionRange(e.value.length,e.value.length)},300)" style="margin-bottom:10px">
-<div class="card">${list.map(m=>{const c=critOf(m.id);return `<div class="list-item" onclick="go('maquina',{mach:'${m.id}'})" style="cursor:pointer"><div class="line"><div><div class="title">${esc(m.id)} · ${esc(m.name)}</div><div class="muted small">${esc(m.sector)} · ${esc(m.location)}${open[m.id]?` · <b style="color:var(--warn)">${open[m.id]} tarea${open[m.id]>1?'s':''} abierta${open[m.id]>1?'s':''}</b>`:''}</div></div><div style="text-align:right">${critBadge(m.id,true)||'<span class="badge">—</span>'}${c?`<div class="muted small">${c.score.toFixed?c.score.toFixed(2):c.score}</div>`:''}</div></div></div>`}).join('')||'<p class="muted">No hay máquinas en esta lista.</p>'}</div>`}
+<div class="card">${list.map(m=>{const c=critOf(m.id);return `<div class="list-item" onclick="go('maquina',{mach:'${m.id}'})" style="cursor:pointer"><div class="line"><div><div class="title">${esc(m.id)} · ${esc(m.name)}</div><div class="muted small">${esc(m.sector)} · ${esc(m.location)}${open[m.id]?` · <b style="color:var(--warn)">${open[m.id]} tarea${open[m.id]>1?'s':''} abierta${open[m.id]>1?'s':''}</b>`:''}</div></div><div style="text-align:right">${critBadge(m.id,true)||'<span class="badge">—</span>'}${c?`<div class="muted small">${scoreTxt(c)}</div>`:''}</div></div></div>`}).join('')||'<p class="muted">No hay máquinas en esta lista.</p>'}</div>`}
 function vMaquina(){const m=MACHINES.find(x=>x.id===S.mach);if(!m)return vMaquinas();const lbl=machineLabel(m);
   const tasks=S.tasks.filter(t=>machIdOf(t.machine_label)===m.id),works=S.parts.filter(p=>machIdOf(p.machine_label)===m.id),mv=S.moves.filter(x=>x.machine_code===m.id),names=Object.fromEntries(S.inv.map(i=>[i.id,i.part_name]));
   return `<button class="btn ghost sm" onclick="go('maquinas')">← Máquinas</button><h2>${esc(lbl)}</h2><p class="muted">${esc(m.sector)}${m.location?' · '+esc(m.location):''}${m.type?' · '+esc(m.type):''}${m.brand?' · '+esc(m.brand):''}</p>${m.notes?`<p class="muted small">${esc(m.notes)}</p>`:''}
@@ -629,32 +654,56 @@ ${machinePlanBox(m)}
 <h3>Repuestos usados</h3><div class="card">${mv.slice(0,30).map(x=>`<div class="list-item small">${fmtDT(x.created_at)} · ${esc(MOVE[x.movement_type])} ${x.quantity} × ${esc(names[x.part_id]||'repuesto')} · ${esc(nameOf(x.performed_by))}</div>`).join('')||'<p class="muted">Sin movimientos.</p>'}</div>`}
 
 let CE=null; // evaluación en edición
+function critView(c){const parts=Array.isArray(c.repair_parts)?c.repair_parts:[];
+  if(c.out_of_service)return `<div class="note">⛔ La máquina <b>no funciona</b>: la criticidad queda nula hasta que vuelva a funcionar. Abajo, lo que cuesta ponerla en marcha.</div>${repairView(c)}${c.notes?`<div class="note">${esc(c.notes)}</div>`:''}`;
+  return `<p style="margin:0 0 6px">Puntaje <b>${scoreTxt(c)}</b> / 5${c.safety_risk?' · ⚠️ Riesgo de seguridad':''}</p>
+  ${c.level==='INCOMPLETO'||c.incomplete?'<div class="note">⚠️ Evaluación <b>incompleta</b>: faltan criterios por completar.</div>':''}
+  <table class="mini">${CRIT.map(k=>`<tr><td>${k.name} <span class="muted small">(${k.w}%)</span></td><td>${critHas(c,k)?`<b>${fmtV(Number(c[k.k]))}/5</b><div class="muted small">${esc(optLabel(k,c[k.k]))}</div>`:'<span class="muted">Sin completar</span>'}</td></tr>`).join('')}</table>
+  ${c.notes?`<div class="note">${esc(c.notes)}</div>`:''}`}
+function repairView(c){const parts=Array.isArray(c.repair_parts)?c.repair_parts:[];
+  return `<div class="card" style="margin:10px 0 0;background:#fff"><h3 style="margin-top:0">Valor del arreglo</h3>
+    ${parts.length?`<table class="mini"><tr><td><b>Repuesto</b></td><td><b>Cant.</b></td><td><b>Valor unit.</b></td><td><b>Subtotal</b></td></tr>${parts.map(x=>`<tr><td>${esc(x.name||'')}</td><td>${fmtV(Number(x.qty)||0)}</td><td>${money(x.price)}</td><td>${money((Number(x.qty)||0)*(Number(x.price)||0))}</td></tr>`).join('')}</table>`:'<p class="muted small">Sin repuestos cargados.</p>'}
+    ${c.repair_labor_external?`<p class="small">Mano de obra externa${c.repair_labor_provider?' ('+esc(c.repair_labor_provider)+')':''}: <b>${money(c.repair_labor_cost)}</b></p>`:'<p class="muted small">Mano de obra propia.</p>'}
+    <p style="margin-bottom:0">Total para hacerla funcionar: <b>${money(repairTotal(c))}</b></p></div>`}
 function critCard(m){
   const c=critOf(m.id);
   if(!isBoss()||S.critMissing){
     if(!c)return `<div class="card"><h3>Criticidad</h3><p class="muted">${S.critMissing?'La criticidad todavía no está activada en la base de datos.':'Esta máquina todavía no fue evaluada. La evalúa el jefe o el supervisor.'}</p></div>`;
-    return `<div class="card ${c.level==='ALTA'?'urgent':c.level==='MEDIA'?'alta':'accent'}"><div class="line"><h3>Criticidad</h3>${critBadge(m.id)}</div><p style="margin:0 0 6px">Puntaje <b>${Number(c.score).toFixed(2)}</b> / 5${c.safety_risk?' · ⚠️ Riesgo de seguridad':''}</p>
-    <table class="mini">${CRIT.map(k=>`<tr><td>${k.name} <span class="muted small">(${k.w}%)</span></td><td><b>${c[k.k]}/5</b><div class="muted small">${esc(k.opts[c[k.k]-1])}</div></td></tr>`).join('')}</table>
-    ${c.notes?`<div class="note">${esc(c.notes)}</div>`:''}<p class="muted small">Evaluó ${esc(nameOf(c.updated_by))} · ${fmtDT(c.updated_at)}</p></div>`}
-  if(!CE||CE.code!==m.id)CE={code:m.id,...Object.fromEntries(CRIT.map(k=>[k.k,c?.[k.k]||0])),safety_risk:!!c?.safety_risk,notes:c?.notes||''};
+    return `<div class="card ${critCls(c.level)}"><div class="line"><h3>${c.level==='ALTA'?'🚨 ':''}Criticidad</h3>${critBadge(m.id)}</div>${critView(c)}<p class="muted small">Evaluó ${esc(nameOf(c.updated_by))} · ${fmtDT(c.updated_at)}</p></div>`}
+  if(!CE||CE.code!==m.id)CE={code:m.id,...Object.fromEntries(CRIT.map(k=>[k.k,critHas(c,k)?Number(c[k.k]):0])),safety_risk:!!c?.safety_risk,notes:c?.notes||'',
+    out_of_service:!!c?.out_of_service,repair_parts:(Array.isArray(c?.repair_parts)?c.repair_parts:[]).map(x=>({name:x.name||'',qty:x.qty??1,price:x.price??''})),
+    labor_external:!!c?.repair_labor_external,labor_provider:c?.repair_labor_provider||'',labor_cost:c?.repair_labor_cost??''};
   const r=critCalc(CE);
-  return `<div class="card ${r?.level==='ALTA'?'urgent':r?.level==='MEDIA'?'alta':'accent'}"><div class="line"><h3>Criticidad</h3>${c?critBadge(m.id):'<span class="badge">Sin evaluar</span>'}</div>
-  ${CRIT.map(k=>`<label>${k.name} <span class="muted small" style="font-weight:400">(${k.w}%)</span></label><select onchange="CE['${k.k}']=Number(this.value);critRefresh()"><option value="0">Elegí 1 a 5…</option>${k.opts.map((o,i)=>`<option value="${i+1}" ${CE[k.k]===i+1?'selected':''}>${i+1} · ${esc(o)}</option>`).join('')}</select>`).join('')}
-  <label style="font-weight:400;margin-top:14px"><input type="checkbox" style="width:auto" ${CE.safety_risk?'checked':''} onchange="CE.safety_risk=this.checked;critRefresh()"> <b>Riesgo grave para la seguridad de las personas</b> (pasa a ALTA automáticamente)</label>
+  return `<div class="card ${critCls(r.level)}" id="critBox"><div class="line"><h3>${r.level==='ALTA'?'🚨 ':''}Criticidad</h3>${c?critBadge(m.id):'<span class="badge">Sin evaluar</span>'}</div>
+  <label style="font-weight:400;margin-top:4px"><input type="checkbox" style="width:auto" ${CE.out_of_service?'checked':''} onchange="CE.out_of_service=this.checked;render()"> <b>⛔ No funciona</b> (criticidad nula; se carga el costo de hacerla funcionar)</label>
+  ${CE.out_of_service?'':CRIT.map(k=>`<label>${k.name} <span class="muted small" style="font-weight:400">(${k.w}%)</span>${k.hint?`<div class="muted small" style="font-weight:400">${k.hint}</div>`:''}</label><select onchange="CE['${k.k}']=Number(this.value);critRefresh()"><option value="0">Elegí una opción…</option>${k.opts.map(([v,o])=>`<option value="${v}" ${CE[k.k]===v?'selected':''}>${fmtV(v)} · ${esc(o)}</option>`).join('')}</select>`).join('')}
+  ${CE.out_of_service?'':`<label style="font-weight:400;margin-top:14px"><input type="checkbox" style="width:auto" ${CE.safety_risk?'checked':''} onchange="CE.safety_risk=this.checked;critRefresh()"> <b>Riesgo grave para la seguridad de las personas</b> (pasa a ALTA automáticamente)</label>`}
+  ${CE.out_of_service?`<div class="card" style="margin:8px 0 0;background:#fff"><h3 style="margin-top:0">Valor del arreglo</h3>
+    <div class="rp-row muted small"><span>Repuesto necesario</span><span>Cant.</span><span>Valor unit. $</span><span></span></div>
+    ${CE.repair_parts.map((x,i)=>`<div class="rp-row"><input value="${esc(x.name)}" placeholder="Ej: rodamiento 6205" oninput="CE.repair_parts[${i}].name=this.value"><input type="number" inputmode="decimal" min="0" step="any" value="${esc(String(x.qty))}" oninput="CE.repair_parts[${i}].qty=this.value;critRefresh()"><input type="number" inputmode="decimal" min="0" step="any" value="${esc(String(x.price))}" placeholder="0" oninput="CE.repair_parts[${i}].price=this.value;critRefresh()"><button class="btn ghost sm" onclick="CE.repair_parts.splice(${i},1);render()" aria-label="Quitar">×</button></div>`).join('')}
+    <button class="btn ghost sm" style="margin-top:8px" onclick="CE.repair_parts.push({name:'',qty:1,price:''});render()">＋ Agregar repuesto</button>
+    <label style="font-weight:400;margin-top:12px"><input type="checkbox" style="width:auto" ${CE.labor_external?'checked':''} onchange="CE.labor_external=this.checked;render()"> <b>Mano de obra externa</b></label>
+    ${CE.labor_external?`<div class="row"><input value="${esc(CE.labor_provider)}" placeholder="Proveedor / taller" oninput="CE.labor_provider=this.value"><input type="number" inputmode="decimal" min="0" step="any" value="${esc(String(CE.labor_cost))}" placeholder="Valor $" oninput="CE.labor_cost=this.value;critRefresh()"></div>`:''}
+    <p style="margin-bottom:0">Total para hacerla funcionar: <b id="repTot">${money(ceTotal())}</b></p></div>`:''}
   <label>Justificación / observaciones</label><textarea style="min-height:64px" oninput="CE.notes=this.value" placeholder="Ej: sin equipo alternativo; motor con entrega de 30 días">${esc(CE.notes)}</textarea>
   <div id="critRes" class="info" style="margin-top:12px">${critResText(r)}</div>
   <button class="btn block" onclick="saveCrit(this,'${m.id}')">Guardar evaluación</button>
   ${c?`<p class="muted small">Última evaluación: ${esc(nameOf(c.updated_by))} · ${fmtDT(c.updated_at)}</p>`:''}</div>`}
-const critResText=r=>r?`Puntaje <b>${r.score.toFixed(2)}</b> / 5 → <b>Criticidad ${r.level}</b>`:'Completá los cuatro criterios para calcular la criticidad.';
-function critRefresh(){const e=$('critRes');if(e)e.innerHTML=critResText(critCalc(CE))}
-async function saveCrit(btn,code){const r=critCalc(CE);if(!r)return toast('Completá los cuatro criterios','bad');const m=MACHINES.find(x=>x.id===code);
-  await busy(btn,async()=>{try{const row=await rpc('save_machine_criticality',{p_machine_code:code,p_machine_name:m?.name||null,p_production_impact:CE.production_impact,p_no_alternative:CE.no_alternative,p_failure_frequency:CE.failure_frequency,p_quality_impact:CE.quality_impact,p_safety_risk:CE.safety_risk,p_notes:CE.notes||null});
-    const x=Array.isArray(row)?row[0]:row;if(x)S.crit[code]=x;CE=null;toast('Criticidad guardada: '+(x?.level||r.level),'good');render()}catch(e){toast(e.message,'bad')}})}
+const ceTotal=()=>repairTotal({repair_parts:CE.repair_parts,repair_labor_external:CE.labor_external,repair_labor_cost:CE.labor_cost});
+const critResText=r=>r.level==='NO_FUNCIONA'?'⛔ <b>No funciona</b>: criticidad nula. Cuando vuelva a funcionar, destildá la casilla y se recalcula con los criterios.':r.incomplete?`<b>INCOMPLETO</b>${r.level==='ALTA'?' (igual queda en <b>ALTA</b> por seguridad/inocuidad)':''} · falta: ${r.missing.map(esc).join(', ')}. Se puede guardar igual.`:`Puntaje <b>${r.score.toFixed(2)}</b> / 5 → <b>Criticidad ${r.level}</b>`;
+function critRefresh(){const r=critCalc(CE);const e=$('critRes');if(e)e.innerHTML=critResText(r);const t=$('repTot');if(t)t.textContent=money(ceTotal());
+  const b=$('critBox');if(b)b.className='card '+critCls(r.level)}
+const critParams=(code,name,v)=>({p_machine_code:code,p_machine_name:name,p_production_impact:critHas(v,CRIT[0])?v.production_impact:null,p_no_alternative:critHas(v,CRIT[1])?v.no_alternative:null,p_failure_frequency:critHas(v,CRIT[2])?v.failure_frequency:null,p_quality_impact:critHas(v,CRIT[3])?v.quality_impact:null,p_economic_impact:critHas(v,CRIT[4])?v.economic_impact:null,p_safety_risk:!!v.safety_risk,p_notes:v.notes||null,
+  p_out_of_service:!!v.out_of_service,p_repair_parts:v.out_of_service?(v.repair_parts||[]).filter(x=>String(x.name||'').trim()).map(x=>({name:String(x.name).trim(),qty:Number(x.qty)||0,price:Number(x.price)||0})):[],p_labor_external:!!(v.out_of_service&&v.labor_external),p_labor_provider:v.out_of_service&&v.labor_external&&v.labor_provider?v.labor_provider:null,p_labor_cost:v.out_of_service&&v.labor_external&&v.labor_cost!==''?Number(v.labor_cost):null});
+const v122Msg=e=>/save_machine_criticality_v2|delete_maintenance_task|schema cache|economic_impact|out_of_service/i.test(e.message)?'Falta correr el SQL de la V12.2 en Supabase.':e.message;
+async function saveCrit(btn,code){const r=critCalc(CE);if(r.incomplete&&!confirm('Faltan criterios: '+r.missing.join(', ')+'.\n¿Guardar igual como INCOMPLETO?'))return;const m=MACHINES.find(x=>x.id===code);
+  await busy(btn,async()=>{try{const row=await rpc('save_machine_criticality_v2',critParams(code,m?.name||null,CE));
+    const x=Array.isArray(row)?row[0]:row;if(x)S.crit[code]=x;CE=null;toast('Criticidad guardada: '+(x?.level||r.level),'good');render()}catch(e){toast(v122Msg(e),'bad')}})}
 function localCritToImport(){const d=store.get('facilitas_criticidad_v1',{})||{};
-  return Object.entries(d).map(([code,v])=>({code,v:{...Object.fromEntries(CRIT.map(k=>[k.k,Number(v?.[k.old])])),safety_risk:!!v?.safety,notes:v?.notes||''}})).filter(x=>!S.crit[x.code]&&MACHINES.some(m=>m.id===x.code)&&critCalc(x.v))}
+  return Object.entries(d).map(([code,v])=>({code,v:{...Object.fromEntries(CRIT.map(k=>[k.k,Number(v?.[k.old])])),safety_risk:!!v?.safety,notes:v?.notes||''}})).filter(x=>!S.crit[x.code]&&MACHINES.some(m=>m.id===x.code)&&critHas(x.v,CRIT[0]))}
 async function importLocalCrit(btn){const list=localCritToImport();if(!confirm(`¿Subir ${list.length} evaluaciones de este celular a la base compartida?`))return;
   await busy(btn,async()=>{let ok=0,bad=0;for(const {code,v} of list){const m=MACHINES.find(x=>x.id===code);
-    try{const row=await rpc('save_machine_criticality',{p_machine_code:code,p_machine_name:m?.name||null,p_production_impact:v.production_impact,p_no_alternative:v.no_alternative,p_failure_frequency:v.failure_frequency,p_quality_impact:v.quality_impact,p_safety_risk:v.safety_risk,p_notes:v.notes||null});const x=Array.isArray(row)?row[0]:row;if(x)S.crit[code]=x;ok++}catch{bad++}}
+    try{const row=await rpc('save_machine_criticality_v2',critParams(code,m?.name||null,v));const x=Array.isArray(row)?row[0]:row;if(x)S.crit[code]=x;ok++}catch{bad++}}
     toast(`Subidas ${ok} evaluaciones${bad?' · '+bad+' con error':''}`,bad?'bad':'good');render()})}
 
 /* ===================== MÁS ===================== */
@@ -1067,7 +1116,7 @@ async function buildReport(){
      ['Tareas en el período',tasks.length],['Tareas terminadas',tasks.filter(t=>t.status==='terminado').length],['Tareas pendientes',tasks.filter(t=>t.status==='pendiente').length],['Tareas en proceso',tasks.filter(t=>t.status==='en_proceso').length],
      ['Tareas urgentes',tasks.filter(t=>t.priority==='urgente').length],['Emergencias cargadas por operarios',tasks.filter(t=>t.is_emergency).length],['Pedidos de repuestos/insumos',reqs.length],['Horas efectivas registradas en tareas',{n:H(tasks.reduce((s,t)=>s+taskSeconds(t),0)),f:2}],
      ['Repuestos retirados (unidades)',sumMv('retiro')],['Repuestos devueltos (unidades)',sumMv('devolucion')],['Repuestos ingresados (unidades)',sumMv('entrada')],
-     ['Costo estimado de repuestos usados',{n:Math.round(cost*100)/100,f:3}],['Repuestos bajo stock mínimo (hoy)',low.length],['Máquinas con criticidad ALTA',MACHINES.filter(m=>critOf(m.id)?.level==='ALTA').length],['Máquinas sin evaluar',MACHINES.filter(m=>!critOf(m.id)).length]]},
+     ['Costo estimado de repuestos usados',{n:Math.round(cost*100)/100,f:3}],['Repuestos bajo stock mínimo (hoy)',low.length],['Máquinas con criticidad ALTA',MACHINES.filter(m=>critOf(m.id)?.level==='ALTA').length],['Máquinas que no funcionan (hoy)',MACHINES.filter(m=>critOf(m.id)?.out_of_service).length],['Valor estimado de arreglos pendientes',{n:Math.round(MACHINES.filter(m=>critOf(m.id)?.out_of_service).reduce((s,m)=>s+repairTotal(critOf(m.id)),0)*100)/100,f:3}],['Máquinas sin evaluar',MACHINES.filter(m=>!critOf(m.id)).length]]},
    {name:'Por operario',title:'Actividad por operario',sub:period,head:['Operario','Trabajos registrados','Tareas','Terminadas','Abiertas','Horas efectivas','Repuestos retirados (u.)'],w:[30,20,10,12,10,16,22],
      rows:Object.values(per).sort((x,y)=>y.secs-x.secs).map(o=>[o.name,o.works,o.tasks,o.done,o.open,{n:H(o.secs),f:2},o.parts])},
    {name:'Trabajos realizados',title:'Trabajos realizados (partes de turno)',sub:period,head:['Fecha','Operario','Equipo','Estado','Trabajo realizado','Repuestos','Aviso siguiente turno','Foto 1','Foto 2','Foto 3'],w:[16,22,34,14,60,34,40,12,12,12],
@@ -1080,8 +1129,8 @@ async function buildReport(){
      rows:reqs.map(r=>[dt(r.created_at),r.kind==='insumo'?'Insumo':'Repuesto',r.item,Number(r.quantity),r.unit||'',r.machine_label||'',r.urgency==='urgente'?'URGENTE':'Normal',nameOf(r.requested_by),REQST[r.status]?.[0]||r.status,[r.notes,r.answer].filter(Boolean).join(' — '),r.handled_by?nameOf(r.handled_by):''])},
    {name:'Inventario actual',title:'Inventario de repuestos al '+fmtDT(new Date()),sub:'Stock en tiempo real al generar el informe',head:['Código','Repuesto','Stock','Mínimo','Estado','Ubicación','Equipo','Costo unitario','Proveedor'],w:[14,38,10,10,12,20,26,14,24],
      rows:inv.map(i=>[i.part_code,i.part_name,Number(i.stock_quantity),Number(i.minimum_stock),Number(i.stock_quantity)<=Number(i.minimum_stock)?'REPONER':'OK',i.storage_location||'',[i.machine_code,i.machine_name].filter(Boolean).join(' · '),i.unit_cost!=null?{n:Number(i.unit_cost),f:3}:'',i.supplier||''])},
-   {name:'Criticidad máquinas',title:'Criticidad de máquinas',sub:'Ponderación: producción 45% · alternativa 25% · frecuencia 15% · inocuidad 15%. ALTA (A) si hay riesgo de seguridad, inocuidad 5 o puntaje ≥ 3,8; MEDIA (B) ≥ 2,5; BAJA (C) el resto. La clase A/B/C es la que usa el Excel del plan.',head:['Código','Máquina','Sector','Criticidad','Clase (A/B/C)','Puntaje','Producción','Alternativa','Frecuencia','Inocuidad','Riesgo seguridad','Tareas abiertas','Trabajos en el período','Observaciones','Evaluó','Fecha evaluación'],w:[10,30,14,12,12,10,11,11,11,11,10,10,12,40,20,16],
-     rows:[...MACHINES].sort((a,b)=>(critOf(b.id)?.score||0)-(critOf(a.id)?.score||0)).map(m=>{const c=critOf(m.id),lbl=machineLabel(m);return [m.id,m.name,m.sector,c?.level||'SIN EVALUAR',c?ABC[c.level]:'',c?{n:Number(c.score),f:2}:'',c?.production_impact||'',c?.no_alternative||'',c?.failure_frequency||'',c?.quality_impact||'',c?(c.safety_risk?'Sí':'No'):'',S.tasks.filter(t=>t.machine_label===lbl&&t.status!=='terminado').length,parts.filter(p=>p.machine_label===lbl).length,c?.notes||'',c?nameOf(c.updated_by):'',c?dt(c.updated_at):'']})}];
+   {name:'Criticidad máquinas',title:'Criticidad de máquinas',sub:'Ponderación: producción 40% · alternativa 25% · frecuencia 13% · inocuidad 12% · impacto económico de insumos 10%. ALTA (A) si hay riesgo de seguridad, inocuidad 5 o puntaje ≥ 3,8; MEDIA (B) ≥ 2,5; BAJA (C) el resto. INCOMPLETO si falta algún criterio. NO FUNCIONA: criticidad nula, con el costo de hacerla funcionar. Las evaluaciones anteriores a la V12.2 conservan su puntaje hasta que se reevalúen.',head:['Código','Máquina','Sector','Criticidad','Clase (A/B/C)','Puntaje','Producción','Alternativa','Frecuencia','Inocuidad','Impacto económico','Riesgo seguridad','No funciona','Repuestos del arreglo','Mano de obra externa','Valor del arreglo','Tareas abiertas','Trabajos en el período','Observaciones','Evaluó','Fecha evaluación'],w:[10,30,14,12,12,10,11,11,11,11,11,10,10,40,24,14,10,12,40,20,16],
+     rows:[...MACHINES].sort((a,b)=>(critOf(b.id)?.score||0)-(critOf(a.id)?.score||0)).map(m=>{const c=critOf(m.id),lbl=machineLabel(m);const rp=Array.isArray(c?.repair_parts)?c.repair_parts:[];return [m.id,m.name,m.sector,c?.level||'SIN EVALUAR',c?ABC[c.level]||'':'',c&&c.score!==null&&c.score!==undefined?{n:Number(c.score),f:2}:'',c?.production_impact!=null?Number(c.production_impact):'',c?.no_alternative||'',c?.failure_frequency||'',c?.quality_impact||'',c?.economic_impact||'',c?(c.safety_risk?'Sí':'No'):'',c?.out_of_service?'Sí':'',c?.out_of_service?rp.map(x=>`${x.qty} × ${x.name} ($${x.price})`).join('; '):'',c?.out_of_service&&c.repair_labor_external?(c.repair_labor_provider||'Externa')+' ($'+(c.repair_labor_cost||0)+')':'',c?.out_of_service?{n:repairTotal(c),f:2}:'',S.tasks.filter(t=>t.machine_label===lbl&&t.status!=='terminado').length,parts.filter(p=>p.machine_label===lbl).length,c?.notes||'',c?nameOf(c.updated_by):'',c?dt(c.updated_at):'']})}];
   await addPmSheets(sheets,from,to);
   return {blob:xlsx(sheets),name:`Mantenimiento Facilitas ${from} a ${to}.xlsx`,summary:`${parts.length} partes · ${tasks.length} tareas · ${moves.length} movimientos de repuestos`};
 }
