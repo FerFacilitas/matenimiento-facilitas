@@ -137,7 +137,7 @@ table.mini th{font-size:12px;color:var(--mut);text-transform:uppercase}
 <script>
 'use strict';
 /* ===================== CONFIGURACIÓN ===================== */
-const VERSION='V12.4';
+const VERSION='V12.5';
 const SB_URL='https://kuvzvpzqsjwpiekrxnxe.supabase.co';
 const SB_KEY='sb_publishable_tEVUpS6_hvpKjZonjw20_g_XDEMw12_'; // clave pública (no es de administrador)
 const GOOGLE_CLIENT_ID='586047120992-v6evqrq8q6n54vgfj3pcg1l3ac73c4o6.apps.googleusercontent.com';
@@ -350,7 +350,7 @@ ${(()=>{const u=unreadNotices();return u.length?u.slice(0,3).map(noticeCard).joi
  <div class="stat ${low?'yel':''}" onclick="go('repuestos',{invLow:true})"><b>${low}</b><span>Repuestos bajo mínimo</span></div>
 ${isBoss()&&!S.v12Missing?(()=>{const lim=addDays(today(),7),n=S.ordersNear.filter(o=>orderState(o)==='sinasignar'&&o.planned_date<=lim).length;return `<div class="stat ${n?'yel':''}" onclick="go('preventivo',{pmF:'sinasignar',pmYm:ymOf(today())})"><b>${n}</b><span>Preventivos sin asignar (próximos 7 días)</span></div>`})():''}
 ${isBoss()?`<div class="stat ${reqOpen?'yel':''}" onclick="go('pedidos',{reqF:'abiertos'})"><b>${reqOpen}</b><span>Pedidos de repuestos/insumos sin pedir</span></div>`:''}
-<div class="stat" style="background:#fff8db;border-color:#f0dc8a" onclick="go('escanear')"><b>📷</b><span><b style="font-size:13px;display:inline;color:#7a5d00">Escanear máquina (QR)</b></span></div>
+<div class="stat" style="background:#fff8db;border-color:#f0dc8a" onclick="S.scanFor='';go('escanear')"><b>📷</b><span><b style="font-size:13px;display:inline;color:#7a5d00">Escanear máquina (QR)</b></span></div>
 <div class="stat" style="background:#fde4e1;border-color:#f5b5ad" onclick="go('emergencia')"><b style="color:#b42318">🚨</b><span><b style="font-size:13px;display:inline;color:#b42318">Cargar emergencia</b></span></div>
 </div>
 ${(()=>{const hi=MACHINES.filter(m=>critOf(m.id)?.level==='ALTA');const ev=MACHINES.filter(m=>critOf(m.id)).length;
@@ -472,8 +472,10 @@ async function savePartMach(btn,id){const codes=pkCodes('e');if(!codes.length)re
   await busy(btn,async()=>{try{await setPartMachines(id,codes);S.editPart='';delete PK.e;toast('Máquinas del repuesto guardadas','good');render()}catch(e){toast(v124Msg(e),'bad')}})}
 function vRegistrar(){
   const myTasks=S.tasks.filter(t=>isMine(t)&&(t.status!=='terminado'||t.id===D.taskId)).slice(0,40);
-  return `<h2>Registrar trabajo</h2><div class="card">
-<label>Equipo o instalación</label><select id="dMachine" onchange="D.machine=this.value;saveDraft();$('dOtherBox').classList.toggle('hidden',this.value!=='__other')">${machineOptions(D.machine)}</select>
+  return `<h2>Registrar trabajo</h2>
+<button class="btn block" style="margin-bottom:12px;min-height:64px;font-size:18px;background:#f0c419;color:#3d2e00" onclick="S.scanFor='registrar';go('escanear')">📷 Escanear QR de la máquina</button>
+<div class="card">
+<label>Equipo o instalación <span class="muted small" style="font-weight:400">(se completa solo al escanear, o elegilo de la lista)</span></label><select id="dMachine" onchange="D.machine=this.value;saveDraft();$('dOtherBox').classList.toggle('hidden',this.value!=='__other')">${machineOptions(D.machine)}</select>
 <div id="dOtherBox" class="${D.machine==='__other'?'':'hidden'}"><label>¿Cuál?</label><input id="dOther" value="${esc(D.other)}" oninput="D.other=this.value;saveDraft()" placeholder="Ej: Portón depósito, baño planta alta…"></div>
 ${myTasks.length?`<label>¿Corresponde a una tarea asignada? (opcional)</label><select onchange="D.taskId=this.value;saveDraft()"><option value="">No, es un trabajo no programado</option>${myTasks.map(t=>`<option value="${t.id}" ${D.taskId===t.id?'selected':''}>${esc(t.description.slice(0,60))}</option>`).join('')}</select>`:''}
 <label>Trabajo realizado / falla encontrada</label><textarea id="dDesc" oninput="D.desc=this.value;saveDraft()" placeholder="Qué falla tenía y qué se hizo">${esc(D.desc)}</textarea>
@@ -548,11 +550,12 @@ function vRepuestos(){
   let list=S.inv.filter(i=>!q||[i.part_code,i.part_name,i.machine_name,i.machine_code,i.storage_location,partMachText(i)].some(v=>String(v||'').toLowerCase().includes(q)));
   if(S.invMach)list=list.filter(i=>partFits(i,S.invMach)||partIsGeneral(i));
   if(S.invLow)list=list.filter(i=>Number(i.stock_quantity)<=Number(i.minimum_stock));
-  const types=[['retiro','Retiro'],['devolucion','Devolución']].concat(isBoss()?[['entrada','Ingreso de stock']]:[]);
+  const types=[['retiro','Retiro'],['devolucion','Devolución']];if(MV.type==='entrada')MV.type='retiro';
   const opens=myOpenWithdrawals();
   const names=Object.fromEntries(S.inv.map(i=>[i.id,i.part_code+' · '+i.part_name]));
   const myReq=S.reqs.filter(r=>r.requested_by===myId()&&['pendiente','pedido'].includes(r.status)).length,openReq=S.reqs.filter(r=>r.status==='pendiente').length;
   return `<h2>Repuestos</h2>
+${ingresoCard()}
 <div class="card alta" style="cursor:pointer" onclick="go('pedidos')"><div class="line"><div><div class="title">📦 Pedir repuestos o insumos</div><div class="muted small">${isBoss()?`${openReq} pedido${openReq===1?'':'s'} sin pedir todavía`:`Le avisa al supervisor · tenés ${myReq} pedido${myReq===1?'':'s'} abierto${myReq===1?'':'s'}`}</div></div><span class="muted">›</span></div></div>
 <div class="card"><h3>Registrar movimiento</h3>
 <div class="seg" style="margin-bottom:4px">${types.map(([k,l])=>`<button class="${MV.type===k?'on':''}" onclick="MV.type='${k}';render()">${l}</button>`).join('')}</div>
@@ -564,12 +567,6 @@ ${MV.type==='retiro'?`<label>Para qué equipo</label><select onchange="MV.machin
 <label>Observaciones</label><input value="${esc(MV.notes)}" oninput="MV.notes=this.value" placeholder="${MV.type==='entrada'?'Proveedor, remito, factura…':'Opcional'}">
 ${(MV.type!=='devolucion'||opens.length)?`<button class="btn block ${MV.type==='retiro'?'':'ok'}" onclick="saveMove(this)">${MV.type==='retiro'?'➖ Descontar del stock':'➕ Sumar al stock'}</button>`:''}
 <p class="muted small">Si usaste repuestos en un trabajo, es más cómodo cargarlos desde <b>Registrar</b>: se guardan junto con el trabajo.</p></div>
-${isBoss()?`<details class="card"><summary>＋ Dar de alta un repuesto nuevo</summary>
-<div class="row"><div><label>Código</label><input id="nCode" placeholder="Ej: ROD-6204"></div><div><label>Stock inicial</label><input id="nQty" type="number" min="0" value="0" inputmode="numeric"></div></div>
-<label>Nombre</label><input id="nName" placeholder="Ej: Rodamiento 6204 2RS">
-<div class="row"><div><label>Stock mínimo</label><input id="nMin" type="number" min="0" value="1" inputmode="numeric"></div><div><label>Ubicación</label><input id="nLoc" placeholder="Estante / cajón"></div></div>
-<label>¿Para qué máquinas sirve? <span class="muted small" style="font-weight:400">(podés tildar varias)</span></label>${machPicker('new',[])}
-<button class="btn block" onclick="newPart(this)">Guardar repuesto</button></details>`:''}
 <h2>Inventario</h2>
 <input placeholder="🔎 Buscar código, nombre o equipo" value="${esc(S.invQ)}" oninput="S.invQ=this.value;clearTimeout(window._iq);window._iq=setTimeout(()=>{const y=scrollY;render();scrollTo(0,y);const e=$('invSearch');e.focus();e.setSelectionRange(e.value.length,e.value.length)},350)" id="invSearch" style="margin-bottom:8px">
 <select onchange="S.invMach=this.value;render()" style="margin-bottom:8px"><option value="">🏭 Todas las máquinas</option>${MACHINES.map(m=>`<option value="${esc(m.id)}" ${S.invMach===m.id?'selected':''}>Sirve para ${esc(machineLabel(m))}</option>`).join('')}</select>
@@ -579,6 +576,45 @@ ${S.v124Missing&&isBoss()?'<div class="err" style="margin-bottom:12px">Falta cor
 ${isBoss()&&!S.v124Missing?`<button class="btn ghost sm" style="margin-top:6px" onclick="editPartMach('${esc(String(i.id))}')">${ed?'✕ Cerrar':'✏️ Máquinas'}</button>`:''}
 ${ed?`<div style="margin-top:6px"><label style="margin-top:4px">¿Para qué máquinas sirve ${esc(i.part_name)}?</label>${machPicker('e',partMachCodes(i))}<button class="btn block sm" style="margin-top:8px" onclick="savePartMach(this,'${esc(String(i.id))}')">Guardar máquinas</button></div>`:''}</div>`}).join('')||'<p class="muted">No hay repuestos para mostrar.</p>'}</div>
 <h2>Últimos movimientos</h2><div class="card">${S.moves.slice(0,40).map(m=>`<div class="list-item"><div class="line"><div><div class="title">${esc(names[m.part_id]||'Repuesto')}</div><div class="muted small">${esc(nameOf(m.performed_by))} · ${fmtDT(m.created_at)}${m.machine_code||m.machine_name?' · '+esc(m.machine_code||m.machine_name):''}</div>${m.notes?`<div class="muted small">${esc(m.notes)}</div>`:''}</div><span class="badge ${m.movement_type==='retiro'?'b-urg':'b-ok'}">${m.movement_type==='retiro'?'−':'+'}${m.quantity} ${MOVE[m.movement_type]||''}</span></div></div>`).join('')||'<p class="muted">Sin movimientos.</p>'}</div>`;
+}
+/* ===================== V12.5: INGRESO DE REPUESTOS (cualquier operario) ===================== */
+const emptyIn=()=>({mode:'stock',part:'',qty:1,cost:'',notes:'',req:'',code:'',name:'',min:1,loc:''});
+let IN=emptyIn();
+const openReqs=()=>(S.reqs||[]).filter(r=>['pendiente','pedido'].includes(r.status));
+function ingresoCard(){
+  const reqs=openReqs(),auto=IN.mode==='stock'&&IN.part?reqs.filter(r=>String(r.part_id)===String(IN.part)):[];
+  const others=reqs.filter(r=>!auto.includes(r));
+  return `<div class="card" style="border:2px solid #1d7a4c"><h3>📥 Ingresó un repuesto</h3><p class="muted small" style="margin-top:-4px">Sumalo al inventario apenas llega. Lo puede cargar cualquiera del equipo.</p>
+<div class="seg" style="margin-bottom:4px"><button class="${IN.mode==='stock'?'on':''}" onclick="IN.mode='stock';render()">Ya está en la lista</button><button class="${IN.mode==='nuevo'?'on':''}" onclick="IN.mode='nuevo';IN.part='';IN.req='';render()">Es un repuesto nuevo</button></div>
+${IN.mode==='stock'?`<label>Repuesto</label><select onchange="IN.part=this.value;IN.req='';render()"><option value="">Elegí repuesto…</option>${S.inv.map(i=>`<option value="${i.id}" ${String(IN.part)===String(i.id)?'selected':''}>${esc(i.part_code+' · '+i.part_name)} (hay ${i.stock_quantity})</option>`).join('')}</select>`
+:`<div class="row"><div><label>Código</label><input value="${esc(IN.code)}" oninput="IN.code=this.value" placeholder="Ej: ROD-6204"></div><div><label>Ubicación</label><input value="${esc(IN.loc)}" oninput="IN.loc=this.value" placeholder="Estante / cajón"></div></div>
+<label>Nombre</label><input value="${esc(IN.name)}" oninput="IN.name=this.value" placeholder="Ej: Rodamiento 6204 2RS">
+<label>¿Para qué máquinas sirve? <span class="muted small" style="font-weight:400">(podés tildar varias)</span></label>${machPicker('in',[])}`}
+<div class="row"><div><label>Cantidad que ingresó</label><input type="number" min="1" step="1" inputmode="numeric" value="${esc(IN.qty)}" oninput="IN.qty=this.value"></div>
+${IN.mode==='nuevo'?`<div><label>Stock mínimo</label><input type="number" min="0" step="1" inputmode="numeric" value="${esc(IN.min)}" oninput="IN.min=this.value"></div>`:isBoss()?`<div><label>Costo unitario (opcional)</label><input type="number" min="0" step="0.01" inputmode="decimal" value="${esc(IN.cost)}" oninput="IN.cost=this.value"></div>`:''}</div>
+<label>Observaciones</label><input value="${esc(IN.notes)}" oninput="IN.notes=this.value" placeholder="Proveedor, remito, factura…">
+${auto.length?`<div class="info" style="margin-top:10px">📦 Hay ${auto.length} pedido${auto.length>1?'s':''} de este repuesto. Al guardar, ${auto.length>1?'pasan':'pasa'} solo${auto.length>1?'s':''} al historial de pedidos como «Recibido».</div>`:''}
+${others.length?`<label>¿Llegó por algún otro pedido? <span class="muted small" style="font-weight:400">(opcional)</span></label><select onchange="IN.req=this.value"><option value="">No / no sé</option>${others.map(r=>`<option value="${r.id}" ${IN.req===r.id?'selected':''}>${esc(String(Number(r.quantity)).replace('.',',')+' × '+r.item)} · pidió ${esc(nameOf(r.requested_by))}</option>`).join('')}</select>`:''}
+<button class="btn block ok" style="margin-top:10px" onclick="saveIngreso(this)">➕ Sumar al inventario</button></div>`}
+async function saveIngreso(btn){
+  const qty=Number(IN.qty);if(!Number.isInteger(qty)||qty<=0)return toast('Cantidad inválida','bad');
+  let it=null,codes=[];
+  if(IN.mode==='stock'){it=S.inv.find(i=>String(i.id)===String(IN.part));if(!it)return toast('Elegí el repuesto','bad')}
+  else{const code=IN.code.trim(),name=IN.name.trim(),min=Number(IN.min||0);
+    if(!code||!name)return toast('Completá código y nombre','bad');
+    if(!Number.isInteger(min)||min<0)return toast('Revisá el stock mínimo','bad');
+    if(S.inv.some(i=>String(i.part_code).toLowerCase()===code.toLowerCase()))return toast('Ya existe un repuesto con ese código: elegilo en «Ya está en la lista»','bad');
+    codes=pkCodes('in');if(!codes.length)return toast('Tildá para qué máquinas sirve (o «Uso general»)','bad')}
+  if(!confirm(`¿Confirmás sumar ${qty} × ${it?it.part_name:IN.name.trim()} al inventario?`))return;
+  await busy(btn,async()=>{try{let warn='';
+    if(it){await rpc('register_spare_part_movement',{p_part_id:it.id,p_movement_type:'entrada',p_quantity:qty,p_machine_code:null,p_machine_name:null,p_work_task_id:null,p_unit_cost:isBoss()&&IN.cost!==''?Number(IN.cost):null,p_notes:IN.notes.trim()||null,p_original_movement_id:null})}
+    else{const m=codes[0]!==GEN?MACHINES.find(x=>x.id===codes[0]):null;
+      await rpc('add_spare_part',{p_part_code:IN.code.trim(),p_part_name:IN.name.trim(),p_minimum_stock:Number(IN.min||0),p_initial_quantity:qty,p_storage_location:IN.loc.trim()||null,p_machine_code:m?.id||null,p_machine_name:m?.name||null});
+      await refresh();it=S.inv.find(i=>String(i.part_code).toLowerCase()===IN.code.trim().toLowerCase());
+      if(it&&!S.v124Missing){try{await setPartMachines(it.id,codes)}catch(e){warn=' No se guardaron las máquinas: '+v124Msg(e)}}}
+    if(IN.req&&it){try{await rpc('receive_part_request',{p_id:IN.req,p_part_id:it.id})}catch(e){warn+=' El pedido no se pudo cerrar: '+(/receive_part_request|schema cache/i.test(e.message)?'falta el SQL de la V12.5.':e.message)}}
+    IN=emptyIn();delete PK.in;await refresh();render();toast('Repuesto sumado al inventario.'+warn,warn?'bad':'good');
+  }catch(e){toast(/No autorizado|Solo el jefe/i.test(e.message)?'Falta correr el SQL de la V12.5 en Supabase para que los operarios puedan ingresar repuestos.':e.message,'bad')}});
 }
 async function saveMove(btn){
   const qty=Number(MV.qty);if(!Number.isInteger(qty)||qty<=0)return toast('Cantidad inválida','bad');
@@ -613,7 +649,7 @@ async function newPart(btn){
 /* ===================== PEDIDOS DE REPUESTOS E INSUMOS ===================== */
 let PQ={kind:'repuesto',part:'',item:'',qty:1,unit:'',machine:'',urg:'normal',notes:''};
 function vPedidos(){
-  let list=S.reqs;if(S.reqF==='abiertos')list=list.filter(r=>['pendiente','pedido'].includes(r.status));else if(S.reqF==='mios')list=list.filter(r=>r.requested_by===myId());
+  const isOpen=r=>['pendiente','pedido'].includes(r.status);let list=S.reqs;if(S.reqF==='mios')list=list.filter(r=>r.requested_by===myId()&&isOpen(r));else if(S.reqF==='hist')list=list.filter(r=>!isOpen(r));else list=list.filter(isOpen);
   return `<button class="btn ghost sm" onclick="go('repuestos')">← Repuestos</button><h2>📦 Pedido de repuestos e insumos</h2>
 ${S.v11Missing?'<div class="err" style="margin-bottom:12px">Falta instalar el SQL de la V11 en Supabase.</div>':''}
 <div class="card"><h3>Nuevo pedido</h3>
@@ -625,7 +661,8 @@ ${PQ.part?'':`<label>${PQ.kind==='insumo'?'Qué insumo hace falta':'Qué repuest
 <label>Urgencia</label><div class="seg" style="margin:0"><button class="${PQ.urg==='normal'?'on':''}" onclick="PQ.urg='normal';render()">Normal</button><button class="${PQ.urg==='urgente'?'on':''}" onclick="PQ.urg='urgente';render()">🔴 Urgente (equipo parado)</button></div>
 <label>Observaciones</label><input value="${esc(PQ.notes)}" oninput="PQ.notes=this.value" placeholder="Marca, medida, proveedor sugerido…">
 <button class="btn block" onclick="saveRequest(this)">📦 Enviar pedido al supervisor</button></div>
-<div class="seg"><button class="${S.reqF==='abiertos'?'on':''}" onclick="S.reqF='abiertos';render()">Sin resolver</button><button class="${S.reqF==='mios'?'on':''}" onclick="S.reqF='mios';render()">Mis pedidos</button><button class="${S.reqF==='todos'?'on':''}" onclick="S.reqF='todos';render()">Todos</button></div>
+<div class="seg"><button class="${S.reqF==='abiertos'?'on':''}" onclick="S.reqF='abiertos';render()">Pendientes</button><button class="${S.reqF==='mios'?'on':''}" onclick="S.reqF='mios';render()">Mis pedidos</button><button class="${S.reqF==='hist'?'on':''}" onclick="S.reqF='hist';render()">📜 Historial</button></div>
+${S.reqF==='hist'?'<p class="muted small" style="margin-top:-4px">Pedidos que ya llegaron (o que no se van a pedir).</p>':''}
 ${list.map(reqCard).join('')||'<div class="card muted">No hay pedidos en esta lista.</div>'}`}
 function reqCard(r){const q=String(Number(r.quantity)).replace('.',',')+(r.unit?' '+r.unit:'');
   const act=(st,l,cls)=>`<button class="btn ${cls} sm" onclick="setRequest(this,'${r.id}','${st}')">${l}</button>`;
@@ -643,7 +680,7 @@ async function setRequest(btn,id,st){const r=S.reqs.find(x=>x.id===id);let ans=n
   if(st==='rechazado'){ans=prompt('¿Por qué no se pide? (opcional, le llega al operario)','');if(ans===null)return}
   if(st==='pedido'){ans=prompt('¿Algún dato para el operario? (proveedor, fecha estimada… opcional)','');if(ans===null)return}
   await busy(btn,async()=>{try{await rpc('update_part_request',{p_id:id,p_status:st,p_answer:ans||null});toast('Pedido actualizado','good');await refresh();render();
-    if(st==='recibido'&&r?.part_id&&confirm('¿Cargar ahora el ingreso al stock de este repuesto?')){MV={type:'entrada',part:r.part_id,qty:Math.round(Number(r.quantity))||1,machine:'',orig:'',cost:'',notes:'Pedido recibido'};go('repuestos')}}
+    if(st==='recibido'&&r?.part_id&&confirm('¿Cargar ahora el ingreso al stock de este repuesto?')){IN={...emptyIn(),part:r.part_id,qty:Math.round(Number(r.quantity))||1,notes:'Pedido recibido'};go('repuestos')}}
   catch(e){toast(e.message,'bad')}})}
 
 /* ===================== AVISOS PUSH ===================== */
@@ -683,7 +720,7 @@ function vMaquinas(){const q=S.machQ.toLowerCase();
   const open={};S.tasks.filter(t=>t.status!=='terminado').forEach(t=>{const id=(t.machine_label||'').split(' · ')[0];open[id]=(open[id]||0)+1});
   const local=localCritToImport();
   return `<button class="btn ghost sm" onclick="go('mas')">← Más</button><h2>Máquinas y criticidad</h2>
-<button class="btn block" style="margin-bottom:12px" onclick="go('escanear')">📷 Escanear el QR de una máquina</button>
+<button class="btn block" style="margin-bottom:12px" onclick="S.scanFor='';go('escanear')">📷 Escanear el QR de una máquina</button>
 ${machineAdminBox()}
 ${S.critMissing?'<div class="err" style="margin-bottom:12px">La criticidad todavía no está activada en la base de datos. Hay que correr el SQL de la V10 en Supabase.</div>':''}
 <div class="stats"><div class="stat crit-a" onclick="S.critF='ALTA';render()"><b>🚨 ${cnt('ALTA')}</b><span>Criticidad ALTA</span></div><div class="stat crit-b" onclick="S.critF='MEDIA';render()"><b>${cnt('MEDIA')}</b><span>Criticidad MEDIA</span></div><div class="stat crit-c" onclick="S.critF='BAJA';render()"><b>${cnt('BAJA')}</b><span>Criticidad BAJA</span></div><div class="stat ${cnt('INCOMPLETO')?'yel':''}" onclick="S.critF='INCOMPLETO';render()"><b>${cnt('INCOMPLETO')}</b><span>Incompletas</span></div><div class="stat ${cnt('NONE')?'yel':''}" onclick="S.critF='NONE';render()"><b>${cnt('NONE')}</b><span>Sin evaluar</span></div><div class="stat" onclick="S.critF='NO_FUNCIONA';render()"><b>⛔ ${nOos}</b><span>No funcionan${nOos?' · '+money(oosTot):''}</span></div></div>
@@ -879,7 +916,7 @@ async function saveUser(btn,id){const g=k=>$(k+id);await busy(btn,async()=>{try{
 function vAyuda(){return `<button class="btn ghost sm" onclick="go(session&&S.me?.approved?'mas':'login')">← Volver</button><h2>Ayuda</h2>
 <div class="card"><h3>📱 Instalar en iPhone</h3><ol class="small"><li>Abrí el enlace en <b>Safari</b> (si se abre en WhatsApp, tocá los tres puntos → Abrir en Safari).</li><li>Tocá el botón <b>Compartir</b> (cuadrado con flecha).</li><li>Elegí <b>Agregar a pantalla de inicio</b> → <b>Agregar</b>.</li></ol>
 <h3>🤖 Instalar en Android</h3><ol class="small"><li>Abrí el enlace en <b>Chrome</b> (si se abre dentro de WhatsApp, tocá los tres puntos → <b>Abrir en Chrome</b>).</li><li>Si aparece el botón amarillo <b>Instalar la app</b>, tocalo.</li><li>Si no, menú de tres puntos ⋮ → <b>Instalar aplicación</b> o <b>Agregar a pantalla principal</b> → <b>Instalar</b>.</li><li>Buscá el ícono de Facilitas en el menú de aplicaciones o en la pantalla principal.</li></ol>${installBox()}</div>
-<div class="card"><h3>Uso diario</h3><ul class="small"><li><b>Inicio:</b> al empezar el turno, leé las novedades y los avisos del turno anterior.</li><li><b>Tareas:</b> tocá Iniciar cuando empezás, Pausar si te interrumpen y Finalizar al terminar. Si te ayudó un compañero, tocá <b>👥 Sumar compañero</b> en la tarea.</li><li><b>🚨 Emergencias:</b> si tuviste que atender una falla sin tarea asignada, cargala con <b>Cargar emergencia</b> (en Inicio o Tareas) y marcá quién te ayudó. Le llega el aviso al supervisor.</li><li><b>Fotos:</b> al registrar el trabajo, sacá hasta 3 fotos. Van al informe diario.</li><li><b>📦 Pedidos:</b> en Repuestos → Pedir repuestos o insumos. Le llega el aviso al supervisor y vos ves cuándo se pidió y cuándo llegó.</li><li><b>🔔 Avisos:</b> en Más → Mi perfil y avisos, activá los avisos para que te llegue cada tarea nueva (en iPhone, primero instalá la app).</li><li><b>Registrar:</b> cargá cada trabajo con los repuestos usados. Los repuestos se descuentan solos del inventario.</li><li><b>Repuestos:</b> retiros sueltos, devoluciones e ingresos de stock (jefe).</li><li>Al terminar la jornada, <b>Cerrar mi turno</b> con un aviso para el que entra.</li><li><b>🛠 Preventivo:</b> en Más → Preventivo del mes están las tareas del plan para cada día. Cuando te asignan una, te llega como cualquier tarea (dice «Preventivo»). Iniciala y finalizala igual que siempre: así queda como hecha.</li><li><b>📷 QR de las máquinas:</b> cada máquina tiene una etiqueta. Tocá <b>Escanear máquina</b> en Inicio (o en Máquinas), apuntá a la etiqueta y se abre la ficha de esa máquina: registrar trabajo, emergencia y tareas. La primera vez, el celular pide permiso para la cámara: tocá Permitir.</li><li><b>📣 Avisos:</b> los avisos del jefe o del supervisor aparecen arriba de todo en Inicio y en Más → Avisos.</li></ul>
+<div class="card"><h3>Uso diario</h3><ul class="small"><li><b>Inicio:</b> al empezar el turno, leé las novedades y los avisos del turno anterior.</li><li><b>Tareas:</b> tocá Iniciar cuando empezás, Pausar si te interrumpen y Finalizar al terminar. Si te ayudó un compañero, tocá <b>👥 Sumar compañero</b> en la tarea.</li><li><b>🚨 Emergencias:</b> si tuviste que atender una falla sin tarea asignada, cargala con <b>Cargar emergencia</b> (en Inicio o Tareas) y marcá quién te ayudó. Le llega el aviso al supervisor.</li><li><b>Fotos:</b> al registrar el trabajo, sacá hasta 3 fotos. Van al informe diario.</li><li><b>📷 Registrar trabajo:</b> lo primero es <b>Escanear QR de la máquina</b>; la máquina se completa sola. Si la etiqueta no se lee, elegila de la lista.</li><li><b>📥 Ingresó un repuesto:</b> en Repuestos, arriba de todo. Elegí el repuesto y la cantidad (o «Es un repuesto nuevo» si no está en la lista) y tocá Sumar al inventario. Lo puede hacer cualquiera.</li><li><b>📦 Pedidos:</b> en Repuestos → Pedir repuestos o insumos. Le llega el aviso al supervisor. Cuando el repuesto ingresa al inventario, el pedido sale de Pendientes y queda en el <b>Historial</b>.</li><li><b>🔔 Avisos:</b> en Más → Mi perfil y avisos, activá los avisos para que te llegue cada tarea nueva (en iPhone, primero instalá la app).</li><li><b>Registrar:</b> cargá cada trabajo con los repuestos usados. Los repuestos se descuentan solos del inventario.</li><li><b>Repuestos:</b> retiros sueltos, devoluciones e ingresos de stock (jefe).</li><li>Al terminar la jornada, <b>Cerrar mi turno</b> con un aviso para el que entra.</li><li><b>🛠 Preventivo:</b> en Más → Preventivo del mes están las tareas del plan para cada día. Cuando te asignan una, te llega como cualquier tarea (dice «Preventivo»). Iniciala y finalizala igual que siempre: así queda como hecha.</li><li><b>📷 QR de las máquinas:</b> cada máquina tiene una etiqueta. Tocá <b>Escanear máquina</b> en Inicio (o en Máquinas), apuntá a la etiqueta y se abre la ficha de esa máquina: registrar trabajo, emergencia y tareas. La primera vez, el celular pide permiso para la cámara: tocá Permitir.</li><li><b>📣 Avisos:</b> los avisos del jefe o del supervisor aparecen arriba de todo en Inicio y en Más → Avisos.</li></ul>
 <h3>Para el jefe y el supervisor</h3><ul class="small"><li><b>Plan preventivo</b> (Más, solo el supervisor): las tareas de cada máquina, con frecuencia, horas, técnicos y horas de parada. Tocá una tarea para cambiarla o desactivarla; «＋ Agregar tarea» para sumar una. «Descargar plan en Excel» lo baja con el formato del plan.</li><li><b>Preventivo del mes</b>: la app genera sola los preventivos del mes y del siguiente (todos los días a las 8:05). Las tareas que paran la máquina más de 1 hora caen en días que no se produce; el resto, en días hábiles. Asigná cada una al operario, cambiale la fecha o cancelala.</li><li><b>Calendario de producción</b> (solo el supervisor lo cambia): lunes a viernes se produce, feriados incluidos. Marcá el sábado que se trabaja y los feriados que no. Después, en Preventivo, tocá «Reprogramar según calendario».</li><li><b>Máquinas</b>: «＋ Agregar máquina» (podés copiarle el plan de otra parecida), «Editar máquina» y «Dar de baja» desde la ficha. Las dadas de baja no se borran y se pueden reactivar.</li><li><b>Criticidad</b> (ficha de cada máquina): 5 criterios — producción 40%, alternativa 25%, frecuencia 13%, inocuidad 12% e impacto económico por insumos de reemplazo 10%. Se puede guardar incompleta (queda «INCOMPLETO»). 🚨 Rojo = ALTA, naranja = MEDIA, verde = BAJA. Si tildás <b>⛔ No funciona</b>, la criticidad queda nula y cargás el valor del arreglo: repuestos con su valor y mano de obra externa.</li>
 <li><b>Borrar tareas</b> (solo el supervisor): en una tarea pendiente o en proceso, «🗑 Borrar». Se elimina como si no hubiera existido y no se puede deshacer. Las terminadas no se borran.</li>
 <li><b>🔩 Repuestos por máquina</b> (V12.4): al dar de alta un repuesto, tildá todas las máquinas para las que sirve, o «Uso general». En los repuestos ya cargados, tocá «✏️ Máquinas». En Repuestos podés filtrar por máquina, y en la ficha de cada máquina aparece «Repuestos que le sirven».</li><li><b>📜 Cambios y arreglos anteriores</b> (V12.4, jefe y supervisor): en la ficha de cada máquina, debajo de la criticidad, tocá «＋ Agregar cambio o arreglo anterior». Alcanza con el mes o el año si no te acordás el día. Los operarios lo ven pero no lo cambian. Sale también en el Excel (hoja «Historial máquinas»).</li><li><b>Etiquetas QR</b>: si agregás una máquina o se rompe una etiqueta, en la ficha de la máquina tocá «🏷️ Etiqueta QR»: baja una imagen para imprimir a 5 × 5 cm.</li><li><b>Mandar aviso</b>: en Más → Avisos, a una persona o a todo el equipo. Les llega al celular.</li><li><b>Informes</b>: el Excel trae el preventivo plan vs. real y el cumplimiento por máquina.</li></ul>
@@ -1139,9 +1176,9 @@ function stopScan(){cancelAnimationFrame(SCAN.raf);SCAN.raf=0;if(SCAN.stream){SC
 function codeFromQr(txt){const t=String(txt||'').trim();let c='';
   try{const u=new URL(t);c=u.searchParams.get('m')||''}catch{c=t}
   return c.toUpperCase().replace(/\s+/g,'')}
-function vEscanear(){return `<button class="btn ghost sm" onclick="go('inicio')">← Volver</button><h2>📷 Escanear máquina</h2>
+function vEscanear(){const forReg=S.scanFor==='registrar';return `<button class="btn ghost sm" onclick="S.scanFor='';go('${forReg?'registrar':'inicio'}')">← Volver</button><h2>📷 Escanear máquina</h2>
 <div class="card" style="padding:8px"><div class="scanbox"><video id="scVid" playsinline muted autoplay></video><div class="scanframe"></div></div><p class="muted small" id="scMsg" style="text-align:center;margin:8px 0 0">Abriendo la cámara…</p></div>
-<div class="info small">Apuntá a la etiqueta QR de la máquina, a unos 15–25 cm. Se abre sola la ficha de la máquina: desde ahí registrás el trabajo, cargás una emergencia o ves sus tareas y su plan.</div>
+<div class="info small">Apuntá a la etiqueta QR de la máquina, a unos 15–25 cm. ${forReg?'La máquina se completa sola en <b>Registrar trabajo</b>.':'Se abre sola la ficha de la máquina: desde ahí registrás el trabajo, cargás una emergencia o ves sus tareas y su plan.'}</div>
 <details class="card" style="margin-top:12px"><summary class="small">¿No anda la cámara? Escribí el código</summary><div class="row" style="margin-top:8px"><input id="scCode" placeholder="Ej.: HOR-04" style="text-transform:uppercase"><button class="btn sm" style="flex:0 0 auto" onclick="openMachineCode($('scCode').value)">Abrir</button></div></details>`}
 afterRender.escanear=async()=>{
   const msg=t=>{const e=$('scMsg');if(e)e.textContent=t};
@@ -1162,7 +1199,7 @@ afterRender.escanear=async()=>{
   }catch(e){stopScan();msg((e.name==='NotAllowedError'?'No se dio permiso para usar la cámara. En iPhone: Configuración → Safari → Cámara → Permitir (o borrá y volvé a agregar la app). ':'')+(e.message||'No se pudo abrir la cámara.'))}
 };
 function openMachineCode(raw){const code=codeFromQr(raw);if(!code)return toast('Escribí el código','bad');
-  const m=MACHINES.find(x=>x.id===code);if(m){toast('🏭 '+machineLabel(m),'good');return go('maquina',{mach:code})}
+  const m=MACHINES.find(x=>x.id===code);if(m){toast('🏭 '+machineLabel(m),'good');if(S.scanFor==='registrar'){S.scanFor='';D.machine=machineLabel(m);D.other='';saveDraft();return go('registrar')}return go('maquina',{mach:code})}
   const off=S.machinesAll.find(x=>x.code===code);toast(off?`${code} está dada de baja.`:`No existe la máquina ${code}.`,'bad');if(S.view!=='escanear')go('escanear')}
 
 /* Etiqueta individual (para máquinas nuevas o reponer una dañada): PNG de 5 × 5 cm a 300 dpi */
