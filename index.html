@@ -73,7 +73,8 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--red);border-colo
 .menu a .ic{width:36px;height:36px;border-radius:10px;background:var(--red-l);display:grid;place-items:center;font-size:19px}
 .menu a .ar{margin-left:auto;color:#aaa}
 nav.bottom{position:fixed;left:0;right:0;bottom:0;z-index:30;background:#fff;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr);padding:6px 4px calc(env(safe-area-inset-bottom) + 6px)}
-nav.bottom button{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11.5px;color:var(--mut);padding:4px 0;font-weight:600}
+nav.bottom button{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11.5px;color:var(--mut);padding:4px 0;font-weight:600;line-height:1.1;text-align:center}
+nav.bottom button.main{font-size:11px;color:var(--red)}
 nav.bottom button i{font-style:normal;font-size:22px;line-height:1.1}
 nav.bottom button.on{color:var(--red)}
 nav.bottom button.main i{background:var(--red);color:#fff;border-radius:14px;width:46px;height:34px;display:grid;place-items:center;font-size:20px}
@@ -130,14 +131,14 @@ table.mini th{font-size:12px;color:var(--mut);text-transform:uppercase}
 <nav class="bottom hidden" id="nav">
   <button data-v="inicio" onclick="go('inicio')"><i>🏠</i>Inicio</button>
   <button data-v="tareas" onclick="go('tareas')"><i>📋</i>Tareas</button>
-  <button data-v="registrar" class="main" onclick="go('registrar')"><i>＋</i>Registrar</button>
+  <button data-v="registrar" class="main" onclick="go('registrar')"><i>＋</i>Registrar trabajo</button>
   <button data-v="repuestos" onclick="go('repuestos')"><i>🔩</i>Repuestos</button>
   <button data-v="mas" onclick="go('mas')"><i>☰</i>Más</button>
 </nav>
 <script>
 'use strict';
 /* ===================== CONFIGURACIÓN ===================== */
-const VERSION='V12.6';
+const VERSION='V12.7';
 const SB_URL='https://kuvzvpzqsjwpiekrxnxe.supabase.co';
 const SB_KEY='sb_publishable_QxeMLHdos-tz7ArSVw_ZSg_1j_4tmXa'; // clave pública (no es de administrador)
 const GOOGLE_CLIENT_ID='586047120992-v6evqrq8q6n54vgfj3pcg1l3ac73c4o6.apps.googleusercontent.com';
@@ -290,7 +291,7 @@ async function doLogin(btn){
   await busy(btn,async()=>{try{
     const s=await raw('/auth/v1/token?grant_type=password',{method:'POST',auth:false,body:{email,password}});
     saveSession(s);store.set('mat10_last_email',email);await start();
-  }catch(e){toast(/invalid/i.test(e.message)?'Correo o contraseña incorrectos':e.message,'bad')}});
+  }catch(e){toast(/banned/i.test(e.message)?'Tu usuario fue dado de baja. Hablá con el supervisor.':/invalid/i.test(e.message)?'Correo o contraseña incorrectos. Si no te acordás, tocá «Olvidé mi contraseña».':/not confirmed/i.test(e.message)?'Falta confirmar el correo: abrí el mail que te llegó y tocá el enlace.':e.message,'bad')}});
 }
 async function doForgot(btn){
   const email=$('lEmail').value.trim();if(!email)return toast('Escribí tu correo arriba y tocá de nuevo','bad');
@@ -302,8 +303,8 @@ function vSignup(){return `<div class="login-wrap"><h2>Crear cuenta</h2><div cla
 <label>Contraseña (mínimo 8 caracteres)</label><input id="rPass" type="password" autocomplete="new-password">
 <label>Especialidad</label><select id="rSpec">${SPECIALTIES.slice(0,3).map(s=>`<option>${s}</option>`).join('')}</select>
 <div class="row"><div><label>Entrada</label><input id="rStart" type="time"></div><div><label>Salida</label><input id="rEnd" type="time"></div></div>
-<button class="btn block" onclick="doSignup(this)">Solicitar registro</button>
-<p class="muted small">Tu cuenta queda pendiente hasta que el supervisor la apruebe.</p></div>
+<button class="btn block" onclick="doSignup(this)">Crear cuenta</button>
+<p class="muted small">Apenas creás la cuenta ya podés usar la app.</p></div>
 <button class="btn ghost block" onclick="go('login')">← Volver</button></div>`}
 async function doSignup(btn){
   const d={first:$('rFirst').value.trim(),last:$('rLast').value.trim(),email:$('rEmail').value.trim(),pass:$('rPass').value};
@@ -313,16 +314,12 @@ async function doSignup(btn){
   await busy(btn,async()=>{try{
     const r=await raw('/auth/v1/signup',{method:'POST',auth:false,body:{email:d.email,password:d.pass,data:meta}});
     store.set('mat10_last_email',d.email);store.set('mat10_pending_meta',meta);
-    if(r?.access_token){saveSession(r);await start()}else{toast('Registro enviado. Si te llega un correo de confirmación, abrilo y después ingresá.','good');go('login')}
+    if(r?.access_token){saveSession(r);await start()}else{toast('¡Cuenta creada! Te llegó un correo: abrilo, tocá el enlace y ya entrás a la app.','good');go('login')}
   }catch(e){toast(/registered|exists/i.test(e.message)?'Ese correo ya está registrado. Ingresá o recuperá la contraseña.':e.message,'bad')}});
 }
-function vPending(){const p=S.me||{};const incomplete=!p.first_name||!p.last_name;return `<div class="login-wrap"><img class="login-logo" src="./logo-facilitas.jpg" alt="">
-<div class="card accent"><h3>Cuenta pendiente de aprobación</h3><p class="muted">Ya estás registrado. Avisale al supervisor para que apruebe tu cuenta. Después tocá "Ya me aprobaron".</p>
-${incomplete?`<div class="note">Completá tus datos para que puedan aprobarte:</div>
-<div class="row"><div><label>Nombre</label><input id="pFirst" value="${esc(p.first_name||'')}"></div><div><label>Apellido</label><input id="pLast" value="${esc(p.last_name||'')}"></div></div>
-<label>Especialidad</label><select id="pSpec">${SPECIALTIES.slice(0,3).map(s=>`<option ${p.specialty===s?'selected':''}>${s}</option>`).join('')}</select>
-<button class="btn block" onclick="savePendingProfile(this)">Guardar mis datos</button>`:`<p><b>${esc(p.first_name+' '+p.last_name)}</b> · ${esc(p.specialty||'')}</p>`}
-<button class="btn sec block" onclick="start()">Ya me aprobaron</button><button class="btn ghost block" onclick="logout()">Salir</button></div></div>`}
+function vPending(){return `<div class="login-wrap"><img class="login-logo" src="./logo-facilitas.jpg" alt="">
+<div class="card accent"><h3>Usuario dado de baja</h3><p class="muted">Tu usuario ya no tiene acceso a la app de mantenimiento. Si es un error, hablá con el supervisor.</p>
+<button class="btn ghost block" onclick="logout()">Salir</button></div></div>`}
 async function savePendingProfile(btn){const first_name=$('pFirst').value.trim(),last_name=$('pLast').value.trim();if(!first_name||!last_name)return toast('Completá nombre y apellido','bad');
   await busy(btn,async()=>{try{await api('/rest/v1/profiles?id=eq.'+myId(),{method:'PATCH',body:{first_name,last_name,specialty:$('pSpec').value}});await loadMe();toast('Datos guardados','good');render()}catch(e){toast(e.message,'bad')}})}
 function vRecovery(){return `<div class="login-wrap"><div class="card"><h3>Nueva contraseña</h3><label>Escribí tu nueva contraseña (mínimo 8)</label><input id="nPass" type="password" autocomplete="new-password"><button class="btn block" onclick="doRecovery(this)">Guardar contraseña</button></div></div>`}
@@ -882,7 +879,7 @@ async function delHist(btn,id){const h=S.hist.find(x=>x.id===id);if(!h||!confirm
 
 /* ===================== MÁS ===================== */
 function vMas(){const it=(v,ic,t)=>`<a href="#" onclick="go('${v}');return false"><span class="ic">${ic}</span>${t}<span class="ar">›</span></a>`;
-  return `<h2>Más</h2><div class="card menu">${it('preventivo','🛠','Preventivo del mes')}${isSup()?it('plan','📋','Plan preventivo'):''}${it('calendario','📅','Calendario de producción')}${it('avisos','📣',isBoss()?'Avisos (mandar aviso)':'Avisos')}${it('maquinas','🏭','Máquinas y criticidad')}${it('pedidos','📦','Pedidos de repuestos e insumos')}${it('perfil','👤','Mi perfil y avisos')}${isBoss()?it('asignar','🗂️','Asignar tarea'):''}${isSup()?it('usuarios','👥','Usuarios y aprobaciones'):''}${isSup()?it('informes','📊','Informes a Google Drive (Excel)'):''}${it('ayuda','❓','Ayuda e instalación')}</div>
+  return `<h2>Más</h2><div class="card menu">${it('preventivo','🛠','Preventivo del mes')}${isSup()?it('plan','📋','Plan preventivo'):''}${it('calendario','📅','Calendario de producción')}${it('avisos','📣',isBoss()?'Avisos (mandar aviso)':'Avisos')}${it('maquinas','🏭','Máquinas y criticidad')}${it('pedidos','📦','Pedidos de repuestos e insumos')}${it('perfil','👤','Mi perfil y avisos')}${isBoss()?it('asignar','🗂️','Asignar tarea'):''}${isSup()?it('usuarios','👥','Usuarios (invitar y eliminar)'):''}${isSup()?it('informes','📊','Informes a Google Drive (Excel)'):''}${it('ayuda','❓','Ayuda e instalación')}</div>
 ${installBox()}<button class="btn ghost block" onclick="if(confirm('¿Cerrar sesión en este celular?'))logout()">Cerrar sesión</button><p class="muted small" style="text-align:center">Matenimiento Facilitas ${VERSION}</p>`}
 function vPerfil(){const p=S.me;return `<button class="btn ghost sm" onclick="go('mas')">← Más</button><h2>Mi perfil</h2><div class="card">
 <div class="row"><div><label>Nombre</label><input id="fFirst" value="${esc(p.first_name||'')}"></div><div><label>Apellido</label><input id="fLast" value="${esc(p.last_name||'')}"></div></div>
@@ -918,27 +915,27 @@ Desde ahora abrila siempre desde el ícono de Facilitas.
 *3) Creá tu cuenta*
 Tocá *Crear cuenta* y completá nombre, apellido, correo, contraseña (mínimo 8 caracteres), especialidad y horario. Si ya tenías cuenta, tocá *Ingresar*.
 
-*4) Esperá la aprobación*
-Avisame cuando te registres así te apruebo. Después tocá *Ya me aprobaron*.
-
-*5) Activá los avisos* 🔔
+*4) Activá los avisos* 🔔
 En Inicio tocá *Activar avisos en este celular* → *Permitir*. Así te llegan las tareas que te asignan aunque tengas la app cerrada.
 
 Cualquier duda, en la app está *Más → Ayuda e instalación*.`}
-function vUsuarios(){const pend=S.profiles.filter(p=>!p.approved),act=S.profiles.filter(p=>p.approved);
+function vUsuarios(){const baja=S.profiles.filter(p=>!p.approved),act=S.profiles.filter(p=>p.approved);
   const link=location.origin+location.pathname,wa='https://wa.me/?text='+encodeURIComponent(inviteText(link));
   return `<button class="btn ghost sm" onclick="go('mas')">← Más</button><h2>Usuarios</h2>
-<div class="card"><h3>Invitar empleado</h3><p class="muted small">Le llega por WhatsApp el enlace con el paso a paso para instalar la app, crear la cuenta y activar los avisos. Después lo aprobás acá.</p><a class="btn ok block" style="text-decoration:none" href="${wa}" target="_blank" rel="noopener">Compartir por WhatsApp</a></div>
-<h3>Pendientes de aprobación (${pend.length})</h3>${pend.map(p=>`<div class="card alta"><div class="title">${esc([p.first_name,p.last_name].filter(Boolean).join(' ')||'Sin nombre todavía')}</div><div class="muted small">${esc(p.specialty||'')}</div>
-${p.first_name&&p.last_name?`<div class="actions"><button class="btn ok sm" onclick="approve(this,'${p.id}')">✓ Aprobar</button></div>`:'<p class="muted small">Todavía no completó nombre y apellido. Cuando entre a la app se le pedirán.</p>'}</div>`).join('')||'<div class="card muted">No hay solicitudes pendientes.</div>'}
+<div class="card"><h3>Invitar empleado</h3><p class="muted small">Le llega por WhatsApp el enlace con el paso a paso para instalar la app, crear la cuenta y activar los avisos. Apenas crea la cuenta ya puede usar la app (no hace falta aprobarlo).</p><a class="btn ok block" style="text-decoration:none" href="${wa}" target="_blank" rel="noopener">Compartir por WhatsApp</a></div>
 <h3>Activos (${act.length})</h3><p class="muted small">🔔 = tiene los avisos activados en al menos un celular.</p>${act.map(p=>p.id===myId()?'':`<details class="card"><summary>${esc((p.first_name||'')+' '+(p.last_name||''))} · ${esc({supervisor:'Supervisor',jefe:'Jefe',operario:'Operario'}[p.role]||p.role)} ${S.pushDev?(S.pushDev[p.id]?'🔔':'<span class="muted small">🔕 sin avisos</span>'):''}</summary>
 <div class="row"><div><label>Nombre</label><input id="u1${p.id}" value="${esc(p.first_name||'')}"></div><div><label>Apellido</label><input id="u2${p.id}" value="${esc(p.last_name||'')}"></div></div>
 <div class="row"><div><label>Especialidad</label><select id="u3${p.id}">${SPECIALTIES.map(s=>`<option ${p.specialty===s?'selected':''}>${s}</option>`).join('')}</select></div><div><label>Rol</label><select id="u4${p.id}"><option value="operario" ${p.role==='operario'?'selected':''}>Operario</option><option value="jefe" ${p.role==='jefe'?'selected':''}>Jefe</option>${p.role==='supervisor'?'<option value="supervisor" selected>Supervisor</option>':''}</select></div></div>
 <div class="row"><div><label>Entrada</label><input type="time" id="u5${p.id}" value="${esc((p.shift_start||'').slice(0,5))}"></div><div><label>Salida</label><input type="time" id="u6${p.id}" value="${esc((p.shift_end||'').slice(0,5))}"></div></div>
-<label style="font-weight:400"><input type="checkbox" id="u7${p.id}" style="width:auto" checked> Usuario activo (destildar para bloquear el acceso)</label>
-<button class="btn block sm" onclick="saveUser(this,'${p.id}')">Guardar cambios</button></details>`).join('')}`}
+<button class="btn block sm" onclick="saveUser(this,'${p.id}')">Guardar cambios</button>
+${p.role!=='supervisor'?`<button class="btn ghost block sm" style="color:#b42318;border-color:#f5b5ad;margin-top:8px" onclick="removeUser(this,'${p.id}')">🗑 Eliminar ${p.role==='jefe'?'usuario':'operario'}</button>`:''}</details>`).join('')}
+<h3>Dados de baja (${baja.length})</h3><p class="muted small">No pueden entrar a la app. Sus trabajos anteriores quedan en el historial.</p>${baja.map(p=>`<div class="card"><div class="line"><div><div class="title">${esc([p.first_name,p.last_name].filter(Boolean).join(' ')||'Sin nombre')}</div><div class="muted small">${esc(p.specialty||'')}</div></div><button class="btn ghost sm" onclick="restoreUser(this,'${p.id}')">Volver a habilitar</button></div></div>`).join('')||'<div class="card muted">Nadie dado de baja.</div>'}`}
+async function removeUser(btn,id){if(!confirm('¿Eliminar a '+nameOf(id)+'?\n\nDeja de poder usar la app al instante (se le cierra la sesión en el celular). Sus trabajos anteriores quedan en el historial.'))return;
+  await busy(btn,async()=>{try{await rpc('remove_maintenance_user',{p_user_id:id});toast(nameOf(id)+' fue dado de baja','good');await refresh();render()}catch(e){toast(/remove_maintenance_user|schema cache/i.test(e.message)?'Falta correr el SQL de la V12.7 en Supabase.':e.message,'bad')}})}
+async function restoreUser(btn,id){if(!confirm('¿Volver a habilitar a '+nameOf(id)+'?'))return;
+  await busy(btn,async()=>{try{await rpc('restore_maintenance_user',{p_user_id:id});toast(nameOf(id)+' puede volver a usar la app','good');await refresh();render()}catch(e){toast(e.message,'bad')}})}
 async function approve(btn,id){if(!confirm('¿Aprobar a '+nameOf(id)+'? Verificá que sea un empleado.'))return;await busy(btn,async()=>{try{await rpc('approve_maintenance_user',{p_user_id:id});toast('Usuario aprobado','good');await refresh();render()}catch(e){toast(e.message,'bad')}})}
-async function saveUser(btn,id){const g=k=>$(k+id);await busy(btn,async()=>{try{await rpc('admin_manage_maintenance_user',{p_user_id:id,p_first_name:g('u1').value.trim(),p_last_name:g('u2').value.trim(),p_specialty:g('u3').value,p_role:g('u4').value,p_shift_start:g('u5').value||null,p_shift_end:g('u6').value||null,p_approved:g('u7').checked});toast('Cambios guardados','good');await refresh();render()}catch(e){toast(e.message,'bad')}})}
+async function saveUser(btn,id){const g=k=>$(k+id);await busy(btn,async()=>{try{await rpc('admin_manage_maintenance_user',{p_user_id:id,p_first_name:g('u1').value.trim(),p_last_name:g('u2').value.trim(),p_specialty:g('u3').value,p_role:g('u4').value,p_shift_start:g('u5').value||null,p_shift_end:g('u6').value||null,p_approved:true});toast('Cambios guardados','good');await refresh();render()}catch(e){toast(e.message,'bad')}})}
 function vAyuda(){return `<button class="btn ghost sm" onclick="go(session&&S.me?.approved?'mas':'login')">← Volver</button><h2>Ayuda</h2>
 <div class="card"><h3>📱 Instalar en iPhone</h3><ol class="small"><li>Abrí el enlace en <b>Safari</b> (si se abre en WhatsApp, tocá los tres puntos → Abrir en Safari).</li><li>Tocá el botón <b>Compartir</b> (cuadrado con flecha).</li><li>Elegí <b>Agregar a pantalla de inicio</b> → <b>Agregar</b>.</li></ol>
 <h3>🤖 Instalar en Android</h3><ol class="small"><li>Abrí el enlace en <b>Chrome</b> (si se abre dentro de WhatsApp, tocá los tres puntos → <b>Abrir en Chrome</b>).</li><li>Si aparece el botón amarillo <b>Instalar la app</b>, tocalo.</li><li>Si no, menú de tres puntos ⋮ → <b>Instalar aplicación</b> o <b>Agregar a pantalla principal</b> → <b>Instalar</b>.</li><li>Buscá el ícono de Facilitas en el menú de aplicaciones o en la pantalla principal.</li></ol>${installBox()}</div>
